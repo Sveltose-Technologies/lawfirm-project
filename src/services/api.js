@@ -42,7 +42,7 @@ import { errorHandler } from "./errorHandler";
 import { responseHandler } from "./responseHandler"; 
 
 const API = axios.create({
-  baseURL: "https://nrislaw.rxchartsquare.com",
+  baseURL: "https://nodejs.nrislawfirm.com",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
