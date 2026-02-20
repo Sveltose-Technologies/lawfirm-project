@@ -105,19 +105,22 @@ const CMSCategory = () => {
     return found ? found.subcategoryName : `ID: ${id}`;
   };
 
-  const toggle = () => {
-    setModal(!modal);
-    if (!modal) {
-      setFormData({
-        adminId: "3",
-        categoryId: "",
-        subcategoryIds: [],
-        content: "",
-      });
-      setIsEditing(false);
-      setCurrentId(null);
-    }
-  };
+const toggle = () => {
+  setModal(!modal);
+  if (!modal) {
+    // Get the current logged-in admin ID
+    const currentAdminId = authService.getAdminId();
+
+    setFormData({
+      adminId: currentAdminId || "",
+      categoryId: "",
+      subcategoryIds: [],
+      content: "",
+    });
+    setIsEditing(false);
+    setCurrentId(null);
+  }
+};
 
   const handleSubCheck = (subId) => {
     setFormData((prev) => {
@@ -135,6 +138,15 @@ const CMSCategory = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Safety check for dynamic ID
+    const currentAdminId = authService.getAdminId();
+
+    if (!currentAdminId) {
+      toast.error("Session expired. Please login again.");
+      return;
+    }
+
     if (!formData.categoryId || !formData.content) {
       return toast.error("Please select a category and add content!");
     }
@@ -143,7 +155,7 @@ const CMSCategory = () => {
     try {
       const payload = {
         ...formData,
-        adminId: Number(formData.adminId),
+        adminId: Number(currentAdminId), // Dynamic ID from session
         categoryId: Number(formData.categoryId),
         subcategoryIds: formData.subcategoryIds,
       };
@@ -165,20 +177,20 @@ const CMSCategory = () => {
       setLoading(false);
     }
   };
-
-  const handleEdit = (item) => {
-    setFormData({
-      adminId: item.adminId || "3",
-      categoryId: item.categoryId,
-      subcategoryIds: Array.isArray(item.subcategoryIds)
-        ? item.subcategoryIds
-        : [],
-      content: decodeHtmlEntities(item.content),
-    });
-    setCurrentId(item.id);
-    setIsEditing(true);
-    setModal(true);
-  };
+const handleEdit = (item) => {
+  const currentAdminId = authService.getAdminId();
+  setFormData({
+    adminId: currentAdminId || item.adminId,
+    categoryId: item.categoryId,
+    subcategoryIds: Array.isArray(item.subcategoryIds)
+      ? item.subcategoryIds
+      : [],
+    content: decodeHtmlEntities(item.content),
+  });
+  setCurrentId(item.id);
+  setIsEditing(true);
+  setModal(true);
+};
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure?")) return;

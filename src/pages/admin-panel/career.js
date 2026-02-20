@@ -567,41 +567,50 @@ const Careers = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const dataToSend = new FormData();
+ const handleSubmit = async (e) => {
+   e.preventDefault();
 
-      // Sending only the fields specified in your requirement
-      dataToSend.append("adminId", "1");
-      dataToSend.append("jobTitle", formData.jobTitle.trim());
-      dataToSend.append("jobCode", formData.jobCode.trim());
-      dataToSend.append("address", formData.address.trim());
-      dataToSend.append("location", formData.location); // Enum value
-      dataToSend.append("jobType", formData.jobType); // Enum value
-      dataToSend.append("textEditor", formData.textEditor);
+   // Retrieve the dynamic Admin ID from localStorage
+   const currentAdminId = authService.getAdminId();
 
-      if (formData.bannerImage instanceof File) {
-        dataToSend.append("bannerImage", formData.bannerImage);
-      }
+   if (!currentAdminId) {
+     alert("Session expired. Please login again.");
+     return;
+   }
 
-      const res = isEditing
-        ? await authService.updateCareer(currentId, dataToSend)
-        : await authService.createCareer(dataToSend);
+   setLoading(true);
+   try {
+     const dataToSend = new FormData();
 
-      if (res.success) {
-        toggle();
-        fetchData();
-      } else {
-        alert("Error: " + (res.message || "Failed to process request"));
-      }
-    } catch (err) {
-      console.error("❌ Submit error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+     // Use the dynamic ID instead of hardcoded "1"
+     dataToSend.append("adminId", currentAdminId);
+     dataToSend.append("jobTitle", formData.jobTitle.trim());
+     dataToSend.append("jobCode", formData.jobCode.trim());
+     dataToSend.append("address", formData.address.trim());
+     dataToSend.append("location", formData.location);
+     dataToSend.append("jobType", formData.jobType);
+     dataToSend.append("textEditor", formData.textEditor);
+
+     if (formData.bannerImage instanceof File) {
+       dataToSend.append("bannerImage", formData.bannerImage);
+     }
+
+     const res = isEditing
+       ? await authService.updateCareer(currentId, dataToSend)
+       : await authService.createCareer(dataToSend);
+
+     if (res.success) {
+       toggle();
+       fetchData();
+     } else {
+       alert("Error: " + (res.message || "Failed to process request"));
+     }
+   } catch (err) {
+     console.error("❌ Submit error:", err);
+   } finally {
+     setLoading(false);
+   }
+ };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this job post?")) return;

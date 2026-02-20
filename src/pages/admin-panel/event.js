@@ -574,6 +574,14 @@
 // };
 
 // export default Events;
+
+
+
+
+
+
+
+
 import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import {
@@ -732,49 +740,61 @@ const Events = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const data = new FormData();
-      data.append("adminId", "1");
-      data.append("title", formData.title);
-      data.append("startDate", formData.startDate);
-      data.append("endDate", formData.endDate);
-      data.append("description", formData.description);
-      data.append("registrationLink", formData.registrationLink || "");
-      data.append("linkedin", formData.linkedin || "");
-      data.append("facebook", formData.facebook || "");
-      data.append("twitter", formData.twitter || "");
-      data.append("capabilityCategoryId", formData.capabilityCategoryId);
-      data.append("countryId", formData.countryId);
-      data.append("subcategoryIds", JSON.stringify(formData.subcategoryIds));
-      data.append("cityIds", JSON.stringify(formData.cityIds));
-      data.append("attorneyIds", JSON.stringify(formData.attorneyIds));
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-      if (formData.bannerImage instanceof File) {
-        data.append("bannerImage", formData.bannerImage);
-      }
+  // Retrieve dynamic Admin ID from localStorage via authService
+  const currentAdminId = authService.getAdminId();
 
-      let res;
-      if (isEditing) {
-        res = await authService.updateEvent(currentId, data);
-      } else {
-        res = await authService.createEvent(data);
-      }
+  if (!currentAdminId) {
+    toast.error("Session expired. Please login again.");
+    return;
+  }
 
-      if (res) {
-        toast.success(isEditing ? "Updated!" : "Created!");
-        toggle();
-        fetchData();
-      }
-    } catch (err) {
-      console.error("Submit Error:", err);
-      toast.error("Operation failed");
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const data = new FormData();
+    // Use dynamic adminId instead of hardcoded "1"
+    data.append("adminId", currentAdminId);
+    data.append("title", formData.title);
+    data.append("startDate", formData.startDate);
+    data.append("endDate", formData.endDate);
+    data.append("description", formData.description);
+    data.append("registrationLink", formData.registrationLink || "");
+    data.append("linkedin", formData.linkedin || "");
+    data.append("facebook", formData.facebook || "");
+    data.append("twitter", formData.twitter || "");
+    data.append("capabilityCategoryId", formData.capabilityCategoryId);
+    data.append("countryId", formData.countryId);
+    data.append("subcategoryIds", JSON.stringify(formData.subcategoryIds));
+    data.append("cityIds", JSON.stringify(formData.cityIds));
+    data.append("attorneyIds", JSON.stringify(formData.attorneyIds));
+
+    if (formData.bannerImage instanceof File) {
+      data.append("bannerImage", formData.bannerImage);
     }
-  };
+
+    let res;
+    if (isEditing) {
+      res = await authService.updateEvent(currentId, data);
+    } else {
+      res = await authService.createEvent(data);
+    }
+
+    if (res) {
+      toast.success(
+        isEditing ? "Updated Successfully!" : "Created Successfully!",
+      );
+      toggle();
+      fetchData();
+    }
+  } catch (err) {
+    console.error("Submit Error:", err);
+    toast.error("Operation failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleEdit = (item) => {
     const parseIds = (v) => {

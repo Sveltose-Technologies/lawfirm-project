@@ -269,3 +269,304 @@ body {
 font iframe {
     display: none !important;
 }
+/* --- Banner System --- */
+.universal-banner {
+    width: 100%;
+    min-height: 350px;
+    display: flex;
+    align-items: center;
+    background-size: cover; 
+    background-position: center center;
+    background-repeat: no-repeat;
+    position: relative;
+    padding: 60px 0;
+}
+
+.banner-overlay {
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6));
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1;
+}
+
+.banner-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    color: var(--text-light);
+}
+
+/* --- Card System (For Promoters, Awards etc.) --- */
+.custom-card-wrapper {
+    border-radius: 4px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #ffffff;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.custom-card-wrapper:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* --- Image Container (Fixed ratio, No Blur, No Cut) --- */
+.img-fixed-container {
+    height: 260px;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--bg-light);
+}
+
+.img-fixed-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+}
+/* --- Universal Button System (Fixed Hover Issue) --- */
+.btn-primary-custom {
+    background-color: #A35233 !important; /* Original Brown */
+    color: #ffffff !important;           /* Always White Text */
+    border: none !important;
+    border-radius: 0 !important;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 12px 0;
+    width: 100%;
+    transition: all 0.3s ease-in-out;
+    display: block;
+    text-align: center;
+    cursor: pointer;
+}
+
+.btn-primary-custom:hover {
+    background-color: #8b452a !important; /* Slightly Darker Brown on Hover */
+    color: #ffffff !important;           /* Ensure Text stays White */
+    text-decoration: none;
+    opacity: 1;
+}
+/* Custom Suggestion Dropdown List */
+.suggestion-list {
+    z-index: 1050;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+/* Table Summary Constraint */
+.table-summary-width {
+    max-width: 250px;
+    display: block;
+}
+
+/* Ensure global font settings apply to inputs and select */
+input, select, .form-control, .form-select {
+    font-family: var(--font-base);
+    font-size: 0.95rem;
+}
+
+/* Table header color using your dark-navy variable */
+.table-dark-custom {
+    background-color: var(--dark-navy) !important;
+    color: var(--text-light) !important;
+}
+
+/* Promoter Specific Styles */
+.promoter-card-wrapper {
+    border-radius: 4px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #ffffff;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.promoter-card-wrapper:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Fixed Image Container to prevent distortion */
+.promoter-img-box {
+    height: 260px;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--bg-light);
+}
+
+.promoter-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+}
+
+/* Typography and Button */
+.promoter-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+
+.promoter-designation {
+    font-size: 0.8rem;
+    color: #6c757d;
+    height: 20px;
+    margin-bottom: 1rem;
+}
+
+.btn-view-profile {
+    background-color: #A35233;
+    color: #ffffff;
+    border: none;
+    border-radius: 0;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 10px 0;
+    width: 100%;
+    transition: opacity 0.3s ease;
+}
+
+.btn-view-profile:hover {
+    color: #ffffff;
+    opacity: 0.9;
+}
+
+.tracking-wider {
+    letter-spacing: 3px;
+}
+
+/* Profile Detail Image Box */
+.profile-detail-img-box {
+    width: 100%;
+    height: 320px;
+    overflow: hidden;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 5px;
+}
+
+.profile-detail-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+}
+
+/* Typography for Biography */
+.biography-heading {
+    color: #A35233;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-bottom: 2px solid #eeeeee;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    font-size: 1.75rem;
+}
+
+.rich-text-content {
+    line-height: 1.8;
+    color: var(--text-dark);
+    text-align: justify;
+    word-break: break-word;
+}
+
+.rich-text-content p {
+    margin-bottom: 1.5rem;
+}
+
+/* Back Button Outline */
+.btn-outline-custom {
+    border: 2px solid var(--dark-navy);
+    color: var(--dark-navy);
+    background: transparent;
+    font-weight: 700;
+    border-radius: 0;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-custom:hover {
+    background: var(--dark-navy);
+    color: #ffffff;
+}
+
+/* Light variant of the universal banner overlay */
+.banner-overlay-light {
+    background: rgba(255, 255, 255, 0.4);
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1;
+}
+
+/* Specific Gold Search Bar Section */
+.capability-search-bar {
+    background-color: #be9144;
+}
+
+.search-input-underline {
+    border-bottom: 2px solid var(--dark-navy) !important;
+}
+
+/* Gold Button Style */
+.btn-gold {
+    background-color: #be9144 !important;
+    color: #000 !important;
+    border: none !important;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 10px 25px;
+    border-radius: 0 !important;
+    text-transform: uppercase;
+}
+
+.btn-gold:hover {
+    background-color: #a67c33 !important;
+}
+
+/* Capability Links */
+.category-title {
+    color: #a67c33;
+    transition: color 0.3s ease;
+}
+
+.category-title:hover {
+    color: #8d6b2c;
+    text-decoration: underline !important;
+}
+
+.subcategory-link {
+    color: var(--text-dark);
+    transition: all 0.3s ease;
+}
+
+.subcategory-link:hover {
+    text-decoration: underline !important;
+    color: #be9144 !important;
+}
+
+.banner-content h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem) !important; 
+    font-weight: 800 !important;
+    line-height: 1.1;
+    margin-bottom: 15px;
+}
+
+/* Banner Sub-text/Paragraph के लिए */
+.banner-content p, 
+.banner-content .capability-header-text p {
+    font-size: clamp(1.1rem, 2vw, 1.5rem) !important;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.banner-content div h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem) !important;
+}

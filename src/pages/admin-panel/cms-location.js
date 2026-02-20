@@ -117,36 +117,46 @@ const LocationCMS = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.countryId || !formData.cityId || !formData.content) {
-      return toast.error("Sare fields bharna zaroori hai!");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // Retrieve the dynamic Admin ID from the authService helper
+  const currentAdminId = authService.getAdminId();
+
+  // If no ID is found, inform the user and stop the process
+  if (!currentAdminId) {
+    return toast.error("Session expired. Please login again.");
+  }
+
+  if (!formData.countryId || !formData.cityId || !formData.content) {
+    return toast.error("Please fill all required fields!");
+  }
+
+  setLoading(true);
+  try {
+    const payload = {
+      adminId: currentAdminId, // Dynamic ID applied here
+      countryId: Number(formData.countryId),
+      cityId: Number(formData.cityId),
+      content: formData.content,
+    };
+
+    const res = isEditing
+      ? await authService.updateLocationCMS(currentId, payload)
+      : await authService.createLocationCMS(payload);
+
+    if (res.success || res) {
+      toast.success(`CMS ${isEditing ? "Updated" : "Created"} Successfully!`);
+      fetchInitialData();
+      toggle();
     }
-
-    setLoading(true);
-    try {
-      const payload = {
-        adminId: 3,
-        countryId: Number(formData.countryId),
-        cityId: Number(formData.cityId),
-        content: formData.content,
-      };
-
-      const res = isEditing
-        ? await authService.updateLocationCMS(currentId, payload)
-        : await authService.createLocationCMS(payload);
-
-      if (res.success || res) {
-        toast.success(`CMS ${isEditing ? "Updated" : "Created"} Successfully!`);
-        fetchInitialData();
-        toggle();
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Server Error");
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (error) {
+    console.error("Submission Error:", error);
+    toast.error(error.response?.data?.message || "Server Error");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleEdit = (item) => {
     setFormData({

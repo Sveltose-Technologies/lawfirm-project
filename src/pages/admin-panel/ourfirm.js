@@ -97,40 +97,52 @@ const OurFirmPage = () => {
     setFormData({ ...formData, [field]: e.target.files[0] });
   };
 
-  const handleSubmit = async (e) => {
-    if (e) e.preventDefault();
-    setLoading(true);
-    try {
-      const data = new FormData();
-      data.append("adminId", "1");
-      data.append("innovationContent", formData.innovationContent);
-      data.append("peopleContent", formData.peopleContent);
-      data.append("historyContent", formData.historyContent);
+const handleSubmit = async (e) => {
+  if (e) e.preventDefault();
 
-      if (formData.bannerImage instanceof File)
-        data.append("bannerImage", formData.bannerImage);
-      if (formData.innovationImage instanceof File)
-        data.append("innovationImage", formData.innovationImage);
-      if (formData.peopleImage instanceof File)
-        data.append("peopleImage", formData.peopleImage);
-      if (formData.historyImage instanceof File)
-        data.append("historyImage", formData.historyImage);
+  // Retrieve the dynamic Admin ID from localStorage
+  const currentAdminId = authService.getAdminId();
 
-      console.log(`📤 ${isEditing ? "Updating" : "Creating"} Firm Details...`);
-      const res = isEditing
-        ? await authService.updateOurFirm(currentId, data)
-        : await authService.createOurFirm(data);
+  if (!currentAdminId) {
+    alert("Session expired. Please login again.");
+    return;
+  }
 
-      if (res.success) {
-        fetchData();
-        toggle();
-      }
-    } catch (err) {
-      console.error("❌ Submission error:", err);
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const data = new FormData();
+    // Use the dynamic ID instead of hardcoded "1"
+    data.append("adminId", currentAdminId);
+    data.append("innovationContent", formData.innovationContent);
+    data.append("peopleContent", formData.peopleContent);
+    data.append("historyContent", formData.historyContent);
+
+    if (formData.bannerImage instanceof File)
+      data.append("bannerImage", formData.bannerImage);
+    if (formData.innovationImage instanceof File)
+      data.append("innovationImage", formData.innovationImage);
+    if (formData.peopleImage instanceof File)
+      data.append("peopleImage", formData.peopleImage);
+    if (formData.historyImage instanceof File)
+      data.append("historyImage", formData.historyImage);
+
+    console.log(
+      `📤 ${isEditing ? "Updating" : "Creating"} Firm Details with Admin ID: ${currentAdminId}`,
+    );
+    const res = isEditing
+      ? await authService.updateOurFirm(currentId, data)
+      : await authService.createOurFirm(data);
+
+    if (res.success) {
+      fetchData();
+      toggle();
     }
-  };
+  } catch (err) {
+    console.error("❌ Submission error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleEdit = (item) => {
     setFormData({
@@ -202,14 +214,11 @@ const OurFirmPage = () => {
               ) : (
                 currentItems.map((item) => (
                   <tr key={item.id}>
+                    {/* 1. Banner Image */}
                     <td className="py-3">
                       <img
-                        src={
-                          item.bannerImage
-                            ? `${authService.IMG_URL}/${item.bannerImage}`
-                            : "https://placehold.co/90x50?text=No+Img"
-                        }
-                        alt="B"
+                        src={authService.getImgUrl(item.bannerImage)}
+                        alt="Banner"
                         style={{
                           width: "90px",
                           height: "50px",
@@ -222,20 +231,22 @@ const OurFirmPage = () => {
                         }
                       />
                     </td>
+
+                    {/* 2. Innovation Image */}
                     <td>
                       <img
-                        src={
-                          item.innovationImage
-                            ? `${authService.IMG_URL}/${item.innovationImage}`
-                            : "https://placehold.co/80x45?text=No+Img"
-                        }
+                        src={authService.getImgUrl(item.innovationImage)}
                         style={{
                           width: "80px",
                           height: "45px",
                           objectFit: "cover",
                           borderRadius: "4px",
                         }}
-                        alt="I"
+                        alt="Innovation"
+                        onError={(e) =>
+                          (e.target.src =
+                            "https://placehold.co/80x45?text=No+Img")
+                        }
                       />
                       <div
                         className="small fw-bold mt-1"
@@ -243,20 +254,22 @@ const OurFirmPage = () => {
                         Innovation
                       </div>
                     </td>
+
+                    {/* 3. People Image */}
                     <td>
                       <img
-                        src={
-                          item.peopleImage
-                            ? `${authService.IMG_URL}/${item.peopleImage}`
-                            : "https://placehold.co/80x45?text=No+Img"
-                        }
+                        src={authService.getImgUrl(item.peopleImage)}
                         style={{
                           width: "80px",
                           height: "45px",
                           objectFit: "cover",
                           borderRadius: "4px",
                         }}
-                        alt="P"
+                        alt="People"
+                        onError={(e) =>
+                          (e.target.src =
+                            "https://placehold.co/80x45?text=No+Img")
+                        }
                       />
                       <div
                         className="small fw-bold mt-1"
@@ -264,20 +277,22 @@ const OurFirmPage = () => {
                         People
                       </div>
                     </td>
+
+                    {/* 4. History Image */}
                     <td>
                       <img
-                        src={
-                          item.historyImage
-                            ? `${authService.IMG_URL}/${item.historyImage}`
-                            : "https://placehold.co/80x45?text=No+Img"
-                        }
+                        src={authService.getImgUrl(item.historyImage)}
                         style={{
                           width: "80px",
                           height: "45px",
                           objectFit: "cover",
                           borderRadius: "4px",
                         }}
-                        alt="H"
+                        alt="History"
+                        onError={(e) =>
+                          (e.target.src =
+                            "https://placehold.co/80x45?text=No+Img")
+                        }
                       />
                       <div
                         className="small fw-bold mt-1"
@@ -285,6 +300,7 @@ const OurFirmPage = () => {
                         History
                       </div>
                     </td>
+
                     <td className="text-end px-4">
                       <Button
                         size="sm"

@@ -124,54 +124,66 @@ const News = () => {
     setFormData({ ...formData, [field]: updated });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const data = new FormData();
-      data.append("adminId", "1"); // Static or from user session
-      data.append("title", formData.title);
-      data.append("date", formData.date);
-      data.append("year", formData.year);
-      data.append("textEditor", formData.textEditor);
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-      // JSON strings for arrays
-      data.append(
-        "capabilityCategoryId",
-        JSON.stringify(formData.capabilityCategoryId),
-      );
-      data.append("countryId", JSON.stringify(formData.countryId));
-      data.append("cityId", JSON.stringify(formData.cityId));
-      data.append("attorneyId", JSON.stringify([]));
+  // Retrieve dynamic Admin ID from localStorage via authService
+  const currentAdminId = authService.getAdminId();
 
-      const socials = {
-        linkedin: formData.linkedin,
-        twitter: formData.twitter,
-        facebook: formData.facebook,
-      };
-      data.append("socialLinks", JSON.stringify(socials));
+  if (!currentAdminId) {
+    alert("Session expired. Please login again.");
+    return;
+  }
 
-      if (formData.bannerImage instanceof File)
-        data.append("bannerImage", formData.bannerImage);
-      if (formData.newsImage instanceof File)
-        data.append("newsImage", formData.newsImage);
+  setLoading(true);
+  try {
+    const data = new FormData();
+    // Replace hardcoded "1" with the dynamic ID
+    data.append("adminId", currentAdminId);
+    data.append("title", formData.title);
+    data.append("date", formData.date);
+    data.append("year", formData.year);
+    data.append("textEditor", formData.textEditor);
 
-      console.log(`📤 ${isEditing ? "Updating" : "Creating"} News...`);
-      const res = isEditing
-        ? await authService.updateNews(currentId, data)
-        : await authService.createNews(data);
+    // JSON strings for arrays
+    data.append(
+      "capabilityCategoryId",
+      JSON.stringify(formData.capabilityCategoryId),
+    );
+    data.append("countryId", JSON.stringify(formData.countryId));
+    data.append("cityId", JSON.stringify(formData.cityId));
+    data.append("attorneyId", JSON.stringify([]));
 
-      if (res) {
-        toggle();
-        fetchData();
-      }
-    } catch (error) {
-      console.error("❌ Submit Error:", error);
-    } finally {
-      setLoading(false);
+    const socials = {
+      linkedin: formData.linkedin,
+      twitter: formData.twitter,
+      facebook: formData.facebook,
+    };
+    data.append("socialLinks", JSON.stringify(socials));
+
+    if (formData.bannerImage instanceof File)
+      data.append("bannerImage", formData.bannerImage);
+    if (formData.newsImage instanceof File)
+      data.append("newsImage", formData.newsImage);
+
+    console.log(
+      `📤 ${isEditing ? "Updating" : "Creating"} News with Admin ID: ${currentAdminId}`,
+    );
+
+    const res = isEditing
+      ? await authService.updateNews(currentId, data)
+      : await authService.createNews(data);
+
+    if (res) {
+      toggle();
+      fetchData();
     }
-  };
-
+  } catch (error) {
+    console.error("❌ Submit Error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
   const handleEdit = (item) => {
     const parse = (val) => {
       try {

@@ -74,29 +74,46 @@ const AdminTermsManagement = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const payload = { adminId: 3, ...formData };
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-      const res = isEditing
-        ? await authService.updateTermsCondition(currentId, payload)
-        : await authService.createTermsCondition(payload);
+  // Get the dynamic admin ID from localStorage via authService
+  const currentAdminId = authService.getAdminId();
 
-      if (res) {
-        toast.success(
-          `Terms ${isEditing ? "Updated" : "Created"} Successfully!`,
-        );
-        toggle();
-        fetchData();
-      }
-    } catch (err) {
-      toast.error("Operation failed");
-    } finally {
-      setLoading(false);
+  // If ID is not found, prevent submission and alert the user
+  if (!currentAdminId) {
+    toast.error("Session expired. Please login again to continue.");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    // Construct payload with the dynamic adminId
+    const payload = {
+      adminId: currentAdminId,
+      ...formData,
+    };
+
+    console.log("Submitting payload with Admin ID:", currentAdminId);
+
+    const res = isEditing
+      ? await authService.updateTermsCondition(currentId, payload)
+      : await authService.createTermsCondition(payload);
+
+    if (res) {
+      toast.success(
+        `Content ${isEditing ? "Updated" : "Created"} Successfully!`,
+      );
+      toggle();
+      fetchData();
     }
-  };
+  } catch (err) {
+    console.error("Submission Error:", err);
+    toast.error("Operation failed. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleEdit = (item) => {
     setFormData({ title: item.title, content: item.content });

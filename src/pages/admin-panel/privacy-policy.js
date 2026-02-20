@@ -224,6 +224,14 @@
 // };
 
 // export default AdminPrivacyPolicyManagement;
+
+
+
+
+
+
+
+
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
@@ -310,12 +318,19 @@ const AdminPrivacyPolicyManagement = () => {
     if (!formData.title || !formData.content)
       return toast.error("Title & Content required");
 
+    // Retrieve dynamic Admin ID from authService
+    const currentAdminId = authService.getAdminId();
+
+    if (!currentAdminId) {
+      return toast.error("Session expired. Please login again.");
+    }
+
     setLoading(true);
     try {
       const payload = {
         title: formData.title,
         content: formData.content,
-        adminId: 1,
+        adminId: currentAdminId, // Dynamic ID applied here
       };
 
       const res = isEditing
@@ -335,7 +350,6 @@ const AdminPrivacyPolicyManagement = () => {
       setLoading(false);
     }
   };
-
   const handleEdit = (item) => {
     setFormData({ title: item.title, content: item.content });
     setCurrentId(item.id);

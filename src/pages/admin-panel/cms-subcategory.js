@@ -98,45 +98,58 @@ const CMSSubcategory = () => {
     fetchData();
   }, [fetchData]);
 
-  const toggle = () => {
-    setModal(!modal);
-    if (!modal) {
-      setFormData({
-        adminId: "3",
-        categoryId: "",
-        subcategoryId: "",
-        content: "",
-      });
-      setIsEditing(false);
-    }
-  };
+ const toggle = () => {
+   setModal(!modal);
+   if (!modal) {
+     // Get dynamic Admin ID from localStorage
+     const currentAdminId = authService.getAdminId();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const payload = {
-        ...formData,
-        categoryId: Number(formData.categoryId),
-        subcategoryId: Number(formData.subcategoryId),
-      };
+     setFormData({
+       adminId: currentAdminId || "", // Set dynamic ID instead of "3"
+       categoryId: "",
+       subcategoryId: "",
+       content: "",
+     });
+     setIsEditing(false);
+   }
+ };
 
-      const res = isEditing
-        ? await authService.updateCMSSubcategory(currentId, payload)
-        : await authService.createCMSSubcategory(payload);
+ const handleSubmit = async (e) => {
+   e.preventDefault();
 
-      if (res) {
-        toast.success("Saved Successfully!");
-        toggle();
-        fetchData();
-      }
-    } catch (err) {
-      toast.error("Save failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+   // Ensure Admin ID is retrieved dynamically
+   const currentAdminId = authService.getAdminId();
 
+   if (!currentAdminId) {
+     toast.error("Session expired. Please login again.");
+     return;
+   }
+
+   setLoading(true);
+   try {
+     const payload = {
+       ...formData,
+       adminId: currentAdminId, // Use dynamic ID
+       categoryId: Number(formData.categoryId),
+       subcategoryId: Number(formData.subcategoryId),
+     };
+
+     const res = isEditing
+       ? await authService.updateCMSSubcategory(currentId, payload)
+       : await authService.createCMSSubcategory(payload);
+
+     if (res) {
+       toast.success("Saved Successfully!");
+       toggle();
+       fetchData();
+     }
+   } catch (err) {
+     console.error("Submission error:", err);
+     toast.error("Save failed");
+   } finally {
+     setLoading(false);
+   }
+ };
   const handleEdit = (item) => {
     setFormData({
       adminId: item.adminId,

@@ -167,7 +167,7 @@ export default function SubCategoryDetail() {
       </div>
 
       {/* --- RELATED CAPABILITIES SECTION --- */}
-      <div className="container py-5 mt-5">
+      {/* <div className="container py-5 mt-5">
         <div className="row justify-content-end">
           <div className="col-lg-9">
             <h3 className="display-4 mb-5" style={{ fontFamily: 'serif', color: 'black', fontWeight: '300', marginRight : "50px"}}>Related Capabilities</h3>
@@ -183,7 +183,7 @@ export default function SubCategoryDetail() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </>
   );
 }

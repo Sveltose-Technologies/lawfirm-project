@@ -112,9 +112,19 @@ const navigation = [
         ],
       },
       {
+        title: "Professionals",
+        href: "/admin-panel/professionals",
+        icon: "bi bi-person-badge",
+      },
+      {
         title: "Capabilities",
         icon: "bi bi-layers",
         children: [
+          {
+            title: "Capabilities",
+            href: "/admin-panel/capabilities",
+            icon: "bi bi-list-check",
+          },
           {
             title: "Capabilities Category",
             href: "/admin-panel/capabilities-category",
@@ -162,6 +172,17 @@ const navigation = [
       {
         title: "Location cms",
         href: "/admin-panel/cms-location",
+        icon: "bi bi-window-sidebar",
+      },
+      {
+        title: "Contact Us",
+        href: "/admin-panel/contact",
+        icon: "bi bi-window-sidebar",
+      },
+
+      {
+        title: "SocialMedia",
+        href: "/admin-panel/socialmedia",
         icon: "bi bi-window-sidebar",
       },
     ],

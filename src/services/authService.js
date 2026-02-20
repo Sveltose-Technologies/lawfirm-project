@@ -1204,6 +1204,7 @@
 import API from "./api";
 
 export const IMG_URL = "https://nodejs.nrislawfirm.com";
+// export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
 // ================= HELPER FUNCTIONS =================
 
@@ -1213,32 +1214,51 @@ export const IMG_URL = "https://nodejs.nrislawfirm.com";
 
 // services/authService.js
 
+// Retrieve the dynamic admin ID from localStorage
 export const getAdminId = () => {
   if (typeof window !== "undefined") {
-    // 1. LocalStorage se 'user' ya jo bhi aapki key ka naam hai use nikalien
-    // Agar aapne key ka naam 'adminData' rakha hai to wahi likhein
-    const storedData = localStorage.getItem("user") || localStorage.getItem("adminProfile");
-    
-    if (storedData) {
-      const admin = JSON.parse(storedData);
-      console.log("Found Admin ID:", admin.id); // Debugging ke liye
-      return admin.id; // Aapke data mein ye 'id' hi hai
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        // Based on your logs, the ID is stored in the 'id' field
+        return user.id || null;
+      } catch (error) {
+        console.error("Error parsing user data from localStorage", error);
+        return null;
+      }
     }
   }
   return null;
 };
 export const getImgUrl = (path) => {
-  const BASE = "https://nrislaw.rxchartsquare.com";
-  const PLACEHOLDER = "https://placehold.co/600x400?text=No+Image";
+  if (!path) return "";
 
-  if (!path) return PLACEHOLDER;
-  if (typeof path === "string" && /^https?:\/\//i.test(path)) return path;
+  // 1. Convert all backslashes to forward slashes for web compatibility
+  let normalizedPath = path.replace(/\\/g, "/");
 
-  let cleanPath = path.toString().replace(/^\//, "");
-  if (cleanPath.startsWith("uploads/") || cleanPath.startsWith("public/")) {
-    return `${BASE}/${cleanPath}`;
+  // 2. If it's already a full URL (starts with http), return it immediately
+  if (normalizedPath.startsWith("http")) {
+    return normalizedPath;
   }
-  return `${BASE}/uploads/${cleanPath}`;
+
+  // 3. Remove leading slash if it exists to avoid double slashes during concatenation
+  if (normalizedPath.startsWith("/")) {
+    normalizedPath = normalizedPath.substring(1);
+  }
+
+  // 4. Logic to determine the folder structure
+  // If the path already contains directory indicators like 'uploads/' or 'public/'
+  if (
+    normalizedPath.startsWith("uploads/") ||
+    normalizedPath.startsWith("public/")
+  ) {
+    return `${IMG_URL}/${normalizedPath}`;
+  }
+
+  // 5. If it's just a filename (no folder prefix), assume it belongs in 'uploads/'
+  // You can adjust 'uploads/' to your default backend storage folder
+  return `${IMG_URL}/uploads/${normalizedPath}`;
 };
 
 /**
@@ -1352,26 +1372,55 @@ export const loginAttorney = async (payload) => {
 };
 
 // ================= ADMIN AUTH & OTP =================
-
 export const adminLogin = async (email, password) => {
   try {
-    console.log("🚀 Admin Login Attempt:", email);
     const response = await API.post("/admin/login", { email, password });
-    const token = response.data?.token || response.data?.admin?.token;
+
+    // Asli JWT Token extract karein
+    const token =
+      response.data?.token ||
+      response.data?.admin?.token ||
+      response.data?.user?.token;
+    const adminData =
+      response.data?.admin || response.data?.user || response.data;
+
     if (token) {
+      // ✅ Dummy "admin-token" ki jagah asli JWT save karein
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(response.data));
+      localStorage.setItem("user", JSON.stringify(adminData));
       localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("role", "admin");
-      console.log("✅ Admin Login Success:", response.data);
+
+      console.log("✅ Real JWT Token saved successfully.");
       return { success: true, data: response.data };
     }
-    return { success: false, message: "Login failed" };
+    return { success: false, message: "Token missing" };
   } catch (error) {
-    console.error("❌ Admin Login Error:", error.response?.data || error.message);
-    return { success: false, message: error.response?.data?.message || "Login failed" };
+    return { success: false, message: "Login failed" };
   }
 };
+// export const adminLogin = async (email, password) => {
+//   try {
+//     const response = await API.post("/admin/login", { email, password });
+
+//     // Check karein ki data kahan hai (response.data ya response.data.admin)
+//     const adminData = response.data?.admin || response.data;
+//     const token = response.data?.token || adminData?.token;
+
+//     if (token) {
+//       localStorage.setItem("token", token);
+
+//       // Pura adminData save karein jisme ID ho
+//       localStorage.setItem("user", JSON.stringify(adminData));
+
+//       localStorage.setItem("isLoggedIn", "true");
+//       return { success: true, data: response.data };
+//     }
+//     return { success: false, message: "Login failed" };
+//   } catch (error) {
+//     return { success: false, message: "Error during login" };
+//   }
+// };
+
 
 export const adminForgotPassword = async (email) => {
   try {
@@ -1410,40 +1459,84 @@ export const adminResetPassword = async (email, newPassword, confirmPassword) =>
 };
 
 // ================= ADMIN PROFILE =================
+// ================= ADMIN PROFILE SERVICES =================
 
 export const getAdminProfile = async () => {
   try {
     console.log("🚀 Fetching Admin Profile...");
     const response = await API.get("/admin/getall-adminprofile");
+    
+    // Normalize data structure
     const data = response.data?.data || response.data;
     const adminData = Array.isArray(data) ? data[0] : data;
-    console.log("✅ Admin Profile Data:", adminData);
+    
+    console.log("✅ Admin Profile Data Fetched:", adminData);
     return adminData;
   } catch (error) {
-    console.error("❌ Get Admin Profile Error:", error);
+    console.error("❌ Get Admin Profile Error:", error.response?.data || error.message);
     throw error;
   }
 };
 
 export const updateAdminProfile = async (id, formData) => {
   try {
-    // Ensure ID is present
     if (!id) throw new Error("Admin ID is missing");
 
+    console.log(`📤 Updating Admin Profile for ID: ${id}...`);
+    
     const response = await API.put(`/admin/update/${id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
-    // Agar API direct data bhejti hai to use return karein
+    if (response.data) {
+      console.log("✅ Update Success:", response.data.message);
+      
+      // OPTIONAL: Update local storage 'user' object so UI stays in sync
+      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const updatedUser = { ...currentUser, ...response.data.data };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Update Admin Error:",
-      error.response?.data || error.message,
-    );
+    console.error("❌ Update Admin Error:", error.response?.data || error.message);
     throw error;
   }
 };
+
+// export const getAdminProfile = async () => {
+//   try {
+//     console.log("🚀 Fetching Admin Profile...");
+//     const response = await API.get("/admin/getall-adminprofile");
+//     const data = response.data?.data || response.data;
+//     const adminData = Array.isArray(data) ? data[0] : data;
+//     console.log("✅ Admin Profile Data:", adminData);
+//     return adminData;
+//   } catch (error) {
+//     console.error("❌ Get Admin Profile Error:", error);
+//     throw error;
+//   }
+// };
+
+// export const updateAdminProfile = async (id, formData) => {
+//   try {
+//     // Ensure ID is present
+//     if (!id) throw new Error("Admin ID is missing");
+
+//     const response = await API.put(`/admin/update/${id}`, formData, {
+//       headers: { "Content-Type": "multipart/form-data" },
+//     });
+
+//     // Agar API direct data bhejti hai to use return karein
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "❌ Update Admin Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error;
+//   }
+// };
 
 // ================= CAPABILITY CATEGORY APIs =================
 
@@ -2300,21 +2393,39 @@ export const getAllContacts = async () => {
 };
 
 
+// ... existing code
 
-// ================= CLIENT MANAGEMENT =================
-
-export const getAllClients = async () => {
+export const updateContact = async (id, data) => {
   try {
-    console.log("🚀 Fetching All Clients...");
-    const response = await API.get("/client/getall");
-    console.log("✅ Clients fetched:", response.data);
+    const response = await API.put(`/contact/update/${id}`, data);
     return response.data;
   } catch (error) {
-    console.error("❌ Get Clients Error:", error.response?.data || error.message);
-    throw error.response?.data || error;
+    throw error;
   }
 };
 
+export const deleteContact = async (id) => {
+  try {
+    const response = await API.delete(`/contact/delete/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+// ================= CLIENT MANAGEMENT =================
+
+// services/authService.js
+
+export const getAllClients = async () => {
+  try {
+    const response = await API.get("/client/getall");
+    console.log("✅ API Success /client/getall:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Get Clients Error:", error.response?.data || error.message);
+    throw error;
+  }
+};
 export const updateClient = async (id, payload) => {
   try {
     console.log(`🚀 Updating Client ID: ${id}`, payload);
@@ -2377,17 +2488,6 @@ export const updateAttorney = async (id, payload) => {
   }
 };
 
-export const getAllProfessionals = async () => {
-  try {
-    console.log("🚀 Fetching All Professionals (Attorneys)...");
-    const response = await API.get("/attorney/getall");
-    console.log("✅ Professionals fetched:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("❌ Error fetching professionals:", error);
-    return { success: false, data: [] };
-  }
-};
 
 // ================= TERMS & CONDITIONS APIs =================
 
@@ -2517,3 +2617,94 @@ export const deletePrivacyPolicy = async (id) => {
     throw error.response?.data || error;
   }
 };
+
+
+// ================= PROFESSIONAL SERVICES =================
+
+export const getAllProfessionals = async () => {
+  try {
+    console.log("🚀 Fetching All Professionals (Attorneys)...");
+    const response = await API.get("/professionals/get-all");
+    console.log("✅ Professionals fetched:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error fetching professionals:", error);
+    return { success: false, data: [] };
+  }
+};
+
+// services/authService.js update karein
+
+export const createProfessional = async (data) => {
+  // Headers override karne ke liye config yahan pass karein
+  const response = await API.post("/professionals/create", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+export const updateProfessional = async (id, data) => {
+  const response = await API.put(`/professionals/update/${id}`, data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+
+
+export const deleteProfessional = async (id) => {
+  const response = await API.delete(`/professionals/delete/${id}`);
+  return response.data;
+};
+// ================= CAPABILITIES SERVICES =================
+
+export const getAllCapabilities = async () => {
+  const response = await API.get("/capability/getall");
+  return response.data;
+};
+
+export const createCapability = async (data) => {
+  const response = await API.post("/capability/create", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
+export const updateCapability = async (id, data) => {
+  const response = await API.put(`/capability/update/${id}`, data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
+export const deleteCapability = async (id) => {
+  const response = await API.delete(`/capability/delete/${id}`);
+  return response.data;
+};
+
+// ================= SOCIAL MEDIA SERVICES =================
+
+export const getAllSocialMedia = async () => {
+  const response = await API.get("/social-media/get-all");
+  return response.data;
+};
+
+export const createSocialMedia = async (data) => {
+  const response = await API.post("/social-media/create", data);
+  return response.data;
+};
+
+export const updateSocialMedia = async (id, data) => {
+  const response = await API.put(`/social-media/update/${id}`, data);
+  return response.data;
+};
+
+export const deleteSocialMedia = async (id) => {
+  const response = await API.delete(`/social-media/delete/${id}`);
+  return response.data;
+};
+

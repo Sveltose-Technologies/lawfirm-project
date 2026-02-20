@@ -112,59 +112,67 @@ const LocationManagement = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+ const handleSubmit = async (e) => {
+   e.preventDefault();
 
-    try {
-      let res;
-      if (activeTab === "country") {
-        // Country Keys: adminId, countryName, content
-        const payload = isEditing
-          ? { countryName: formData.countryName, content: formData.content }
-          : {
-              adminId: 3,
-              countryName: formData.countryName,
-              content: formData.content,
-            };
+   // Get the dynamic Admin ID from localStorage via the service
+   const currentAdminId = authService.getAdminId();
 
-        res = isEditing
-          ? await authService.updateLocationCountry(currentId, payload)
-          : await authService.createLocationCountry(payload);
-      } else {
-        // City Keys: adminId, countryId, cityName, address, phoneNo, faxNo, image
-        const data = new FormData();
-        if (!isEditing) {
-          data.append("adminId", 3);
-          data.append("countryId", formData.countryId);
-        }
-        data.append("cityName", formData.cityName);
-        data.append("address", formData.address || "");
-        data.append("phoneNo", formData.phoneNo || "");
-        data.append("faxNo", formData.faxNo || "");
+   if (!currentAdminId) {
+     toast.error("Session expired. Please login again.");
+     return;
+   }
 
-        if (formData.image instanceof File) {
-          data.append("image", formData.image);
-        }
+   setLoading(true);
 
-        res = isEditing
-          ? await authService.updateLocationCity(currentId, data)
-          : await authService.createLocationCity(data);
-      }
+   try {
+     let res;
+     if (activeTab === "country") {
+       // Country Keys: adminId, countryName, content
+       const payload = isEditing
+         ? { countryName: formData.countryName, content: formData.content }
+         : {
+             adminId: currentAdminId, // Dynamic ID applied here
+             countryName: formData.countryName,
+             content: formData.content,
+           };
 
-      if (res.success || res) {
-        toast.success(`${activeTab.toUpperCase()} Saved Successfully!`);
-        toggle();
-        fetchData();
-      }
-    } catch (err) {
-      console.error("Submit Error:", err);
-      toast.error(err.response?.data?.message || "Operation failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+       res = isEditing
+         ? await authService.updateLocationCountry(currentId, payload)
+         : await authService.createLocationCountry(payload);
+     } else {
+       // City Keys: adminId, countryId, cityName, address, phoneNo, faxNo, image
+       const data = new FormData();
+       if (!isEditing) {
+         data.append("adminId", currentAdminId); // Dynamic ID applied here
+         data.append("countryId", formData.countryId);
+       }
+       data.append("cityName", formData.cityName);
+       data.append("address", formData.address || "");
+       data.append("phoneNo", formData.phoneNo || "");
+       data.append("faxNo", formData.faxNo || "");
 
+       if (formData.image instanceof File) {
+         data.append("image", formData.image);
+       }
+
+       res = isEditing
+         ? await authService.updateLocationCity(currentId, data)
+         : await authService.createLocationCity(data);
+     }
+
+     if (res.success || res) {
+       toast.success(`${activeTab.toUpperCase()} Saved Successfully!`);
+       toggle();
+       fetchData();
+     }
+   } catch (err) {
+     console.error("Submit Error:", err);
+     toast.error(err.response?.data?.message || "Operation failed");
+   } finally {
+     setLoading(false);
+   }
+ };
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure?")) return;
     try {

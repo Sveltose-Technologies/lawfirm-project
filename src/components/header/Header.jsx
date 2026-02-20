@@ -165,7 +165,7 @@ function Header() {
                 <li className="nav-item"><Link href="/events"><a className={`nav-link ${isActive('/events')}`}>Events</a></Link></li>
                 <li className="nav-item"><Link href="/location"><a className={`nav-link ${isActive('/location')}`}>Locations</a></Link></li>
 
-                <li className="nav-item"><Link href="/contact"><a className={`nav-link ${isActive('/contact')}`}>Contact Us</a></Link></li>
+                <li className="nav-item"><Link href="/contact-us"><a className={`nav-link ${isActive('/contact')}`}>Contact Us</a></Link></li>
 
                 {/* --- LANGUAGE DROPDOWN (Static UI) --- */}
                 <li 

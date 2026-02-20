@@ -395,11 +395,9 @@ export default function UserProfile({ isAdmin = false }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Password Match Check (Sirf tab jab user ne password bhara ho)
-    if (formData.password || formData.confirmPassword) {
-      if (formData.password !== formData.confirmPassword) {
-        return toast.error("Passwords do not match!");
-      }
+    // Validation logic... (Match passwords etc)
+    if (formData.password && formData.password !== formData.confirmPassword) {
+      return toast.error("Passwords do not match!");
     }
 
     setLoading(true);
@@ -411,45 +409,40 @@ export default function UserProfile({ isAdmin = false }) {
       fd.append("phoneNo", formData.phoneNo);
       fd.append("city", formData.city);
 
-      // Sirf tab password bhejein jab user ne naya password dala ho
-      // Agar aapka backend mandatory maang raha hai to purana password user se mangwayein
       if (formData.password) {
         fd.append("password", formData.password);
         fd.append("confirmPassword", formData.confirmPassword);
       }
 
-      if (formData.profileImage instanceof File) {
+      if (formData.profileImage instanceof File)
         fd.append("profileImage", formData.profileImage);
-      }
-      if (formData.websiteLogo instanceof File) {
+      if (formData.websiteLogo instanceof File)
         fd.append("websiteLogo", formData.websiteLogo);
-      }
 
       const res = await authService.updateAdminProfile(userId, fd);
 
+      // --- YAHAN FIX HAI ---
       if (res) {
         toast.success("Profile updated successfully!");
 
-        // --- IMPORTANT: LocalStorage update karein taaki CMS mein adminId milti rahe ---
-        const existingUser = JSON.parse(localStorage.getItem("user") || "{}");
-        const updatedUser = { ...existingUser, ...res.data };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
+        // 1. Backend se aaya naya data lein
+        const updatedAdmin = res.data || res.admin || res;
 
+        // 2. LocalStorage ko update karein taaki CMS ko ID mil sake
+        // Hum poora object save karenge jisme 'id: 1' ho
+        localStorage.setItem("user", JSON.stringify(updatedAdmin));
+
+        // 3. Password fields khali karein
         setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }));
 
-        // UI mein images update karein
-        if (res.data) {
-          setServerImages({
-            profileImage: res.data.profileImage || serverImages.profileImage,
-            websiteLogo: res.data.websiteLogo || serverImages.websiteLogo,
-          });
-        }
+        // 4. UI images update karein
+        setServerImages({
+          profileImage: updatedAdmin.profileImage || serverImages.profileImage,
+          websiteLogo: updatedAdmin.websiteLogo || serverImages.websiteLogo,
+        });
       }
     } catch (error) {
-      const errorMsg =
-        error.response?.data?.message ||
-        "Update failed. Ensure all fields are valid.";
-      toast.error(errorMsg);
+      toast.error(error.response?.data?.message || "Update failed");
     } finally {
       setLoading(false);
     }
