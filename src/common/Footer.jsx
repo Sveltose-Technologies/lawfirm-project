@@ -445,11 +445,11 @@ function Footer() {
                         <a className={`footer-link`}>News</a>
                       </Link>
                     </li>
-                    <li>
+                    {/* <li>
                       <Link href="/faq">
                         <a className={`footer-link`}>FAQ</a>
                       </Link>
-                    </li>
+                    </li> */}
                     <li>
                       <Link href="/contact">
                         <a className={`footer-link`}>Contact Us</a>

@@ -3,7 +3,7 @@ const upload = require("../middleware/upload");
 const { createCategory, updateCategory, deleteCategory, getAllCategories, getCategoryById } = require("../controllers/capabilitycategoriescontroller");
 const router = express.Router();
 
-/* 🔐 ADMIN ONLY */
+/* ADMIN ONLY */
 router.post(
   "/create",
   upload.single("bannerImage"),
@@ -21,7 +21,7 @@ router.delete(
   deleteCategory
 );
 
-/* 👀 ALL USERS */
+/* ALL USERS */
 router.get("/get-all", getAllCategories);
 router.get("/get/:id", getCategoryById);
 

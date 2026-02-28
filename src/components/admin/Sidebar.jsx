@@ -93,7 +93,10 @@ const navigation = [
     title: "Page Settings",
     href: "/pages-list",
     icon: "bi bi-file-earmark-code",
+
     children: [
+      { title: "Home", href: "/admin-panel/home", icon: "bi bi-people" },
+
       {
         title: "About Us",
         icon: "bi bi-info-circle",

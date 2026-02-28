@@ -1200,28 +1200,20 @@
 // export default defaultAuthService;
 
 
-
+//src/Serives/authService
 import API from "./api";
 
-export const IMG_URL = "https://nodejs.nrislawfirm.com";
-// export const IMG_URL = "https://nrislaw.rxchartsquare.com";
+// export const IMG_URL = "https://nodejs.nrislawfirm.com";
+export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
 // ================= HELPER FUNCTIONS =================
 
-/**
- * Resolve Global Image URL
- */
-
-// services/authService.js
-
-// Retrieve the dynamic admin ID from localStorage
 export const getAdminId = () => {
   if (typeof window !== "undefined") {
     const userData = localStorage.getItem("user");
     if (userData) {
       try {
         const user = JSON.parse(userData);
-        // Based on your logs, the ID is stored in the 'id' field
         return user.id || null;
       } catch (error) {
         console.error("Error parsing user data from localStorage", error);
@@ -1234,21 +1226,17 @@ export const getAdminId = () => {
 export const getImgUrl = (path) => {
   if (!path) return "";
 
-  // 1. Convert all backslashes to forward slashes for web compatibility
   let normalizedPath = path.replace(/\\/g, "/");
 
-  // 2. If it's already a full URL (starts with http), return it immediately
   if (normalizedPath.startsWith("http")) {
     return normalizedPath;
   }
 
-  // 3. Remove leading slash if it exists to avoid double slashes during concatenation
   if (normalizedPath.startsWith("/")) {
     normalizedPath = normalizedPath.substring(1);
   }
 
-  // 4. Logic to determine the folder structure
-  // If the path already contains directory indicators like 'uploads/' or 'public/'
+
   if (
     normalizedPath.startsWith("uploads/") ||
     normalizedPath.startsWith("public/")
@@ -1256,8 +1244,7 @@ export const getImgUrl = (path) => {
     return `${IMG_URL}/${normalizedPath}`;
   }
 
-  // 5. If it's just a filename (no folder prefix), assume it belongs in 'uploads/'
-  // You can adjust 'uploads/' to your default backend storage folder
+ 
   return `${IMG_URL}/uploads/${normalizedPath}`;
 };
 
@@ -2708,3 +2695,20 @@ export const deleteSocialMedia = async (id) => {
   return response.data;
 };
 
+// Logo Type API
+export const createLogoType = (data) => API.post("/logo-type/create", data);
+export const getAllLogoTypes = () => API.get("/logo-type/get-all");
+export const updateLogoType = (id, data) => API.put(`/logo-type/update/${id}`, data);
+export const deleteLogoType = (id) => API.delete(`/logo-type/delete/${id}`);
+
+// Home Banner API
+export const createHomeBanner = (formData) => API.post("/home-banner/create", formData, { headers: { "Content-Type": "multipart/form-data" } });
+export const getAllHomeBanners = () => API.get("/home-banner/get-all");
+export const updateHomeBanner = (id, formData) => API.put(`/home-banner/update/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
+export const deleteHomeBanner = (id) => API.delete(`/home-banner/delete/${id}`);
+
+// Home Data API
+export const createHomeData = (formData) => API.post("/home-data/create", formData, { headers: { "Content-Type": "multipart/form-data" } });
+export const getAllHomeData = () => API.get("/home-data/get-all");
+export const updateHomeData = (id, formData) => API.put(`/home-data/update/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
+export const deleteHomeData = (id) => API.delete(`/home-data/delete/${id}`);

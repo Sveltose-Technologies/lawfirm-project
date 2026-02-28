@@ -15,8 +15,6 @@ const generateToken = (adminId) => {
   );
 };
 
-
-
 exports.adminSignup = async (req, res) => {
   try {
     const {

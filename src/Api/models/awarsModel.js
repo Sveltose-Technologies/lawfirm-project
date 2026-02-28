@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../configer/dbconfig");
+const sequelize = require("../configer/dbconfig.js");
 
-const Award = sequelize.define(
+const Awards = sequelize.define(
   "awards",
   {
     id: {
@@ -16,17 +16,17 @@ const Award = sequelize.define(
     },
 
     bannerImage: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
 
     personName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
 
     organization: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
 
@@ -36,7 +36,7 @@ const Award = sequelize.define(
     },
 
     awardTitle: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
 
@@ -44,12 +44,24 @@ const Award = sequelize.define(
       type: DataTypes.TEXT("long"),
       allowNull: true,
     },
+
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
   },
   {
     tableName: "awards",
-    freezeTableName: true,
     timestamps: true,
   }
 );
 
-module.exports = Award;
+
+module.exports = Awards;
