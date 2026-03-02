@@ -24,8 +24,21 @@ import {
 } from "reactstrap";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import * as authService from "../../services/authService";
-
+import {
+  getAllLogoTypes,
+  getAllHomeBanners,
+  getAllHomeData,
+  createLogoType,
+  updateLogoType,
+  deleteLogoType,
+  createHomeBanner,
+  updateHomeBanner,
+  deleteHomeBanner,
+  createHomeData,
+  updateHomeData,
+  deleteHomeData,
+  getImgUrl,
+} from "../../services/authService";
 const ReactQuill = dynamic(() => import("react-quill-new"), {
   ssr: false,
   loading: () => (
@@ -76,9 +89,9 @@ const AdminHomeManagement = () => {
     setLoading(true);
     try {
       const [logoRes, bannerRes, homeRes] = await Promise.all([
-        authService.getAllLogoTypes(),
-        authService.getAllHomeBanners(),
-        authService.getAllHomeData(),
+        getAllLogoTypes(),
+        getAllHomeBanners(),
+        getAllHomeData(),
       ]);
       setLogoTypes(logoRes.data?.data || logoRes.data || []);
       setHomeBanners(bannerRes.data?.data || bannerRes.data || []);
@@ -136,16 +149,16 @@ const AdminHomeManagement = () => {
       let res;
       if (modal.type === "logo") {
         res = modal.edit
-          ? await authService.updateLogoType(modal.id, logoForm)
-          : await authService.createLogoType(logoForm);
+          ? await updateLogoType(modal.id, logoForm)
+          : await createLogoType(logoForm);
       } else if (modal.type === "banner") {
         const fd = new FormData();
         Object.keys(bannerForm).forEach((key) => {
           if (bannerForm[key]) fd.append(key, bannerForm[key]);
         });
         res = modal.edit
-          ? await authService.updateHomeBanner(modal.id, fd)
-          : await authService.createHomeBanner(fd);
+          ? await updateHomeBanner(modal.id, fd)
+          : await createHomeBanner(fd);
       } else {
         const fd = new FormData();
 
@@ -154,8 +167,8 @@ const AdminHomeManagement = () => {
         });
 
         res = modal.edit
-          ? await authService.updateHomeData(modal.id, fd)
-          : await authService.createHomeData(fd);
+          ? await updateHomeData(modal.id, fd)
+          : await createHomeData(fd);
       }
 
       if (res) {
@@ -173,9 +186,9 @@ const AdminHomeManagement = () => {
   const handleDelete = async (type, id) => {
     if (!window.confirm("Confirm Delete?")) return;
     try {
-      if (type === "logo") await authService.deleteLogoType(id);
-      if (type === "banner") await authService.deleteHomeBanner(id);
-      if (type === "homeData") await authService.deleteHomeData(id);
+      if (type === "logo") await deleteLogoType(id);
+      if (type === "banner") await deleteHomeBanner(id);
+      if (type === "homeData") await deleteHomeData(id);
       toast.success("Deleted");
       fetchData();
     } catch (err) {
@@ -279,7 +292,7 @@ const AdminHomeManagement = () => {
                   <tr key={idx}>
                     <td>
                       <img
-                        src={authService.getImgUrl(item.image)}
+                        src={getImgUrl(item.image)}
                         width="80"
                         className="rounded"
                         alt=""
@@ -341,14 +354,14 @@ const AdminHomeManagement = () => {
                     <td>{item.middleText}</td>
                     <td>
                       <img
-                        src={authService.getImgUrl(item.firstImage)}
+                        src={getImgUrl(item.firstImage)}
                         width="50"
                         alt=""
                       />
                     </td>
                     <td>
                       <img
-                        src={authService.getImgUrl(item.secondImage)}
+                        src={getImgUrl(item.secondImage)}
                         width="50"
                         alt=""
                       />
@@ -515,29 +528,28 @@ const AdminHomeManagement = () => {
           </Form>
         </ModalBody>
       </Modal>
-     <style jsx global>{`
-  .nav-link {
-    color: black !important;
-  }
+      <style jsx global>{`
+        .nav-link {
+          color: black !important;
+        }
 
-  .nav-link.active {
-    color: white !important;
-    font-weight: 700;
-    position: relative;
-  }
+        .nav-link.active {
+          color: white !important;
+          font-weight: 700;
+          position: relative;
+        }
 
-  .nav-link.active::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 3px;
-    background-color: white;
-    border-radius: 2px 2px 0 0;
-  }
-`}</style>
-     
+        .nav-link.active::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          width: 100%;
+          height: 3px;
+          background-color: white;
+          border-radius: 2px 2px 0 0;
+        }
+      `}</style>
     </Container>
   );
 };

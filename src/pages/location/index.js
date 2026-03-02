@@ -1,0 +1,137 @@
+
+
+'use client';
+import React, { useEffect, useState } from 'react';
+import Head from 'next/head';
+import Link from 'next/link';
+import * as authService from '../../services/authService';
+
+function Locations() {
+  const [countries, setCountries] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [openSections, setOpenSections] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const countryRes = await authService.getAllLocationCountries();
+        const cityRes = await authService.getAllLocationCities();
+        setCountries(countryRes?.data || []);
+        setCities(cityRes?.data || []);
+      } catch (err) {
+        console.error("Error fetching locations:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const toggleSection = (id) => {
+    setOpenSections(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleExpandAll = () => setOpenSections(countries.map(c => c.id || c._id));
+  const handleCollapseAll = () => setOpenSections([]);
+
+  if (loading) return <div className="text-center py-5">Loading Locations...</div>;
+
+  return (
+    <>
+      <Head>
+        <title>Our Locations | Global Offices</title>
+      </Head>
+
+      <div className="location-banner d-flex align-items-center justify-content-center text-center px-3">
+        <div className="overlay"></div>
+        <div className="container position-relative" style={{ zIndex: 2 }}>
+          <h5 className="text-gold fw-bold text-uppercase mb-3">Global Reach</h5>
+          <h1 className="font-serif display-3 fw-bold text-white mb-3">Our Locations</h1>
+        </div>
+      </div>
+
+      <div className="container py-5">
+        <div className="row mb-4 align-items-center">
+          <div className="col-md-6">
+            <h3 className="font-serif fw-bold text-navy mb-0">Office Directory</h3>
+          </div>
+          <div className="col-md-6 text-md-end">
+            <div className="btn-group shadow-sm">
+              <button className="btn btn-outline-dark btn-sm" onClick={handleExpandAll}>Expand All</button>
+              <button className="btn btn-outline-dark btn-sm" onClick={handleCollapseAll}>Collapse All</button>
+            </div>
+          </div>
+        </div>
+
+        {countries.map(country => {
+          const countryId = country.id || country._id;
+          const countryCities = cities.filter(city => city.countryId === countryId);
+          const isOpen = openSections.includes(countryId);
+
+          return (
+            <div key={countryId} className="mb-3 border rounded overflow-hidden">
+              <div
+                className="p-3 d-flex justify-content-between align-items-center bg-light cursor-pointer"
+                onClick={() => toggleSection(countryId)}
+                style={{ cursor: 'pointer' }}
+              >
+                <h5 className="fw-bold mb-0">{country.countryName}</h5>
+                <i className={`bi bi-chevron-down transition-icon ${isOpen ? 'rotate-180' : ''}`}></i>
+              </div>
+
+              {isOpen && (
+                <div className="p-4 bg-white">
+                  <div className="row g-4">
+                    {countryCities.length > 0 ? (
+                      countryCities.map(city => {
+                        // City name ko slug me convert kiya (e.g. "Abu Dhabi" -> "abu-dhabi")
+                        const citySlug = city.cityName.toLowerCase().replace(/\s+/g, '-');
+                        return (
+                          <div key={city.id} className="col-md-4">
+                            <Link href={`/location/${citySlug}`} className="text-decoration-none">
+                              <div className="card h-100 shadow-sm location-card">
+                                <div className="img-container">
+                                    <img src={`${authService.IMG_URL}/${city.image}`} className="card-img-top" alt={city.cityName} />
+                                </div>
+                                <div className="card-body">
+                                  <h5 className="fw-bold text-dark">{city.cityName}</h5>
+                                  <p className="small text-muted mb-2">{city.address}</p>
+                                  <p className="small text-navy fw-bold mb-0">{city.phoneNo}</p>
+                                </div>
+                              </div>
+                            </Link>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="text-muted ps-3">No offices available in this country.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <style jsx>{`
+        .location-banner { min-height: 400px; background: url('/assets/images/banner-img3.png') center/cover no-repeat; position: relative; }
+        .overlay { position: absolute; inset: 0; background: rgba(10, 28, 56, 0.7); }
+        .font-serif { font-family: "Georgia", serif; }
+        .text-gold { color: #de9f57 !important; }
+        .text-navy { color: #0a1c38 !important; }
+        .location-card { transition: 0.3s; border: none; cursor: pointer; }
+        .location-card:hover { transform: translateY(-5px); }
+        .img-container { height: 200px; overflow: hidden; }
+        .img-container img { height: 100%; width: 100%; object-fit: cover; }
+        .transition-icon { transition: 0.3s; }
+        .rotate-180 { transform: rotate(180deg); }
+      `}</style>
+    </>
+  );
+}
+
+export default Locations;

@@ -95,7 +95,7 @@ const navigation = [
     icon: "bi bi-file-earmark-code",
 
     children: [
-      { title: "Home", href: "/admin-panel/home", icon: "bi bi-people" },
+      { title: "Home", href: "/admin-panel/home", icon: "bi bi-question-circle" },
 
       {
         title: "About Us",
