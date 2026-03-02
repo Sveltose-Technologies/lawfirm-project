@@ -21,14 +21,10 @@ import { ToastContainer, toast } from "react-toastify";
 import * as authService from "../../services/authService";
 import PaginationComponent from "../../context/Pagination";
 
-import "react-quill-new/dist/quill.snow.css";
-const ReactQuill = dynamic(() => import("react-quill-new"), {
+import "react-quill/dist/quill.snow.css";
+
+const ReactQuill = dynamic(() => import("react-quill"), {
   ssr: false,
-  loading: () => (
-    <div className="p-2 text-center border rounded small">
-      Loading Editor...
-    </div>
-  ),
 });
 
 const CMSSubcategory = () => {

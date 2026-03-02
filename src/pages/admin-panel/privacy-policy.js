@@ -252,17 +252,12 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as authService from "../../services/authService";
-import "react-quill-new/dist/quill.snow.css";
+import "react-quill/dist/quill.snow.css";
 
-const ReactQuill = dynamic(() => import("react-quill-new"), {
+
+const ReactQuill = dynamic(() => import("react-quill"), {
   ssr: false,
-  loading: () => (
-    <div className="p-2 text-center border rounded small">
-      Loading Editor...
-    </div>
-  ),
 });
-
 const AdminPrivacyPolicyManagement = () => {
   const GOLD = "#eebb5d";
   const LIGHT_GOLD = "#fdf8ef";

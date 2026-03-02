@@ -23,17 +23,12 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import classnames from "classnames";
-import * as authService from '../../services/authService';
+import * as authService from "../../services/authService";
 
-// Rich Text Editor Setup
-import "react-quill-new/dist/quill.snow.css";
-const ReactQuill = dynamic(() => import("react-quill-new"), {
+import "react-quill/dist/quill.snow.css";
+
+const ReactQuill = dynamic(() => import("react-quill"), {
   ssr: false,
-  loading: () => (
-    <div className="p-2 text-center border rounded small">
-      Loading Editor...
-    </div>
-  ),
 });
 
 const LocationManagement = () => {
@@ -112,67 +107,68 @@ const LocationManagement = () => {
     }
   };
 
- const handleSubmit = async (e) => {
-   e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-   // Get the dynamic Admin ID from localStorage via the service
-   const currentAdminId = authService.getAdminId();
+    // Get the dynamic Admin ID from localStorage via the service
+    const currentAdminId = authService.getAdminId();
 
-   if (!currentAdminId) {
-     toast.error("Session expired. Please login again.");
-     return;
-   }
+    if (!currentAdminId) {
+      toast.error("Session expired. Please login again.");
+      return;
+    }
 
-   setLoading(true);
+    setLoading(true);
 
-   try {
-     let res;
-     if (activeTab === "country") {
-       // Country Keys: adminId, countryName, content
-       const payload = isEditing
-         ? { countryName: formData.countryName, content: formData.content }
-         : {
-             adminId: currentAdminId, // Dynamic ID applied here
-             countryName: formData.countryName,
-             content: formData.content,
-           };
+    try {
+      let res;
+      if (activeTab === "country") {
+        // Country Keys: adminId, countryName, content
+        const payload = isEditing
+          ? { countryName: formData.countryName, content: formData.content }
+          : {
+              adminId: currentAdminId, // Dynamic ID applied here
+              countryName: formData.countryName,
+              content: formData.content,
+            };
 
-       res = isEditing
-         ? await authService.updateLocationCountry(currentId, payload)
-         : await authService.createLocationCountry(payload);
-     } else {
-       // City Keys: adminId, countryId, cityName, address, phoneNo, faxNo, image
-       const data = new FormData();
-       if (!isEditing) {
-         data.append("adminId", currentAdminId); // Dynamic ID applied here
-         data.append("countryId", formData.countryId);
-       }
-       data.append("cityName", formData.cityName);
-       data.append("address", formData.address || "");
-       data.append("phoneNo", formData.phoneNo || "");
-       data.append("faxNo", formData.faxNo || "");
+        res = isEditing
+          ? await authService.updateLocationCountry(currentId, payload)
+          : await authService.createLocationCountry(payload);
+      } else {
+        // City Keys: adminId, countryId, cityName, address, phoneNo, faxNo, image
+        const data = new FormData();
+        if (!isEditing) {
+          data.append("adminId", currentAdminId); // Dynamic ID applied here
+          data.append("countryId", formData.countryId);
+        }
+        data.append("cityName", formData.cityName);
+        data.append("address", formData.address || "");
+        data.append("phoneNo", formData.phoneNo || "");
+        data.append("faxNo", formData.faxNo || "");
 
-       if (formData.image instanceof File) {
-         data.append("image", formData.image);
-       }
+        if (formData.image instanceof File) {
+          data.append("image", formData.image);
+        }
 
-       res = isEditing
-         ? await authService.updateLocationCity(currentId, data)
-         : await authService.createLocationCity(data);
-     }
+        res = isEditing
+          ? await authService.updateLocationCity(currentId, data)
+          : await authService.createLocationCity(data);
+      }
 
-     if (res.success || res) {
-       toast.success(`${activeTab.toUpperCase()} Saved Successfully!`);
-       toggle();
-       fetchData();
-     }
-   } catch (err) {
-     console.error("Submit Error:", err);
-     toast.error(err.response?.data?.message || "Operation failed");
-   } finally {
-     setLoading(false);
-   }
- };
+      if (res.success || res) {
+        toast.success(`${activeTab.toUpperCase()} Saved Successfully!`);
+        toggle();
+        fetchData();
+      }
+    } catch (err) {
+      console.error("Submit Error:", err);
+      toast.error(err.response?.data?.message || "Operation failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure?")) return;
     try {
@@ -239,8 +235,6 @@ const LocationManagement = () => {
               onClick={() => setActiveTab(tab)}
               style={{
                 cursor: "pointer",
-                color: activeTab === tab ? GOLD : "#999",
-                backgroundColor: "transparent",
               }}>
               {tab.toUpperCase()} MANAGEMENT
             </NavLink>
@@ -490,10 +484,14 @@ const LocationManagement = () => {
           color: white !important;
           border: none !important;
         }
+        .nav-link {
+          color: black !important; /* Sabhi nav-link ko black color do */
+        }
         .nav-link.active {
           border-bottom: 3px solid #eebb5d !important;
           background: transparent !important;
-          color: #eebb5d !important;
+          color: black !important; /* Active tab bhi black text me ho */
+          font-weight: 700; /* thoda bold karne ke liye */
         }
       `}</style>
     </Container>

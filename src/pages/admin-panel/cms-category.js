@@ -22,18 +22,13 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import PaginationComponent from "../../context/Pagination";
-import "react-quill-new/dist/quill.snow.css";
 
-// --- FIX: Yahan 'import * as authService' use karein taaki niche 'authService.xxx' kaam kare ---
 import * as authService from "../../services/authService";
 
-const ReactQuill = dynamic(() => import("react-quill-new"), {
+import "react-quill/dist/quill.snow.css";
+
+const ReactQuill = dynamic(() => import("react-quill"), {
   ssr: false,
-  loading: () => (
-    <div className="p-2 text-center border rounded small">
-      Loading Editor...
-    </div>
-  ),
 });
 
 const CMSCategory = () => {
