@@ -2,7 +2,6 @@ import React from "react";
 import { Card, CardBody, CardTitle } from "reactstrap";
 import dynamic from "next/dynamic";
 
-// ApexCharts को क्लाइंट-साइड पर लोड करने के लिए dynamic import जरूरी है
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 const ProfitChart = () => {
@@ -23,7 +22,7 @@ const ProfitChart = () => {
         height: 250,
         toolbar: { show: false },
       },
-      colors: ["#eebb5d", "#002147"], // Gold and Dark Blue
+      colors: ["#eebb5d", "#002147"], 
       plotOptions: {
         bar: {
           horizontal: false,

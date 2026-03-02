@@ -17,11 +17,10 @@ export default function AdminLayout({ children }) {
       <main className="flex-grow-1 d-flex flex-column min-vh-100 overflow-hidden">
         <Header showMobmenu={() => setShowMobilemenu(!showMobilemenu)} />
         <div className="p-3 p-lg-4 flex-grow-1 overflow-auto">
-          {children} {/* Yahan aapka dashboard ka content aayega */}
+          {children} 
         </div>
       </main>
 
-      {/* Mobile Overlay */}
       {showMobilemenu && (
         <div
           className="position-fixed top-0 start-0 w-100 h-100 d-lg-none"
