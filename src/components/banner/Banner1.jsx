@@ -633,7 +633,7 @@ useEffect(() => {
           color: #00415a !important;
           font-family: serif !important;
           margin-bottom: 20px !important;
-          line-height: 1.2;
+          line-height: 0.6;
         }
         .dynamic-content-fix p {
           font-size: 1.1rem !important;

@@ -4,8 +4,8 @@
 
 import API from "./api";
 
-// export const IMG_URL = "https://nodejs.nrislawfirm.com";
-export const IMG_URL = "https://nrislaw.rxchartsquare.com";
+export const IMG_URL = "https://nodejs.nrislawfirm.com";
+// export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
 // ================= HELPER FUNCTIONS =================
 
@@ -1206,6 +1206,47 @@ export const updateContact = async (id, data) => {
 export const deleteContact = async (id) => {
   try {
     const response = await API.delete(`/contact/delete/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// --- Contact Page Text Methods ---
+
+export const getContactText = async () => {
+  try {
+    const res = await API.get("/contact-text/get-all");
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("❌ Get Contact Text Error:", error);
+    throw error;
+  }
+};
+
+export const createContactText = async (data) => {
+  try {
+    const response = await API.post("/contact-text/create", data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateContactText = async (id, data) => {
+  try {
+    // URL format: /contact-text/update/:id
+    const response = await API.put(`/contact-text/update/${id}`, data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteContactText = async (id) => {
+  try {
+    // URL format: /contact-text/delete/:id
+    const response = await API.delete(`/contact-text/delete/${id}`);
     return response.data;
   } catch (error) {
     throw error;
