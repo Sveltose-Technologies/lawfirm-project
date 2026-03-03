@@ -1,11 +1,7 @@
-
-
-
-
 import API from "./api";
 
-// export const IMG_URL = "https://nodejs.nrislawfirm.com";
-export const IMG_URL = "https://nrislaw.rxchartsquare.com";
+export const IMG_URL = "https://nodejs.nrislawfirm.com";
+// export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
 // ================= HELPER FUNCTIONS =================
 
@@ -91,7 +87,10 @@ export const signupUser = async (payload) => {
     console.log("✅ Client Signup Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Client Signup Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Client Signup Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -103,7 +102,10 @@ export const loginUser = async (payload) => {
     console.log("✅ Client Login Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Client Login Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Client Login Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -115,7 +117,10 @@ export const forgotPassword = async (payload) => {
     console.log("✅ Client Forgot Password Response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Client Forgot Password Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Client Forgot Password Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -127,7 +132,10 @@ export const verifyOtp = async (payload) => {
     console.log("✅ Client Verify OTP Response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Client Verify OTP Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Client Verify OTP Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -139,7 +147,10 @@ export const resetPassword = async (payload) => {
     console.log("✅ Client Reset Password Response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Client Reset Password Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Client Reset Password Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -153,7 +164,10 @@ export const signupAttorney = async (payload) => {
     console.log("✅ Attorney Signup Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Attorney Signup Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Attorney Signup Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -165,7 +179,10 @@ export const loginAttorney = async (payload) => {
     console.log("✅ Attorney Login Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Attorney Login Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Attorney Login Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -220,16 +237,21 @@ export const adminLogin = async (email, password) => {
 //   }
 // };
 
-
 export const adminForgotPassword = async (email) => {
   try {
     console.log("🚀 Calling Admin Forgot Password API:", email);
     const response = await API.post("/admin/forgot-password", { email });
     console.log("✅ Admin OTP Sent:", response.data);
-    return { success: true, message: response.data?.message || "OTP sent to email" };
+    return {
+      success: true,
+      message: response.data?.message || "OTP sent to email",
+    };
   } catch (error) {
     console.error("❌ Admin Forgot Password Error:", error);
-    return { success: false, message: error.response?.data?.message || "Failed to send OTP" };
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to send OTP",
+    };
   }
 };
 
@@ -241,19 +263,36 @@ export const adminVerifyOtp = async (email, otp) => {
     return { success: true, message: response.data?.message || "OTP verified" };
   } catch (error) {
     console.error("❌ Admin Verify OTP Error:", error);
-    return { success: false, message: error.response?.data?.message || "Invalid OTP" };
+    return {
+      success: false,
+      message: error.response?.data?.message || "Invalid OTP",
+    };
   }
 };
 
-export const adminResetPassword = async (email, newPassword, confirmPassword) => {
+export const adminResetPassword = async (
+  email,
+  newPassword,
+  confirmPassword,
+) => {
   try {
     console.log("🚀 Calling Admin Reset Password API:", email);
-    const response = await API.post("/admin/reset-password", { email, newPassword, confirmPassword });
+    const response = await API.post("/admin/reset-password", {
+      email,
+      newPassword,
+      confirmPassword,
+    });
     console.log("✅ Admin Password Reset Success:", response.data);
-    return { success: true, message: response.data?.message || "Password reset successful" };
+    return {
+      success: true,
+      message: response.data?.message || "Password reset successful",
+    };
   } catch (error) {
     console.error("❌ Admin Reset Password Error:", error);
-    return { success: false, message: error.response?.data?.message || "Failed to reset password" };
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to reset password",
+    };
   }
 };
 
@@ -264,15 +303,18 @@ export const getAdminProfile = async () => {
   try {
     console.log("🚀 Fetching Admin Profile...");
     const response = await API.get("/admin/getall-adminprofile");
-    
+
     // Normalize data structure
     const data = response.data?.data || response.data;
     const adminData = Array.isArray(data) ? data[0] : data;
-    
+
     console.log("✅ Admin Profile Data Fetched:", adminData);
     return adminData;
   } catch (error) {
-    console.error("❌ Get Admin Profile Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Get Admin Profile Error:",
+      error.response?.data || error.message,
+    );
     throw error;
   }
 };
@@ -282,14 +324,14 @@ export const updateAdminProfile = async (id, formData) => {
     if (!id) throw new Error("Admin ID is missing");
 
     console.log(`📤 Updating Admin Profile for ID: ${id}...`);
-    
+
     const response = await API.put(`/admin/update/${id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
     if (response.data) {
       console.log("✅ Update Success:", response.data.message);
-      
+
       // OPTIONAL: Update local storage 'user' object so UI stays in sync
       const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
       const updatedUser = { ...currentUser, ...response.data.data };
@@ -298,7 +340,10 @@ export const updateAdminProfile = async (id, formData) => {
 
     return response.data;
   } catch (error) {
-    console.error("❌ Update Admin Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Update Admin Error:",
+      error.response?.data || error.message,
+    );
     throw error;
   }
 };
@@ -346,7 +391,10 @@ export const getAllCapabilityCategories = async () => {
     console.log("✅ Categories fetched:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Fetch Categories Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Fetch Categories Error:",
+      error.response?.data || error.message,
+    );
     return { success: false, data: [] };
   }
 };
@@ -360,7 +408,10 @@ export const createCapabilityCategory = async (formData) => {
     console.log("✅ Create Response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Create Category Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Create Category Error:",
+      error.response?.data || error.message,
+    );
     throw error;
   }
 };
@@ -368,13 +419,20 @@ export const createCapabilityCategory = async (formData) => {
 export const updateCapabilityCategory = async (id, formData) => {
   try {
     console.log(`🚀 Updating Category ID: ${id}...`);
-    const response = await API.put(`/capability-categories/update/${id}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await API.put(
+      `/capability-categories/update/${id}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
     console.log("✅ Update Response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Update Category Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Update Category Error:",
+      error.response?.data || error.message,
+    );
     throw error;
   }
 };
@@ -386,7 +444,10 @@ export const deleteCapabilityCategory = async (id) => {
     console.log("✅ Delete Response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Delete Category Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Delete Category Error:",
+      error.response?.data || error.message,
+    );
     throw error;
   }
 };
@@ -396,7 +457,9 @@ export const deleteCapabilityCategory = async (id) => {
 export const getAllCapabilitySubCategories = async () => {
   try {
     console.log("🚀 Fetching all Subcategories...");
-    const response = await API.get("/capability-subcategory/getall-subcategory");
+    const response = await API.get(
+      "/capability-subcategory/getall-subcategory",
+    );
     console.log("✅ Subcategories fetched:", response.data);
     return { success: true, data: response.data.data || response.data || [] };
   } catch (error) {
@@ -422,9 +485,13 @@ export const createCapabilitySubCategory = async (formData) => {
 export const updateCapabilitySubCategory = async (id, formData) => {
   try {
     console.log(`🚀 Updating Subcategory ID: ${id}`);
-    const res = await API.put(`/capability-subcategory/update/${id}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await API.put(
+      `/capability-subcategory/update/${id}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
     console.log("✅ Update Subcategory Response:", res.data);
     return res.data;
   } catch (error) {
@@ -506,9 +573,6 @@ export const deleteCMSCategory = async (id) => {
     throw error;
   }
 };
-
-
-
 
 // ================= CMS SUBCATEGORY APIs =================
 
@@ -596,14 +660,17 @@ export const getAllSubcategoryCMS = async () => {
     console.log("🚀 Fetching all Subcategory CMS Content...");
     const response = await API.get("/cms-subcategory/getall");
     console.log("✅ Subcategory CMS fetched:", response.data);
-    
+
     // Response handling based on your data structure
-    return { 
-      success: true, 
-      data: response.data?.data || response.data || [] 
+    return {
+      success: true,
+      data: response.data?.data || response.data || [],
     };
   } catch (error) {
-    console.error("❌ Fetch Subcategory CMS Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Fetch Subcategory CMS Error:",
+      error.response?.data || error.message,
+    );
     return { success: false, data: [] };
   }
 };
@@ -803,7 +870,8 @@ export const getAllNews = async () => {
   try {
     console.log("🚀 Fetching all News...");
     const response = await API.get("/news/getall");
-    let data = response.data?.data || response.data?.news || response.data || [];
+    let data =
+      response.data?.data || response.data?.news || response.data || [];
     console.log("✅ News fetched:", data);
     return { success: true, data };
   } catch (error) {
@@ -858,7 +926,8 @@ export const getAllEvents = async () => {
   try {
     console.log("🚀 Fetching all Events...");
     const response = await API.get("/event/getall");
-    let data = response.data?.data || response.data?.events || response.data || [];
+    let data =
+      response.data?.data || response.data?.events || response.data || [];
     console.log("✅ Events fetched:", data);
     return { success: true, data };
   } catch (error) {
@@ -957,8 +1026,6 @@ export const deleteCareer = async (id) => {
 };
 // ================= LOCATION COUNTRY APIs =================
 
-
-
 export const getAllCountries = async () => {
   try {
     console.log("🚀 Fetching all countries...");
@@ -966,7 +1033,10 @@ export const getAllCountries = async () => {
     console.log("✅ Countries fetched successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Fetch Countries Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Fetch Countries Error:",
+      error.response?.data || error.message,
+    );
     return { success: false, data: [] };
   }
 };
@@ -981,7 +1051,10 @@ export const createLocationCountry = async (payload) => {
     console.log("✅ Country created successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Create Country Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Create Country Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -996,7 +1069,10 @@ export const updateLocationCountry = async (id, payload) => {
     console.log("✅ Country updated successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Update Country Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Update Country Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1011,7 +1087,10 @@ export const deleteLocationCountry = async (id) => {
     console.log("✅ Country deleted successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Delete Country Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Delete Country Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1021,7 +1100,6 @@ export const deleteLocationCountry = async (id) => {
 /**
  * Fetch all cities
  */
-
 
 /**
  * Update an existing city (Uses FormData for Image Upload)
@@ -1035,7 +1113,10 @@ export const updateLocationCity = async (id, formData) => {
     console.log("✅ City updated successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Update City Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Update City Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1050,13 +1131,13 @@ export const deleteLocationCity = async (id) => {
     console.log("✅ City deleted successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Delete City Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Delete City Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
-
-
-
 
 export const getAllLocationCountries = async () => {
   try {
@@ -1120,7 +1201,6 @@ export const getAllLocationCMS = async () => {
   }
 };
 
-
 /**
  * Create a new Location CMS record
  */
@@ -1131,7 +1211,10 @@ export const createLocationCMS = async (payload) => {
     console.log("✅ Location CMS created successfully:", res.data);
     return res.data;
   } catch (error) {
-    console.error("❌ Create Location CMS Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Create Location CMS Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1146,7 +1229,10 @@ export const updateLocationCMS = async (id, payload) => {
     console.log("✅ Location CMS updated successfully:", res.data);
     return res.data;
   } catch (error) {
-    console.error("❌ Update Location CMS Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Update Location CMS Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1161,7 +1247,10 @@ export const deleteLocationCMS = async (id) => {
     console.log("✅ Location CMS deleted successfully:", res.data);
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("❌ Delete Location CMS Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Delete Location CMS Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1190,7 +1279,6 @@ export const getAllContacts = async () => {
     throw error;
   }
 };
-
 
 // ... existing code
 
@@ -1262,7 +1350,10 @@ export const getAllClients = async () => {
     console.log("✅ API Success /client/getall:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Get Clients Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Get Clients Error:",
+      error.response?.data || error.message,
+    );
     throw error;
   }
 };
@@ -1273,7 +1364,10 @@ export const updateClient = async (id, payload) => {
     console.log("✅ Update Client Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Update Client Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Update Client Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1285,7 +1379,10 @@ export const deleteClient = async (id) => {
     console.log("✅ Delete Client Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Delete Client Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Delete Client Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1299,7 +1396,10 @@ export const getAllAttorneys = async () => {
     console.log("✅ Attorneys fetched:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Get Attorneys Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Get Attorneys Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1311,7 +1411,10 @@ export const deleteAttorney = async (id) => {
     console.log("✅ Delete Attorney Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Delete Attorney Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Delete Attorney Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1323,11 +1426,13 @@ export const updateAttorney = async (id, payload) => {
     console.log("✅ Update Attorney Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Update Attorney Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Update Attorney Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
-
 
 // ================= TERMS & CONDITIONS APIs =================
 
@@ -1339,14 +1444,17 @@ export const getAllTermsConditions = async () => {
     console.log("🚀 Fetching all Terms & Conditions...");
     const response = await API.get("/terms-condition/getall");
     console.log("✅ Terms & Conditions fetched:", response.data);
-    
+
     // Returning structured data based on your log: { success: true, data: Array(1) }
-    return { 
-      success: true, 
-      data: response.data?.data || response.data || [] 
+    return {
+      success: true,
+      data: response.data?.data || response.data || [],
     };
   } catch (error) {
-    console.error("❌ Fetch Terms Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Fetch Terms Error:",
+      error.response?.data || error.message,
+    );
     return { success: false, data: [] };
   }
 };
@@ -1361,7 +1469,10 @@ export const createTermsCondition = async (payload) => {
     console.log("✅ Terms & Conditions created successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Create Terms Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Create Terms Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1376,7 +1487,10 @@ export const updateTermsCondition = async (id, payload) => {
     console.log("✅ Terms & Conditions updated successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Update Terms Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Update Terms Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1391,11 +1505,13 @@ export const deleteTermsCondition = async (id) => {
     console.log("✅ Terms & Conditions deleted successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Delete Terms Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Delete Terms Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
-
 
 /**
  * Fetch all Privacy Policies
@@ -1403,7 +1519,7 @@ export const deleteTermsCondition = async (id) => {
 // --- Privacy Policy API ---
 export const getAllPrivacyPolicy = async () => {
   try {
-    const response = await API.get('/privacy-policy/getall');
+    const response = await API.get("/privacy-policy/getall");
     console.log("Privacy Policy API Response:", response);
     return response.data;
   } catch (error) {
@@ -1411,7 +1527,6 @@ export const getAllPrivacyPolicy = async () => {
     return { success: false, data: [] };
   }
 };
-
 
 /**
  * Create Privacy Policy
@@ -1423,7 +1538,10 @@ export const createPrivacyPolicy = async (payload) => {
     console.log("✅ Privacy Policy created:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Create Privacy Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Create Privacy Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1438,7 +1556,10 @@ export const updatePrivacyPolicy = async (id, payload) => {
     console.log("✅ Privacy Policy updated:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Update Privacy Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Update Privacy Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
@@ -1453,11 +1574,13 @@ export const deletePrivacyPolicy = async (id) => {
     console.log("✅ Privacy Policy deleted:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Delete Privacy Error:", error.response?.data || error.message);
+    console.error(
+      "❌ Delete Privacy Error:",
+      error.response?.data || error.message,
+    );
     throw error.response?.data || error;
   }
 };
-
 
 // ================= PROFESSIONAL SERVICES =================
 
@@ -1493,8 +1616,6 @@ export const updateProfessional = async (id, data) => {
   });
   return response.data;
 };
-
-
 
 export const deleteProfessional = async (id) => {
   const response = await API.delete(`/professionals/delete/${id}`);
@@ -1551,17 +1672,44 @@ export const deleteSocialMedia = async (id) => {
 // Logo Type API
 export const createLogoType = (data) => API.post("/logo-type/create", data);
 export const getAllLogoTypes = () => API.get("/logo-type/get-all");
-export const updateLogoType = (id, data) => API.put(`/logo-type/update/${id}`, data);
+export const updateLogoType = (id, data) =>
+  API.put(`/logo-type/update/${id}`, data);
 export const deleteLogoType = (id) => API.delete(`/logo-type/delete/${id}`);
 
 // Home Banner API
-export const createHomeBanner = (formData) => API.post("/home-banner/create", formData, { headers: { "Content-Type": "multipart/form-data" } });
+export const createHomeBanner = (formData) =>
+  API.post("/home-banner/create", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 export const getAllHomeBanners = () => API.get("/home-banner/get-all");
-export const updateHomeBanner = (id, formData) => API.put(`/home-banner/update/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
+export const updateHomeBanner = (id, formData) =>
+  API.put(`/home-banner/update/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 export const deleteHomeBanner = (id) => API.delete(`/home-banner/delete/${id}`);
 
 // Home Data API
-export const createHomeData = (formData) => API.post("/home-data/create", formData, { headers: { "Content-Type": "multipart/form-data" } });
+export const createHomeData = (formData) =>
+  API.post("/home-data/create", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 export const getAllHomeData = () => API.get("/home-data/get-all");
-export const updateHomeData = (id, formData) => API.put(`/home-data/update/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
+export const updateHomeData = (id, formData) =>
+  API.put(`/home-data/update/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 export const deleteHomeData = (id) => API.delete(`/home-data/delete/${id}`);
+
+export const createCounters = (formData) =>
+  API.post("/home-count/create", formData);
+export const getAllCounters = () => API.get("home-count/getall");
+// export const updateCounters = (id, formData) =>
+//   API.put(`/home-count/update/${id}`, formData, {
+//     headers: { "Content-Type": "multipart/form-data" },
+//   });
+
+// Home Ranking API
+export const createRanking = (formData) =>
+  // console.log("Entered Content HOMEEE");
+  API.post("/home-ranking/create", formData);
+export const getAllRanking = () => API.get("/home-ranking/getall");
