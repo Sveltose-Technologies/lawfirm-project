@@ -21,7 +21,6 @@ import {
 } from "reactstrap";
 import * as authService from "../../services/authService";
 import PaginationComponent from "../../context/Pagination";
-import "react-quill-new/dist/quill.snow.css";
 
 import "react-quill/dist/quill.snow.css";
 

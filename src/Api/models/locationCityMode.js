@@ -44,6 +44,10 @@ const LocationCity = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    content: {
+      type: DataTypes.TEXT("long"),
+      allowNull: false,
+    },
   },
   {
     tableName: "location_city",

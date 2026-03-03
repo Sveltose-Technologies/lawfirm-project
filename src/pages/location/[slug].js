@@ -24,81 +24,6 @@ function LocationDetail() {
       .replace(/[^\w-]+/g, "")
       .replace(/--+/g, "-");
 
-  // const fetchData = useCallback(async () => {
-  //   if (!slug) return;
-  //   try {
-  //     setLoading(true);
-  //     const [cityRes, cmsRes, newsRes, eventRes] = await Promise.all([
-  //       authService.getAllLocationCities(),
-  //       authService.getAllLocationCMS(),
-  //       authService.getAllNews(),
-  //       authService.getAllEvents(),
-  //     ]);
-
-  //     // 1. City Filter (Slug matching)
-  //     const allCities = cityRes?.data || cityRes || [];
-  //     const foundCity = Array.isArray(allCities)
-  //       ? allCities.find((c) => {
-  //           const currentCitySlug = c.cityName
-  //             ?.toLowerCase()
-  //             .trim()
-  //             .replace(/\s+/g, "-");
-  //           return currentCitySlug === slug;
-  //         })
-  //       : null;
-
-  //     if (foundCity) {
-  //       setCity(foundCity);
-  //       const currentCityId = Number(foundCity.id);
-
-  //       // 2. CMS Logic (Error Fix: strictly check for array)
-  //       const rawCms = cmsRes?.data || cmsRes;
-  //       const cmsArray = Array.isArray(rawCms) ? rawCms : [];
-  //       const foundCMS = cmsArray.find((c) => Number(c.cityId) === currentCityId);
-  //       setCms(foundCMS);
-
-  //       // Helper function to handle different ID formats (like ["7"] or [7])
-  //       const getParsedIds = (idData) => {
-  //         if (!idData) return [];
-  //         if (Array.isArray(idData)) return idData.map(Number);
-  //         if (typeof idData === "string") {
-  //           try {
-  //             const parsed = JSON.parse(idData);
-  //             return Array.isArray(parsed)
-  //               ? parsed.map(Number)
-  //               : [Number(idData)];
-  //           } catch (e) {
-  //             return [Number(idData)];
-  //           }
-  //         }
-  //         return [];
-  //       };
-
-  //       // 3. News Filtering (Logs show cityId is "[\"7\"]")
-  //       const allNews = newsRes?.data || newsRes || [];
-  //       const locationNews = Array.isArray(allNews)
-  //         ? allNews.filter((n) => getParsedIds(n.cityId).includes(currentCityId))
-  //         : [];
-  //       setFilteredNews(locationNews);
-
-  //       // 4. Events Filtering (Logs show cityIds is [7])
-  //       const allEvents = eventRes?.data || eventRes || [];
-  //       const locationEvents = Array.isArray(allEvents)
-  //         ? allEvents.filter((e) => {
-  //             // Check both possible keys: cityIds or cityId
-  //             const ids = getParsedIds(e.cityIds || e.cityId);
-  //             return ids.includes(currentCityId);
-  //           })
-  //         : [];
-  //       setFilteredEvents(locationEvents);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching details:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [slug]);
-
   const fetchData = useCallback(async () => {
     if (!slug) return;
     try {
@@ -112,21 +37,17 @@ function LocationDetail() {
 
       const allCities = cityRes?.data || cityRes || [];
 
-      // 1. Find City with Trim and Lowercase
       const foundCity = allCities.find((c) => {
-        const currentCitySlug = c.cityName
-          ?.toLowerCase()
-          .trim() // Space remove karne ke liye
-          .replace(/\s+/g, "-");
+        const currentCitySlug = createItemSlug(c.cityName);
         return currentCitySlug === slug;
       });
 
       if (foundCity) {
         setCity(foundCity);
         const currentCityId = Number(foundCity.id);
-        console.log("Matching for City ID:", currentCityId);
 
-        // --- Helper: Convert any format to Number Array ---
+        console.log("Found City Data:", foundCity);
+
         const parseToNumbers = (data) => {
           if (!data) return [];
           let arr = [];
@@ -134,7 +55,6 @@ function LocationDetail() {
             if (Array.isArray(data)) {
               arr = data;
             } else if (typeof data === "string") {
-              // Agar string "[7]" ya "[\"7\"]" hai
               const parsed = JSON.parse(data);
               arr = Array.isArray(parsed) ? parsed : [parsed];
             }
@@ -144,7 +64,6 @@ function LocationDetail() {
           return arr.map((id) => Number(id));
         };
 
-        // 2. CMS Filtering
         const rawCms = cmsRes?.data || cmsRes;
         const cmsArray = Array.isArray(rawCms) ? rawCms : [];
         const foundCMS = cmsArray.find(
@@ -158,16 +77,13 @@ function LocationDetail() {
           return ids.includes(currentCityId);
         });
         setFilteredNews(locationNews);
-        console.log("Filtered News:", locationNews);
 
-        // 4. Events Filtering
         const allEvents = eventRes?.data || eventRes || [];
         const locationEvents = allEvents.filter((e) => {
           const ids = parseToNumbers(e.cityIds || e.cityId);
           return ids.includes(currentCityId);
         });
         setFilteredEvents(locationEvents);
-        console.log("Filtered Events:", locationEvents);
       }
     } catch (error) {
       console.error("Error fetching details:", error);
@@ -175,6 +91,7 @@ function LocationDetail() {
       setLoading(false);
     }
   }, [slug]);
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -200,7 +117,9 @@ function LocationDetail() {
           <h1 className="hero-title">{city.cityName}</h1>
           <div className="hero-address-block">
             <p className="mb-1 fw-bold">Core Law, P.A.</p>
-            <p className="mb-1">{city.address}</p>
+            <p className="mb-1" style={{ whiteSpace: "pre-line" }}>
+              {city.address}
+            </p>
             <p className="mb-1">Phone: {city.phoneNo}</p>
             {city.faxNo && <p className="mb-0">Fax: {city.faxNo}</p>}
           </div>
@@ -214,7 +133,7 @@ function LocationDetail() {
         </div>
       </div>
 
-      {/* --- CMS CONTENT --- */}
+      {/* --- CONTENT SECTION --- */}
       <div className="container py-5">
         <div className="row justify-content-center">
           <div className="col-lg-9">
@@ -222,6 +141,7 @@ function LocationDetail() {
               className="cms-rich-text"
               dangerouslySetInnerHTML={{
                 __html:
+                  city?.content ||
                   cms?.content ||
                   `<p class="text-muted">Explore our professional legal services in ${city.cityName}.</p>`,
               }}
@@ -230,10 +150,10 @@ function LocationDetail() {
         </div>
       </div>
 
-      {/* --- DYNAMIC NEWS & EVENTS SECTION --- */}
+      {/* --- NEWS & EVENTS SECTION --- */}
       <div className="dark-news-section">
         <div className="container">
-          <h2 className="section-title-white mb-5">News, Insights & Events</h2>
+          <h2 className="section-title-white mb-5">News & Events</h2>
 
           <div className="news-tabs mb-4 d-flex gap-4 border-bottom border-secondary">
             {["News", "Events"].map((tab) => (
@@ -267,7 +187,7 @@ function LocationDetail() {
                       <Link
                         href={`/${activeTab.toLowerCase()}/${createItemSlug(item.title)}`}>
                         <a className="text-decoration-none">
-                          <h3 className="news-heading">{item.title}</h3>
+                          <h4 className="news-heading">{item.title}</h4>
                         </a>
                       </Link>
                     </div>

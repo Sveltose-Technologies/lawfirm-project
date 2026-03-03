@@ -10,8 +10,8 @@ import {
   Button,
   Badge,
 } from "reactstrap";
-import * as authService from "../../services/authService";
-import PaginationComponent from "../../context/Pagination";
+import * as authService from "../services/authService";
+import PaginationComponent from "../context/Pagination"
 
 const Attorney = () => {
   const [attorneys, setAttorneys] = useState([]);

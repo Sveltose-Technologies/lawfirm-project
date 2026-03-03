@@ -329,7 +329,7 @@ import {
   Button,
 } from "reactstrap";
 import { toast } from "react-toastify";
-import * as authService from "../../services/authService";
+import * as authService from "../services/authService";
 
 export default function UserProfile({ isAdmin = false }) {
   const [loading, setLoading] = useState(false);

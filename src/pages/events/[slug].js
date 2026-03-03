@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
@@ -7,7 +6,7 @@ import {
   getAllEvents,
   getAllCapabilityCategories,
   getAllLocationCities,
-  getImgUrl, // 1. Added getImgUrl to handle image paths
+  getImgUrl,
 } from "../../services/authService";
 
 export default function EventDetail() {
@@ -43,6 +42,47 @@ export default function EventDetail() {
       .replace(/[^a-z0-9 -]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
+
+  // Format Date Range: "March 2, 2026 - March 6, 2026"
+  const formatDateRange = (start, end) => {
+    if (!start) return "Date TBD";
+    const options = { month: "long", day: "numeric", year: "numeric" };
+    const s = new Date(start).toLocaleDateString("en-US", options);
+    if (!end) return s;
+    const e = new Date(end).toLocaleDateString("en-US", options);
+    return s === e ? s : `${s} - ${e}`;
+  };
+
+  // Format Time: "14:00" -> "2:00 PM"
+  const formatTimeRange = (start, end) => {
+    if (!start) return "";
+    const formatTime = (timeStr) => {
+      if (!timeStr) return "";
+      const [hours, minutes] = timeStr.split(":");
+      const h = parseInt(hours);
+      const ampm = h >= 12 ? "PM" : "AM";
+      const formattedHours = h % 12 || 12;
+      return `${formattedHours}:${minutes} ${ampm}`;
+    };
+
+    const s = formatTime(start);
+    const e = formatTime(end);
+    return e ? `${s} - ${e}` : s;
+  };
+
+  // location
+  const getEventLocation = (item) => {
+    const cityIdArray = parseIds(item.cityIds || item.cityId);
+    const matchedCity = cities.find((c) => cityIdArray.includes(Number(c.id)));
+
+    if (matchedCity) {
+      // Assuming country name is available on the city object or globally
+      const cityName = matchedCity.cityName;
+      const countryName = matchedCity.countryName || "";
+      return countryName ? `${cityName}, ${countryName}` : cityName;
+    }
+    return "";
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,20 +134,13 @@ export default function EventDetail() {
         <div className="spinner-border text-warning"></div>
       </div>
     );
+
   if (!event)
     return (
       <div className="text-center py-5 mt-5">
         <h3>Event Not Found</h3>
       </div>
     );
-
-  const formatDateRange = (start, end) => {
-    const options = { month: "long", day: "numeric", year: "numeric" };
-    const s = new Date(start).toLocaleDateString("en-US", options);
-    if (!end) return s;
-    const e = new Date(end).toLocaleDateString("en-US", options);
-    return s === e ? s : `${s} - ${e}`;
-  };
 
   const matchedCities = cities.filter((c) =>
     parseIds(event.cityIds || event.cityId).includes(Number(c.id)),
@@ -122,11 +155,12 @@ export default function EventDetail() {
         <title>{event.title} | Lawstick</title>
       </Head>
 
-      {/* 2. DYNAMIC BANNER IMAGE IN HEADER */}
       <header
         className="text-white pt-5 pb-5 position-relative"
         style={{
-          background: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${getImgUrl(event.bannerImage)})`,
+          background: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${getImgUrl(
+            event.bannerImage,
+          )})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           minHeight: "400px",
@@ -137,6 +171,12 @@ export default function EventDetail() {
           <div className="mb-2 opacity-75">
             <span className="text-uppercase fw-bold small tracking-widest">
               {formatDateRange(event.startDate, event.endDate)}
+              {event.startTime && (
+                <>
+                  <span className="mx-2">•</span>
+                  {formatTimeRange(event.startTime, event.endTime)}
+                </>
+              )}
             </span>
             <span className="mx-2">|</span>
             <span className="text-uppercase fw-bold small">Event</span>
@@ -182,14 +222,6 @@ export default function EventDetail() {
       <main className="container py-5 mt-4">
         <div className="row justify-content-center">
           <div className="col-lg-10">
-            {/* Displaying Banner as a regular image if needed below the title */}
-            <img
-              src={getImgUrl(event.bannerImage)}
-              className="img-fluid w-100 rounded mb-5 shadow"
-              alt={event.title}
-              onError={(e) => (e.target.style.display = "none")}
-            />
-
             <div className="row g-0 pt-4">
               <div className="col-md-1">
                 <div className="sticky-top" style={{ top: "110px" }}>
@@ -197,15 +229,33 @@ export default function EventDetail() {
                     Share
                   </p>
                   <div className="d-flex flex-column gap-4 fs-4 text-muted">
-                    <a href="#" className="hover-gold text-secondary">
-                      <i className="bi bi-linkedin"></i>
-                    </a>
-                    <a href="#" className="hover-gold text-secondary">
-                      <i className="bi bi-twitter-x"></i>
-                    </a>
-                    <a href="#" className="hover-gold text-secondary">
-                      <i className="bi bi-facebook"></i>
-                    </a>
+                    {event?.linkedin && (
+                      <a
+                        href={event.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover-gold text-secondary">
+                        <i className="bi bi-linkedin"></i>
+                      </a>
+                    )}
+                    {event?.twitter && (
+                      <a
+                        href={event.twitter}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover-gold text-secondary">
+                        <i className="bi bi-twitter-x"></i>
+                      </a>
+                    )}
+                    {event?.facebook && (
+                      <a
+                        href={event.facebook}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover-gold text-secondary">
+                        <i className="bi bi-facebook"></i>
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
@@ -216,56 +266,78 @@ export default function EventDetail() {
                     dangerouslySetInnerHTML={{ __html: event.description }}
                   />
                 </div>
-                {event.registrationLink && (
+
+                {/* {event.registrationLink && (
                   <div className="mt-5">
                     <a
                       href={event.registrationLink}
                       target="_blank"
-                      className="btn btn-warning px-5 py-3 fw-bold rounded-0"
+                      rel="noopener noreferrer"
+                      className="btn px-5 py-3 fw-bold rounded-0"
                       style={{
                         backgroundColor: "#c5a059",
                         border: "none",
                         color: "#fff",
-                      }}>
+                      }}
+                    >
                       REGISTER FOR EVENT
                     </a>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      {/* 3. RELATED EVENTS WITH IMAGES */}
       <section className="bg-dark text-white py-5">
         <div className="container py-5">
           <h3 className="pb-4 border-bottom border-secondary mb-5 font-serif">
             You May Also Be Interested In:
           </h3>
-          <div className="row g-4">
-            {allEvents.map((item) => (
-              <div key={item.id} className="col-md-4">
-                <div className="card bg-transparent border-0 h-100 text-white">
-                  <img
+          <div className=" g-4">
+            {allEvents.map((item) => {
+              const locationInfo = getEventLocation(item);
+              return (
+                <div key={item.id} className="col-md-4">
+                  <div className="card bg-transparent border-0 h-100 text-white">
+                    {/* <img
                     src={getImgUrl(item.bannerImage)}
                     className="card-img-top rounded-0"
                     alt={item.title}
                     style={{ height: "200px", objectFit: "cover" }}
-                  />
-                  <div className="card-body px-0">
-                    <p className="small fw-bold text-uppercase text-white-50 mb-2">
-                      {formatDateRange(item.startDate, item.endDate)} | Event
-                    </p>
-                    <Link href={`/events/${createSlug(item.title)}`}>
-                      <a className="h5 gold-text text-decoration-none fw-bold d-block mb-2 font-serif">
-                        {item.title}
-                      </a>
-                    </Link>
+                  /> */}
+                    <div className="card-body px-0">
+                      <p className="small fw-bold text-uppercase text-white mb-2">
+                        {formatDateRange(item.startDate, item.endDate)}
+                        {item.startTime && (
+                          <>
+                            {" "}
+                            | {formatTimeRange(item.startTime, item.endTime)}
+                          </>
+                        )}{" "}
+                        | Event
+                      </p>
+                      <Link href={`/events/${createSlug(item.title)}`}>
+                        <a className="h5 gold-text text-decoration-none fw-bold d-block mb-2 font-serif">
+                          {item.title}
+                        </a>
+                      </Link>
+                      {locationInfo && (
+                        <>
+                          {" "}
+                          |{" "}
+                          <span className="small fw-bold text-uppercase text-white mb-2">
+                            {locationInfo}
+                          </span>
+                        </>
+                      )}
+                      <hr className="border-secondary opacity-50 my-3" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

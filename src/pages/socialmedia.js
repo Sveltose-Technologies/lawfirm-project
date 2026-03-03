@@ -14,8 +14,8 @@ import {
   Input,
 } from "reactstrap";
 
-import * as authService from "../../services/authService";
-import PaginationComponent from "../../context/Pagination";
+import * as authService from "../services/authService";
+import PaginationComponent from "../context/Pagination";
 
 const SocialMediaPage = () => {
   const GOLD = "#eebb5d";

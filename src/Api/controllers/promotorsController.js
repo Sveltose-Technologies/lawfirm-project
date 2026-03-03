@@ -8,6 +8,8 @@ exports.createPromoter = async (req, res) => {
       personName,
       designation,
       specialization,
+      email,
+      mobileNo
     } = req.body;
 
     const promoter = await Promoter.create({
@@ -17,6 +19,8 @@ exports.createPromoter = async (req, res) => {
       personImage: req.files?.personImage?.[0]?.path || req.body.personImage,
       designation,
       specialization,
+      email,
+      mobileNo
     });
 
     res.status(201).json({
@@ -73,6 +77,8 @@ exports.updatePromoter = async (req, res) => {
       personImage: req.files?.personImage?.[0]?.path || promoter.personImage,
       designation: req.body.designation || promoter.designation,
       specialization: req.body.specialization || promoter.specialization,
+      email: req.body.email || promoter.email,
+      mobileNo: req.body.mobileNo || promoter.mobileNo
     });
 
     res.status(200).json({ success: true, message: "Promoter updated successfully", data: promoter });

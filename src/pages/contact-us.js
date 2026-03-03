@@ -32,14 +32,12 @@ function Contact() {
     }
   }, []);
 
-  // ✅ FIX: DYNAMIC DATA FETCH (Path corrected based on your JSON)
+  // ✅ DYNAMIC DATA FETCH
   useEffect(() => {
     const fetchContactText = async () => {
       try {
         const res = await getContactText();
-
-        // Aapke JSON ke hisaab se path: res.data.data[0]
-        // Kyunki res.data axios ka response hai aur uske andar backend ka success/data object hai
+        // Path handling for Axios response and your specific JSON structure
         const actualData = res.data?.data || res.data;
 
         if (Array.isArray(actualData) && actualData.length > 0) {
@@ -108,8 +106,6 @@ function Contact() {
     }
   };
 
-  const handleDeadClick = (e) => e.preventDefault();
-
   return (
     <>
       <Head>
@@ -122,9 +118,9 @@ function Contact() {
         </h1>
 
         <div className="row g-4">
-          {/* LEFT SIDEBAR - DYNAMIC CONTENT AREA */}
+          {/* LEFT SIDEBAR - FULLY DYNAMIC EXCEPT BUTTONS */}
           <div className="col-lg-5 col-md-12 border-end">
-            {/* dynamic text from API rendered here */}
+            {/* 1. Dynamic Content from Editor/API */}
             {contactText ? (
               <div
                 className="text-secondary mb-4"
@@ -134,33 +130,21 @@ function Contact() {
               <p className="text-secondary">Loading...</p>
             )}
 
-            <div className="mb-4">
-              <p>Complete list of media contacts:</p>
+            {/* 2. Static Buttons (As requested) */}
+            <div className="mb-3">
               <Link href="/media-contacts">
                 <a className="btn btn-premium">MEDIA CONTACTS</a>
               </Link>
             </div>
 
-            <div>
-              <p>Learn about careers at our firm:</p>
-              <p className="small">
-                All jobs posted{" "}
-                <a href="#" onClick={handleDeadClick} className="text-gold">
-                  here
-                </a>
-                . Report fraud to{" "}
-                <a href="mailto:hr@nrlslaw.com" className="text-gold">
-                </a>
-                .
-              </p>
-
+            <div className="mb-3">
               <Link href="/careers">
                 <a className="btn btn-premium">JOB OPPORTUNITIES</a>
               </Link>
             </div>
           </div>
 
-          {/* FORM SECTION - (UI UNCHANGED) */}
+          {/* RIGHT SIDE - FORM SECTION (UI UNCHANGED) */}
           <div className="col-lg-7 col-md-12">
             <p className="text-secondary">Please fill out the form below.</p>
             <form onSubmit={handleSubmit}>

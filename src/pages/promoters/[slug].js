@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { getAllPromoters, IMG_URL } from "../../services/authService";
@@ -70,18 +68,61 @@ export default function PromoterDetail() {
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="container py-5">
         <div className="row g-5">
-          {/* Left Column: Profile Image & Back Button */}
-          <div className="col-lg-4">
-            <div className="profile-detail-img-box shadow-sm">
+          {/* LEFT SIDEBAR - CORRECTED STRUCTURE */}
+          <div className="col-lg-4 col-md-5">
+            <div className="profile-detail-img-box shadow-sm mb-4">
               <img
                 src={`${IMG_URL}/${person.personImage}`}
                 alt={person.personName}
+                className="img-fluid w-100"
               />
             </div>
 
+            <div className="contact-details-box border-top pt-3">
+              <h5
+                className="fw-bold text-uppercase mb-3 small"
+                style={{ letterSpacing: "1px" }}>
+                Professional Info
+              </h5>
+
+              {/* Designation */}
+              <div className="mb-3">
+                <label
+                  className="text-uppercase fw-bold text-muted d-block mb-0"
+                  style={{ fontSize: "0.7rem" }}>
+                  Designation
+                </label>
+                <div className="text-dark fw-bold">{person.designation}</div>
+              </div>
+
+              {/* Email */}
+              {person.email && (
+                <div className="mb-2">
+                  <label
+                    className="text-uppercase fw-bold text-muted d-block mb-0"
+                    style={{ fontSize: "0.7rem" }}>
+                    Email
+                  </label>
+                  <div className="text-muted">{person.email}</div>
+                </div>
+              )}
+
+              {/* Phone */}
+              {person.mobileNo && (
+                <div className="mb-3">
+                  <label
+                    className="text-uppercase fw-bold text-muted d-block mb-0"
+                    style={{ fontSize: "0.7rem" }}>
+                    Phone
+                  </label>
+                  <div className="text-muted">{person.mobileNo}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Back Button */}
             <div className="mt-4">
               <button
                 className="btn btn-outline-custom w-100 py-2 text-uppercase small"
@@ -91,18 +132,25 @@ export default function PromoterDetail() {
             </div>
           </div>
 
-          {/* Right Column: Biography Details */}
-          <div className="col-lg-8">
+          {/* RIGHT COLUMN - BIOGRAPHY */}
+          <div className="col-lg-8 col-md-7">
             <div className="biography-section">
               <h3 className="biography-heading">Biography</h3>
               <div
-                className="rich-text-content fs-5"
+                className="rich-text-content fs-6"
+                style={{ lineHeight: "1.7", color: "#444" }}
                 dangerouslySetInnerHTML={{ __html: person.specialization }}
               />
             </div>
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .rich-text-content :global(p) {
+          margin-bottom: 1.5rem;
+        }
+      `}</style>
     </div>
   );
 }

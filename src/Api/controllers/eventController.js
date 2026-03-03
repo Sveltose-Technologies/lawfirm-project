@@ -26,7 +26,7 @@ exports.createEvent = async (req, res) => {
     }
 
     const event = await Event.create(req.body);
-
+console.log(req.body);
     return res.status(201).json({
       success: true,
       message: "Event created successfully",

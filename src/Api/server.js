@@ -59,6 +59,9 @@ app.use("/logo-type", require("./routes/logoTypeRoutes"));
 app.use("/home-banner",require("./routes/homeBanner.routes"));
 app.use("/home-data",require("./routes/homeDataRoutes"));
 app.use("/contact-text",require("./routes/contactTextRoutes") );
+app.use("/home-count", require("./routes/homeCountRoute"));
+app.use("/home-ranking", require("./routes/homeRankingRoute"));
+
 
 app.listen(PORT, () => {
   console.log(`Server is running at PORT: http://localhost:${PORT}`.bgBlue.black);

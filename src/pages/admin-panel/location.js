@@ -67,7 +67,20 @@ const LocationManagement = () => {
     [],
   );
 
-  // API Response handling based on your logs {success: true, data: []}
+  // Function to clean HTML, remove &nbsp;, and truncate to exactly 3 words
+  const truncateWords = (html, limit) => {
+    if (!html) return "No description";
+    const plainText = html
+      .replace(/<[^>]*>/g, " ") // Remove HTML tags
+      .replace(/&nbsp;/g, " ") // Replace non-breaking spaces
+      .replace(/\s+/g, " ") // Replace multiple spaces with single space
+      .trim();
+
+    const words = plainText.split(" ");
+    if (words.length <= limit) return plainText;
+    return words.slice(0, limit).join(" ") + "...";
+  };
+
   const getSafeArray = (res) => {
     if (res?.success && Array.isArray(res.data)) return res.data;
     if (Array.isArray(res)) return res;
@@ -109,48 +122,41 @@ const LocationManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Get the dynamic Admin ID from localStorage via the service
     const currentAdminId = authService.getAdminId();
-
     if (!currentAdminId) {
       toast.error("Session expired. Please login again.");
       return;
     }
 
     setLoading(true);
-
     try {
       let res;
       if (activeTab === "country") {
-        // Country Keys: adminId, countryName, content
         const payload = isEditing
           ? { countryName: formData.countryName, content: formData.content }
           : {
-              adminId: currentAdminId, // Dynamic ID applied here
+              adminId: currentAdminId,
               countryName: formData.countryName,
               content: formData.content,
             };
-
         res = isEditing
           ? await authService.updateLocationCountry(currentId, payload)
           : await authService.createLocationCountry(payload);
       } else {
-        // City Keys: adminId, countryId, cityName, address, phoneNo, faxNo, image
         const data = new FormData();
         if (!isEditing) {
-          data.append("adminId", currentAdminId); // Dynamic ID applied here
+          data.append("adminId", currentAdminId);
           data.append("countryId", formData.countryId);
         }
         data.append("cityName", formData.cityName);
         data.append("address", formData.address || "");
         data.append("phoneNo", formData.phoneNo || "");
         data.append("faxNo", formData.faxNo || "");
+        data.append("content", formData.content || "");
 
         if (formData.image instanceof File) {
           data.append("image", formData.image);
         }
-
         res = isEditing
           ? await authService.updateLocationCity(currentId, data)
           : await authService.createLocationCity(data);
@@ -191,15 +197,16 @@ const LocationManagement = () => {
     if (activeTab === "country") {
       setFormData({
         countryName: item.countryName,
-        content: item.content,
+        content: item.content || "",
       });
     } else {
       setFormData({
         countryId: item.countryId,
         cityName: item.cityName,
-        address: item.address,
-        phoneNo: item.phoneNo,
-        faxNo: item.faxNo,
+        address: item.address || "",
+        phoneNo: item.phoneNo || "",
+        faxNo: item.faxNo || "",
+        content: item.content || "",
         image: null,
       });
     }
@@ -216,9 +223,7 @@ const LocationManagement = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h4 className="fw-bold mb-0">Location Management</h4>
-          <p className="text-muted small">
-            Manage Countries and City details with Images.
-          </p>
+          <p className="text-muted small">Manage Countries and City details.</p>
         </div>
         <Button className="btn-gold px-4" onClick={toggle}>
           + Add {activeTab === "country" ? "Country" : "City"}
@@ -233,9 +238,7 @@ const LocationManagement = () => {
                 active: activeTab === tab,
               })}
               onClick={() => setActiveTab(tab)}
-              style={{
-                cursor: "pointer",
-              }}>
+              style={{ cursor: "pointer" }}>
               {tab.toUpperCase()} MANAGEMENT
             </NavLink>
           </NavItem>
@@ -244,20 +247,21 @@ const LocationManagement = () => {
 
       <Card className="border-0 shadow-sm rounded-4">
         <CardBody className="p-0">
-          <Table hover responsive className="align-middle mb-0">
+          <Table hover responsive className="align-middle mb-0 text-nowrap">
             <thead style={{ backgroundColor: LIGHT_GOLD }}>
               <tr>
                 <th className="px-4 py-3">Sr. No.</th>
                 {activeTab === "country" ? (
                   <>
                     <th>Country Name</th>
-                    <th>Description Preview</th>
+                    <th>Description</th>
                   </>
                 ) : (
                   <>
                     <th>Image</th>
                     <th>City Name</th>
                     <th>Country</th>
+                    <th>Description</th>
                     <th>Contacts</th>
                   </>
                 )}
@@ -270,12 +274,8 @@ const LocationManagement = () => {
                     <tr key={c.id}>
                       <td className="px-4">{i + 1}</td>
                       <td className="fw-bold">{c.countryName}</td>
-                      <td>
-                        <div
-                          className="text-truncate"
-                          style={{ maxWidth: "250px" }}
-                          dangerouslySetInnerHTML={{ __html: c.content }}
-                        />
+                      <td className="text-muted small">
+                        {truncateWords(c.content, 3)}
                       </td>
                       <td className="text-end px-4">
                         <Button
@@ -320,6 +320,9 @@ const LocationManagement = () => {
                           (c) => String(c.id) === String(city.countryId),
                         )?.countryName || `ID: ${city.countryId}`}
                       </td>
+                      <td className="text-muted small">
+                        {truncateWords(city.content, 3)}
+                      </td>
                       <td className="small">
                         📞 {city.phoneNo} <br /> 📠 {city.faxNo}
                       </td>
@@ -346,12 +349,7 @@ const LocationManagement = () => {
         </CardBody>
       </Card>
 
-      <Modal
-        isOpen={modal}
-        toggle={toggle}
-        size={activeTab === "country" ? "lg" : "md"}
-        centered
-        scrollable>
+      <Modal isOpen={modal} toggle={toggle} size="lg" centered scrollable>
         <ModalHeader
           toggle={toggle}
           className="border-0 fw-bold"
@@ -455,6 +453,24 @@ const LocationManagement = () => {
                 </Col>
                 <Col md={12}>
                   <FormGroup>
+                    <Label className="small fw-bold">
+                      City Content / Description
+                    </Label>
+                    <div className="bg-white border rounded">
+                      <ReactQuill
+                        theme="snow"
+                        value={formData.content}
+                        onChange={(val) =>
+                          setFormData({ ...formData, content: val })
+                        }
+                        modules={modules}
+                        style={{ height: "180px", marginBottom: "45px" }}
+                      />
+                    </div>
+                  </FormGroup>
+                </Col>
+                <Col md={12}>
+                  <FormGroup>
                     <Label className="small fw-bold">City Image</Label>
                     <Input
                       type="file"
@@ -467,7 +483,6 @@ const LocationManagement = () => {
                 </Col>
               </Row>
             )}
-
             <Button
               type="submit"
               className="btn-gold w-100 mt-4 py-2 fw-bold"
@@ -485,13 +500,17 @@ const LocationManagement = () => {
           border: none !important;
         }
         .nav-link {
-          color: black !important; /* Sabhi nav-link ko black color do */
+          color: black !important;
         }
         .nav-link.active {
           border-bottom: 3px solid #eebb5d !important;
           background: transparent !important;
-          color: black !important; /* Active tab bhi black text me ho */
-          font-weight: 700; /* thoda bold karne ke liye */
+          color: black !important;
+          font-weight: 700;
+        }
+        .text-nowrap th,
+        .text-nowrap td {
+          white-space: nowrap;
         }
       `}</style>
     </Container>

@@ -11,6 +11,7 @@ exports.createCity = async (req, res) => {
       address,
       phoneNo,
       faxNo,
+      content
     } = req.body;
 
     if (!adminId || !countryId || !cityName || !address || !phoneNo) {
@@ -30,6 +31,7 @@ exports.createCity = async (req, res) => {
       phoneNo,
       faxNo,
       image,
+      content
     });
 
     res.status(201).json({
@@ -100,6 +102,7 @@ exports.updateCity = async (req, res) => {
       phoneNo: req.body.phoneNo,
       faxNo: req.body.faxNo,
       image: req.file ? req.file.path : city.image,
+      content: req.body.content
     });
 
     res.status(200).json({

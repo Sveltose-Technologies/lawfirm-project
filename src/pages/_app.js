@@ -15,7 +15,7 @@ import '../styles/globals.css';
 // Components Imports
 import Layout from "../components/layout/Layout";
 import DisclaimerPopup from "../components/DisclaimerPopup";
-
+import "react-quill/dist/quill.snow.css";
 function MyApp({ Component, pageProps }) {
   // Layout Logic
   const getLayout = Component.getLayout || ((page) => (

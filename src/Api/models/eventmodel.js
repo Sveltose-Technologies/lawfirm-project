@@ -34,6 +34,16 @@ const Event = sequelize.define(
       allowNull: false,
     },
 
+     startTime: {
+      type: DataTypes.TIME,
+      allowNull: false,
+    },
+
+    endTime: {
+      type: DataTypes.TIME,
+      allowNull: false,
+    },
+
     capabilityCategoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,

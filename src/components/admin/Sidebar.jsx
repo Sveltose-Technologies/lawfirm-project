@@ -91,7 +91,6 @@ const navigation = [
   { title: "FAQ", href: "/faq", icon: "bi bi-question-circle" },
   {
     title: "Page Settings",
-    href: "/pages-list",
     icon: "bi bi-file-earmark-code",
 
     children: [

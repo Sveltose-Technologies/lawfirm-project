@@ -635,14 +635,13 @@ export default function CapabilityDetail() {
               <h2
                 className="display-5 text-white mb-5"
                 style={{ fontFamily: "serif" }}>
-                News, Insights & Events
+                News & Events
               </h2>
               <div className="d-flex flex-wrap border-bottom border-secondary mb-5 pb-0 gap-4">
                 {[
-                  "Featured",
+                 
                   "News",
-                  "Insights",
-                  "Past Events",
+                
                   "Upcoming Events",
                 ].map((tab) => (
                   <span

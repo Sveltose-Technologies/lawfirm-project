@@ -20,6 +20,14 @@ const Promoter = sequelize.define(
       allowNull: false,
     },
 
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+     mobileNo: 
+     { type: DataTypes.STRING },
+
     personName: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -30,15 +38,15 @@ const Promoter = sequelize.define(
       allowNull: false,
     },
 
-    designation: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+designation: {
+  type: DataTypes.TEXT,
+  allowNull: false,
+},
 
-    specialization: {
-      type: DataTypes.STRING,
-      allowNull: true,  
-    },
+specialization: {
+  type: DataTypes.TEXT,
+  allowNull: true,
+},
     
   },
   {
