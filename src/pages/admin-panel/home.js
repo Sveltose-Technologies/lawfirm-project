@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import {
   Container,
   Card,
-  CardBody,
   Table,
   Button,
   Modal,
@@ -37,7 +36,16 @@ import {
   createHomeData,
   updateHomeData,
   deleteHomeData,
+  // New API integrations based on your request
+  getAllRanking,
+  createRanking,
+  updateRanking,
+  getAllCounters,
+  createCounters,
+  updateCounters,
   getImgUrl,
+  deleteRankData,
+  deleteCountData,
 } from "../../services/authService";
 import "react-quill/dist/quill.snow.css";
 
@@ -53,6 +61,8 @@ const AdminHomeManagement = () => {
   const [logoTypes, setLogoTypes] = useState([]);
   const [homeBanners, setHomeBanners] = useState([]);
   const [homeDataList, setHomeDataList] = useState([]);
+  const [rankings, setRankings] = useState([]);
+  const [counters, setCounters] = useState([]);
 
   // Modal States
   const [modal, setModal] = useState({
@@ -81,17 +91,47 @@ const AdminHomeManagement = () => {
     fourthImage: null,
   });
 
+  // Ranking Form State
+  const [rankingForm, setRankingForm] = useState({
+    rankingText: "",
+    rankingNo: "",
+    languageText: "",
+    languageNo: "",
+    countrieText: "",
+    countrieNo: "",
+    locationText: "",
+    locationNo: "",
+    textEditor: "",
+  });
+
+  // Counters Form State
+  const [counterForm, setCounterForm] = useState({
+    consultationsText: "",
+    consultationsNo: "",
+    successRateText: "",
+    successRateCount: "",
+    yearsExperienceText: "",
+    yearsExperienceCount: "",
+    attorneysText: "",
+    attorneysCount: "",
+  });
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [logoRes, bannerRes, homeRes] = await Promise.all([
-        getAllLogoTypes(),
-        getAllHomeBanners(),
-        getAllHomeData(),
-      ]);
+      const [logoRes, bannerRes, homeRes, rankRes, countRes] =
+        await Promise.all([
+          getAllLogoTypes(),
+          getAllHomeBanners(),
+          getAllHomeData(),
+          getAllRanking ? getAllRanking() : Promise.resolve({ data: [] }),
+          getAllCounters ? getAllCounters() : Promise.resolve({ data: [] }),
+        ]);
       setLogoTypes(logoRes.data?.data || logoRes.data || []);
       setHomeBanners(bannerRes.data?.data || bannerRes.data || []);
       setHomeDataList(homeRes.data?.data || homeRes.data || []);
+      setRankings(rankRes.data?.data || rankRes.data || []);
+      setCounters(countRes.data?.data || countRes.data || []);
     } catch (error) {
       console.error("Fetch Error", error);
     } finally {
@@ -121,6 +161,8 @@ const AdminHomeManagement = () => {
           thirdImage: null,
           fourthImage: null,
         });
+      if (type === "ranking") setRankingForm({ ...data });
+      if (type === "counter") setCounterForm({ ...data });
     } else {
       setLogoForm({ type: "logo" });
       setBannerForm({ typeId: "", textEditor: "", image: null });
@@ -135,12 +177,35 @@ const AdminHomeManagement = () => {
         thirdImage: null,
         fourthImage: null,
       });
+      setRankingForm({
+        rankingText: "",
+        rankingNo: "",
+        languageText: "",
+        languageNo: "",
+        countrieText: "",
+        countrieNo: "",
+        locationText: "",
+        locationNo: "",
+        textEditor: "",
+      });
+      setCounterForm({
+        consultationsText: "",
+        consultationsNo: "",
+        successRateText: "",
+        successRateCount: "",
+        yearsExperienceText: "",
+        yearsExperienceCount: "",
+        attorneysText: "",
+        attorneysCount: "",
+      });
     }
   };
 
   const handleAction = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log("counterForm", counterForm);
+
     try {
       let res;
       if (modal.type === "logo") {
@@ -155,16 +220,22 @@ const AdminHomeManagement = () => {
         res = modal.edit
           ? await updateHomeBanner(modal.id, fd)
           : await createHomeBanner(fd);
-      } else {
+      } else if (modal.type === "homeData") {
         const fd = new FormData();
-
         Object.keys(homeDataForm).forEach((key) => {
           fd.append(key, homeDataForm[key] || "");
         });
-
         res = modal.edit
           ? await updateHomeData(modal.id, fd)
           : await createHomeData(fd);
+      } else if (modal.type === "ranking") {
+        res = modal.edit
+          ? await updateRanking(modal.id, rankingForm)
+          : await createRanking(rankingForm);
+      } else if (modal.type === "counter") {
+        res = modal.edit
+          ? await updateCounters(modal.id, counterForm)
+          : await createCounters(counterForm);
       }
 
       if (res) {
@@ -185,6 +256,8 @@ const AdminHomeManagement = () => {
       if (type === "logo") await deleteLogoType(id);
       if (type === "banner") await deleteHomeBanner(id);
       if (type === "homeData") await deleteHomeData(id);
+      if (type === "homeRankData") await deleteRankData(id);
+      if (type === "homeCountData") await deleteCountData(id);
       toast.success("Deleted");
       fetchData();
     } catch (err) {
@@ -201,18 +274,22 @@ const AdminHomeManagement = () => {
       </div>
 
       <Nav tabs className="border-0 mb-4">
-        {["Logo Types", "Home Banners", "Home Data Sections"].map(
-          (label, i) => (
-            <NavItem key={i}>
-              <NavLink
-                className={`border-0 fw-bold px-4 py-3 cursor-pointer ${activeTab === `${i + 1}` ? " text-white" : "text-muted"}`}
-                onClick={() => setActiveTab(`${i + 1}`)}
-                style={{ cursor: "pointer" }}>
-                {label}
-              </NavLink>
-            </NavItem>
-          ),
-        )}
+        {[
+          "Logo Types",
+          "Home Banners",
+          "Home Data Sections",
+          "Home Ranking",
+          "Home Counters",
+        ].map((label, i) => (
+          <NavItem key={i}>
+            <NavLink
+              className={`border-0 fw-bold px-4 py-3 cursor-pointer ${activeTab === `${i + 1}` ? " active" : "text-muted"}`}
+              onClick={() => setActiveTab(`${i + 1}`)}
+              style={{ cursor: "pointer" }}>
+              {label}
+            </NavLink>
+          </NavItem>
+        ))}
       </Nav>
 
       <TabContent activeTab={activeTab}>
@@ -298,9 +375,7 @@ const AdminHomeManagement = () => {
                     <td
                       className="small text-truncate"
                       style={{ maxWidth: "200px" }}>
-                      {item.textEditor
-                        ?.replace(/&nbsp;/g, " ")
-                        .replace(/<[^>]*>/g, "")}
+                      {item.textEditor?.replace(/<[^>]*>/g, "")}
                     </td>
                     <td className="text-end">
                       <Button
@@ -349,11 +424,7 @@ const AdminHomeManagement = () => {
                   <tr key={idx}>
                     <td>{item.middleText}</td>
                     <td>
-                      <img
-                        src={getImgUrl(item.firstImage)}
-                        width="50"
-                        alt=""
-                      />
+                      <img src={getImgUrl(item.firstImage)} width="50" alt="" />
                     </td>
                     <td>
                       <img
@@ -384,13 +455,119 @@ const AdminHomeManagement = () => {
             </Table>
           </Card>
         </TabPane>
+
+        {/* RANKING TAB */}
+        <TabPane tabId="4">
+          <div className="text-end mb-3">
+            <Button
+              className="btn-primary-custom w-auto px-4"
+              onClick={() => toggleModal("ranking")}>
+              + Add Ranking
+            </Button>
+          </div>
+          <Card className="card-shadow border-0">
+            <Table hover responsive className="align-middle mb-0">
+              <thead className="table-dark-custom">
+                <tr>
+                  <th>Rank No</th>
+                  <th>Countries</th>
+                  <th>Languages</th>
+                  <th>Location</th>
+                  <th className="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rankings.map((item, idx) => (
+                  <tr key={idx}>
+                    <td>{item.rankingNo}</td>
+                    <td>{item.countrieNo}</td>
+                    <td>{item.languageNo}</td>
+                    <td>{item.locationNo}</td>
+                    <td className="text-end">
+                      <Button
+                        size="sm"
+                        color="white"
+                        className="border me-2"
+                        onClick={() => toggleModal("ranking", true, item)}>
+                        ✏️
+                      </Button>
+                      <Button
+                        size="sm"
+                        color="white"
+                        className="border text-danger"
+                        onClick={() => handleDelete("homeRankData", item.id)}>
+                        🗑️
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card>
+        </TabPane>
+
+        {/* COUNTERS TAB */}
+        <TabPane tabId="5">
+          <div className="text-end mb-3">
+            <Button
+              className="btn-primary-custom w-auto px-4"
+              onClick={() => toggleModal("counter")}>
+              + Add Counters
+            </Button>
+          </div>
+          <Card className="card-shadow border-0">
+            <Table hover responsive className="align-middle mb-0">
+              <thead className="table-dark-custom">
+                <tr>
+                  <th>Consultations</th>
+                  <th>Success Rate</th>
+                  <th>Attorneys</th>
+                  <th>Years Of Experience Count</th>
+                  <th className="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {counters.map((item, idx) => (
+                  <tr key={idx}>
+                    <td>{item.consultationsNo}</td>
+                    <td>{item.successRateCount}%</td>
+                    <td>{item.attorneysCount}</td>
+                    <td>{item.yearsExperienceCount}</td>
+                    <td className="text-end">
+                      <Button
+                        size="sm"
+                        color="white"
+                        className="border me-2"
+                        onClick={() => toggleModal("counter", true, item)}>
+                        ✏️
+                      </Button>
+                      <Button
+                        size="sm"
+                        color="white"
+                        className="border text-danger"
+                        onClick={() => handleDelete("homeCountData", item.id)}>
+                        🗑️
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card>
+        </TabPane>
       </TabContent>
 
       {/* MODALS */}
       <Modal
         isOpen={modal.open}
         toggle={() => toggleModal()}
-        size={modal.type === "homeData" ? "xl" : "lg"}
+        size={
+          modal.type === "homeData" ||
+          modal.type === "ranking" ||
+          modal.type === "counter"
+            ? "xl"
+            : "lg"
+        }
         centered>
         <ModalHeader className="border-0 text-blue fw-bold">
           {modal.edit ? "Edit" : "Add"} {modal.type.toUpperCase()}
@@ -410,6 +587,260 @@ const AdminHomeManagement = () => {
               </FormGroup>
             )}
 
+            {modal.type === "ranking" && (
+              <Row>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Ranking Text</Label>
+                    <Input
+                      value={rankingForm.rankingText}
+                      onChange={(e) =>
+                        setRankingForm({
+                          ...rankingForm,
+                          rankingText: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Ranking No</Label>
+                    <Input
+                      type="number"
+                      value={rankingForm.rankingNo}
+                      onChange={(e) =>
+                        setRankingForm({
+                          ...rankingForm,
+                          rankingNo: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Language Text</Label>
+                    <Input
+                      value={rankingForm.languageText}
+                      onChange={(e) =>
+                        setRankingForm({
+                          ...rankingForm,
+                          languageText: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Language No</Label>
+                    <Input
+                      type="number"
+                      value={rankingForm.languageNo}
+                      onChange={(e) =>
+                        setRankingForm({
+                          ...rankingForm,
+                          languageNo: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Countries Text</Label>
+                    <Input
+                      value={rankingForm.countrieText}
+                      onChange={(e) =>
+                        setRankingForm({
+                          ...rankingForm,
+                          countrieText: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Countries No</Label>
+                    <Input
+                      type="number"
+                      value={rankingForm.countrieNo}
+                      onChange={(e) =>
+                        setRankingForm({
+                          ...rankingForm,
+                          countrieNo: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Location Text</Label>
+                    <Input
+                      value={rankingForm.locationText}
+                      onChange={(e) =>
+                        setRankingForm({
+                          ...rankingForm,
+                          locationText: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Location No</Label>
+                    <Input
+                      type="number"
+                      value={rankingForm.locationNo}
+                      onChange={(e) =>
+                        setRankingForm({
+                          ...rankingForm,
+                          locationNo: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={12}>
+                  <Label>Description (Editor)</Label>
+                  <ReactQuill
+                    theme="snow"
+                    value={rankingForm.textEditor}
+                    onChange={(v) =>
+                      setRankingForm({ ...rankingForm, textEditor: v })
+                    }
+                    style={{ height: "150px", marginBottom: "50px" }}
+                  />
+                </Col>
+              </Row>
+            )}
+
+            {modal.type === "counter" && (
+              <Row>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Consultations Text</Label>
+                    <Input
+                      value={counterForm.consultationsText}
+                      onChange={(e) =>
+                        setCounterForm({
+                          ...counterForm,
+                          consultationsText: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Consultations No</Label>
+                    <Input
+                      type="number"
+                      value={counterForm.consultationsNo}
+                      onChange={(e) =>
+                        setCounterForm({
+                          ...counterForm,
+                          consultationsNo: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Success Rate Text</Label>
+                    <Input
+                      value={counterForm.successRateText}
+                      onChange={(e) =>
+                        setCounterForm({
+                          ...counterForm,
+                          successRateText: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Success Rate Count (%)</Label>
+                    <Input
+                      type="number"
+                      value={counterForm.successRateCount}
+                      onChange={(e) =>
+                        setCounterForm({
+                          ...counterForm,
+                          successRateCount: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Years Experience Text</Label>
+                    <Input
+                      value={counterForm.yearsExperienceText}
+                      onChange={(e) =>
+                        setCounterForm({
+                          ...counterForm,
+                          yearsExperienceText: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Years Experience Count</Label>
+                    <Input
+                      type="number"
+                      value={counterForm.yearsExperienceCount}
+                      onChange={(e) =>
+                        setCounterForm({
+                          ...counterForm,
+                          yearsExperienceCount: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Attorneys Text</Label>
+                    <Input
+                      value={counterForm.attorneysText}
+                      onChange={(e) =>
+                        setCounterForm({
+                          ...counterForm,
+                          attorneysText: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label>Attorneys Count</Label>
+                    <Input
+                      type="number"
+                      value={counterForm.attorneysCount}
+                      onChange={(e) =>
+                        setCounterForm({
+                          ...counterForm,
+                          attorneysCount: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+              </Row>
+            )}
+
+            {/* Original Banner and HomeData Logic remains untouched */}
             {modal.type === "banner" && (
               <Row>
                 <Col md={6}>
@@ -524,26 +955,35 @@ const AdminHomeManagement = () => {
           </Form>
         </ModalBody>
       </Modal>
+
       <style jsx global>{`
         .nav-link {
           color: black !important;
+          transition: 0.3s;
         }
-
         .nav-link.active {
-          color: white !important;
+          color: #c5a059 !important; /* Gold color from screenshot for active text */
+          background-color: transparent !important;
+          border-bottom: 2px solid #c5a059 !important;
           font-weight: 700;
-          position: relative;
         }
-
-        .nav-link.active::after {
-          content: "";
-          position: absolute;
-          left: 0;
-          bottom: 0;
-          width: 100%;
-          height: 3px;
-          background-color: white;
-          border-radius: 2px 2px 0 0;
+        .btn-primary-custom {
+          background-color: #7b4433;
+          border: none;
+          color: white;
+        }
+        .text-blue {
+          color: #003366;
+        }
+        .text-gold {
+          color: #c5a059;
+        }
+        .table-dark-custom {
+          background-color: #f8f9fa;
+          border-bottom: 2px solid #dee2e6;
+        }
+        .card-shadow {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
       `}</style>
     </Container>

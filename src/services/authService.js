@@ -1,24 +1,19 @@
 import API from "./api";
 
 export const IMG_URL = "https://nodejs.nrislawfirm.com";
+
+
 // export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
 // ================= HELPER FUNCTIONS =================
 
-/**
- * Resolve Global Image URL
- */
 
-// services/authService.js
-
-// Retrieve the dynamic admin ID from localStorage
 export const getAdminId = () => {
   if (typeof window !== "undefined") {
     const userData = localStorage.getItem("user");
     if (userData) {
       try {
         const user = JSON.parse(userData);
-        // Based on your logs, the ID is stored in the 'id' field
         return user.id || null;
       } catch (error) {
         console.error("Error parsing user data from localStorage", error);
@@ -31,21 +26,17 @@ export const getAdminId = () => {
 export const getImgUrl = (path) => {
   if (!path) return "";
 
-  // 1. Convert all backslashes to forward slashes for web compatibility
   let normalizedPath = path.replace(/\\/g, "/");
 
-  // 2. If it's already a full URL (starts with http), return it immediately
   if (normalizedPath.startsWith("http")) {
     return normalizedPath;
   }
 
-  // 3. Remove leading slash if it exists to avoid double slashes during concatenation
   if (normalizedPath.startsWith("/")) {
     normalizedPath = normalizedPath.substring(1);
   }
 
   // 4. Logic to determine the folder structure
-  // If the path already contains directory indicators like 'uploads/' or 'public/'
   if (
     normalizedPath.startsWith("uploads/") ||
     normalizedPath.startsWith("public/")
@@ -1700,16 +1691,18 @@ export const updateHomeData = (id, formData) =>
   });
 export const deleteHomeData = (id) => API.delete(`/home-data/delete/${id}`);
 
+// Home Counter API
 export const createCounters = (formData) =>
   API.post("/home-count/create", formData);
 export const getAllCounters = () => API.get("home-count/getall");
-// export const updateCounters = (id, formData) =>
-//   API.put(`/home-count/update/${id}`, formData, {
-//     headers: { "Content-Type": "multipart/form-data" },
-//   });
-
+export const updateCounters = (id, formData) =>
+  API.put(`/home-count/update/${id}`, formData);
+export const deleteCountData = (id) => API.delete(`/home-count/delete/${id}`);
+ 
 // Home Ranking API
 export const createRanking = (formData) =>
-  // console.log("Entered Content HOMEEE");
   API.post("/home-ranking/create", formData);
 export const getAllRanking = () => API.get("/home-ranking/getall");
+export const deleteRankData = (id) => API.delete(`/home-ranking/delete/${id}`);
+export const updateRanking = (id, formData) =>
+  API.put(`/home-ranking/update/${id}`, formData);

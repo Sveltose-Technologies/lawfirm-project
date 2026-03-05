@@ -680,9 +680,9 @@ export default function CapabilityDetail() {
                       <Link
                         href={`/${isEventTab ? "events" : "news"}/${createSlug(item.title)}`}>
                         <a className="text-decoration-none col-lg-9 p-0">
-                          <h3 style={{ color: "#be9144", fontFamily: "serif" }}>
+                          <h5 style={{ color: "#be9144", fontFamily: "serif" }}>
                             {item.title}
-                          </h3>
+                          </h5>
                         </a>
                       </Link>
                       <div className="d-none d-md-flex align-items-center text-white-50 small mt-2">
@@ -701,7 +701,7 @@ export default function CapabilityDetail() {
                   </div>
                 ))}
               </div>
-              <div className="text-center mt-2">
+              {/* <div className="text-center mt-2">
                 <Link href={isEventTab ? "/events" : "/news"}>
                   <a
                     className="text-decoration-none fw-bold"
@@ -709,7 +709,7 @@ export default function CapabilityDetail() {
                     View More +
                   </a>
                 </Link>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
