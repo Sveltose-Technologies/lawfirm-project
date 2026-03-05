@@ -3,7 +3,6 @@ import API from "./api";
 export const IMG_URL = "https://nodejs.nrislawfirm.com";
 
 
-// export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
 // ================= HELPER FUNCTIONS =================
 
