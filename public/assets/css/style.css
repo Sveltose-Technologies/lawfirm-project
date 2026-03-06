@@ -3535,9 +3535,8 @@ header.style-5 .main-nav ul li.menu-item-has-children > i {
   position: absolute;
   left: 0; top: 0; right: 0; bottom: 0;
   
-  /* Yahan variable use karein fallback image ke saath */
-  background-image: linear-gradient(rgba(32, 32, 32, 0.5), rgba(32, 32, 32, 0.5)), 
-                    var(--banner-bg, url("/assets/images/bg/banner1-bg.png"));
+  /* background-image: linear-gradient(rgba(32, 32, 32, 0.5), rgba(32, 32, 32, 0.5)), 
+                    var(--banner-bg, url("/assets/images/bg/banner1-bg.png")); */
 
   background-size: cover;
   background-repeat: no-repeat;

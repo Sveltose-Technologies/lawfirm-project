@@ -3,6 +3,7 @@ import API from "./api";
 export const IMG_URL = "https://nodejs.nrislawfirm.com";
 
 
+// export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
 // ================= HELPER FUNCTIONS =================
 
@@ -1179,6 +1180,55 @@ export const createLocationCity = async (formData) => {
   }
 };
 
+
+// ================= LOCATION MAIN (BANNER) APIs =================
+
+export const createLocation = async (formData) => {
+  try {
+    // Kyunki isme image (bannerImage) hai, isliye FormData use hoga
+    const response = await API.post("/location/create", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const getAllLocations = async () => {
+  try {
+    const response = await API.get("/location/get-all");
+    return response.data;
+  } catch (error) {
+    console.error("❌ Get All Locations Error:", error);
+    return { success: false, data: [] };
+  }
+};
+
+export const getLocationById = async (id) => {
+  const response = await API.get(`/location/get-by-id/${id}`);
+  return response.data;
+};
+
+export const updateLocation = async (id, formData) => {
+  try {
+    const response = await API.put(`/location/update/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const deleteLocation = async (id) => {
+  try {
+    const response = await API.delete(`/location/delete/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
 export const getAllLocationCMS = async () => {
   try {
     console.log("🚀 Fetching Location CMS records...");

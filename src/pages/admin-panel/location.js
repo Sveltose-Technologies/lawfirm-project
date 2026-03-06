@@ -38,6 +38,7 @@ const LocationManagement = () => {
   const [activeTab, setActiveTab] = useState("country");
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
+  const [locations, setLocations] = useState([]); // New State
 
   const [modal, setModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -53,6 +54,7 @@ const LocationManagement = () => {
     phoneNo: "",
     faxNo: "",
     image: null,
+    bannerImage: null, // New field
   });
 
   const modules = useMemo(
@@ -67,13 +69,12 @@ const LocationManagement = () => {
     [],
   );
 
-  // Function to clean HTML, remove &nbsp;, and truncate to exactly 3 words
   const truncateWords = (html, limit) => {
     if (!html) return "No description";
     const plainText = html
-      .replace(/<[^>]*>/g, " ") // Remove HTML tags
-      .replace(/&nbsp;/g, " ") // Replace non-breaking spaces
-      .replace(/\s+/g, " ") // Replace multiple spaces with single space
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
       .trim();
 
     const words = plainText.split(" ");
@@ -91,8 +92,11 @@ const LocationManagement = () => {
     try {
       const countryRes = await authService.getAllCountries();
       const cityRes = await authService.getAllCities();
+      const locationRes = await authService.getAllLocations(); // Fetch Locations
+
       setCountries(getSafeArray(countryRes));
       setCities(getSafeArray(cityRes));
+      setLocations(getSafeArray(locationRes));
     } catch (error) {
       console.error("Fetch Error:", error);
     }
@@ -114,6 +118,7 @@ const LocationManagement = () => {
         phoneNo: "",
         faxNo: "",
         image: null,
+        bannerImage: null,
       });
       setIsEditing(false);
       setCurrentId(null);
@@ -142,7 +147,7 @@ const LocationManagement = () => {
         res = isEditing
           ? await authService.updateLocationCountry(currentId, payload)
           : await authService.createLocationCountry(payload);
-      } else {
+      } else if (activeTab === "city") {
         const data = new FormData();
         if (!isEditing) {
           data.append("adminId", currentAdminId);
@@ -153,13 +158,20 @@ const LocationManagement = () => {
         data.append("phoneNo", formData.phoneNo || "");
         data.append("faxNo", formData.faxNo || "");
         data.append("content", formData.content || "");
-
-        if (formData.image instanceof File) {
+        if (formData.image instanceof File)
           data.append("image", formData.image);
-        }
         res = isEditing
           ? await authService.updateLocationCity(currentId, data)
           : await authService.createLocationCity(data);
+      } else if (activeTab === "location") {
+        const data = new FormData();
+        data.append("content", formData.content || "");
+        if (formData.bannerImage instanceof File) {
+          data.append("bannerImage", formData.bannerImage);
+        }
+        res = isEditing
+          ? await authService.updateLocation(currentId, data)
+          : await authService.createLocation(data);
       }
 
       if (res.success || res) {
@@ -168,7 +180,6 @@ const LocationManagement = () => {
         fetchData();
       }
     } catch (err) {
-      console.error("Submit Error:", err);
       toast.error(err.response?.data?.message || "Operation failed");
     } finally {
       setLoading(false);
@@ -178,10 +189,14 @@ const LocationManagement = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure?")) return;
     try {
-      const res =
-        activeTab === "country"
-          ? await authService.deleteLocationCountry(id)
-          : await authService.deleteLocationCity(id);
+      let res;
+      if (activeTab === "country")
+        res = await authService.deleteLocationCountry(id);
+      else if (activeTab === "city")
+        res = await authService.deleteLocationCity(id);
+      else if (activeTab === "location")
+        res = await authService.deleteLocation(id);
+
       if (res) {
         toast.success("Deleted successfully");
         fetchData();
@@ -193,13 +208,13 @@ const LocationManagement = () => {
 
   const handleEdit = (item) => {
     setIsEditing(true);
-    setCurrentId(item.id);
+    setCurrentId(item.id || item._id);
     if (activeTab === "country") {
       setFormData({
         countryName: item.countryName,
         content: item.content || "",
       });
-    } else {
+    } else if (activeTab === "city") {
       setFormData({
         countryId: item.countryId,
         cityName: item.cityName,
@@ -208,6 +223,11 @@ const LocationManagement = () => {
         faxNo: item.faxNo || "",
         content: item.content || "",
         image: null,
+      });
+    } else if (activeTab === "location") {
+      setFormData({
+        content: item.content || "",
+        bannerImage: null,
       });
     }
     setModal(true);
@@ -223,15 +243,22 @@ const LocationManagement = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h4 className="fw-bold mb-0">Location Management</h4>
-          <p className="text-muted small">Manage Countries and City details.</p>
+          <p className="text-muted small">
+            Manage Countries, Cities and Main Locations.
+          </p>
         </div>
         <Button className="btn-gold px-4" onClick={toggle}>
-          + Add {activeTab === "country" ? "Country" : "City"}
+          + Add{" "}
+          {activeTab === "country"
+            ? "Country"
+            : activeTab === "city"
+              ? "City"
+              : "Location"}
         </Button>
       </div>
 
       <Nav tabs className="border-0 mb-3">
-        {["country", "city"].map((tab) => (
+        {["country", "city", "location"].map((tab) => (
           <NavItem key={tab}>
             <NavLink
               className={classnames("fw-bold border-0 px-4", {
@@ -239,7 +266,7 @@ const LocationManagement = () => {
               })}
               onClick={() => setActiveTab(tab)}
               style={{ cursor: "pointer" }}>
-              {tab.toUpperCase()} MANAGEMENT
+              {tab.toUpperCase()} {tab === "location" ? "" : "MANAGEMENT"}
             </NavLink>
           </NavItem>
         ))}
@@ -256,7 +283,7 @@ const LocationManagement = () => {
                     <th>Country Name</th>
                     <th>Description</th>
                   </>
-                ) : (
+                ) : activeTab === "city" ? (
                   <>
                     <th>Image</th>
                     <th>City Name</th>
@@ -264,86 +291,135 @@ const LocationManagement = () => {
                     <th>Description</th>
                     <th>Contacts</th>
                   </>
+                ) : (
+                  <>
+                    <th>Banner Image</th>
+                    <th>Content</th>
+                  </>
                 )}
                 <th className="text-end px-4">Action</th>
               </tr>
             </thead>
             <tbody>
-              {activeTab === "country"
-                ? countries.map((c, i) => (
-                    <tr key={c.id}>
-                      <td className="px-4">{i + 1}</td>
-                      <td className="fw-bold">{c.countryName}</td>
-                      <td className="text-muted small">
-                        {truncateWords(c.content, 3)}
-                      </td>
-                      <td className="text-end px-4">
-                        <Button
-                          size="sm"
-                          color="white"
-                          className="border shadow-sm me-2"
-                          onClick={() => handleEdit(c)}>
-                          ✏️
-                        </Button>
-                        <Button
-                          size="sm"
-                          color="white"
-                          className="text-danger border shadow-sm"
-                          onClick={() => handleDelete(c.id)}>
-                          🗑️
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                : cities.map((city, i) => (
-                    <tr key={city.id}>
-                      <td className="px-4">{i + 1}</td>
-                      <td>
-                        <img
-                          src={authService.getImgUrl(city.image)}
-                          alt="city"
-                          style={{
-                            width: "55px",
-                            height: "40px",
-                            objectFit: "cover",
-                            borderRadius: "4px",
-                          }}
-                          onError={(e) => {
-                            e.target.src =
-                              "https://placehold.co/70x45?text=No+Image";
-                          }}
-                        />
-                      </td>
-                      <td className="fw-bold">{city.cityName}</td>
-                      <td>
-                        {countries.find(
-                          (c) => String(c.id) === String(city.countryId),
-                        )?.countryName || `ID: ${city.countryId}`}
-                      </td>
-                      <td className="text-muted small">
-                        {truncateWords(city.content, 3)}
-                      </td>
-                      <td className="small">
-                        📞 {city.phoneNo} <br /> 📠 {city.faxNo}
-                      </td>
-                      <td className="text-end px-4">
-                        <Button
-                          size="sm"
-                          color="white"
-                          className="border shadow-sm me-2"
-                          onClick={() => handleEdit(city)}>
-                          ✏️
-                        </Button>
-                        <Button
-                          size="sm"
-                          color="white"
-                          className="text-danger border shadow-sm"
-                          onClick={() => handleDelete(city.id)}>
-                          🗑️
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+              {activeTab === "country" &&
+                countries.map((c, i) => (
+                  <tr key={c.id}>
+                    <td className="px-4">{i + 1}</td>
+                    <td className="fw-bold">{c.countryName}</td>
+                    <td className="text-muted small">
+                      {truncateWords(c.content, 3)}
+                    </td>
+                    <td className="text-end px-4">
+                      <Button
+                        size="sm"
+                        color="white"
+                        className="border shadow-sm me-2"
+                        onClick={() => handleEdit(c)}>
+                        ✏️
+                      </Button>
+                      <Button
+                        size="sm"
+                        color="white"
+                        className="text-danger border shadow-sm"
+                        onClick={() => handleDelete(c.id)}>
+                        🗑️
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+
+              {activeTab === "city" &&
+                cities.map((city, i) => (
+                  <tr key={city.id}>
+                    <td className="px-4">{i + 1}</td>
+                    <td>
+                      <img
+                        src={authService.getImgUrl(city.image)}
+                        alt="city"
+                        style={{
+                          width: "55px",
+                          height: "40px",
+                          objectFit: "cover",
+                          borderRadius: "4px",
+                        }}
+                        onError={(e) => {
+                          e.target.src =
+                            "https://placehold.co/70x45?text=No+Image";
+                        }}
+                      />
+                    </td>
+                    <td className="fw-bold">{city.cityName}</td>
+                    <td>
+                      {countries.find(
+                        (c) => String(c.id) === String(city.countryId),
+                      )?.countryName || `ID: ${city.countryId}`}
+                    </td>
+                    <td className="text-muted small">
+                      {truncateWords(city.content, 3)}
+                    </td>
+                    <td className="small">
+                      📞 {city.phoneNo} <br /> 📠 {city.faxNo}
+                    </td>
+                    <td className="text-end px-4">
+                      <Button
+                        size="sm"
+                        color="white"
+                        className="border shadow-sm me-2"
+                        onClick={() => handleEdit(city)}>
+                        ✏️
+                      </Button>
+                      <Button
+                        size="sm"
+                        color="white"
+                        className="text-danger border shadow-sm"
+                        onClick={() => handleDelete(city.id)}>
+                        🗑️
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+
+              {activeTab === "location" &&
+                locations.map((loc, i) => (
+                  <tr key={loc.id || loc._id}>
+                    <td className="px-4">{i + 1}</td>
+                    <td>
+                      <img
+                        src={authService.getImgUrl(loc.bannerImage)}
+                        alt="banner"
+                        style={{
+                          width: "80px",
+                          height: "45px",
+                          objectFit: "cover",
+                          borderRadius: "4px",
+                        }}
+                        onError={(e) => {
+                          e.target.src =
+                            "https://placehold.co/80x45?text=No+Image";
+                        }}
+                      />
+                    </td>
+                    <td className="text-muted small">
+                      {truncateWords(loc.content, 10)}
+                    </td>
+                    <td className="text-end px-4">
+                      <Button
+                        size="sm"
+                        color="white"
+                        className="border shadow-sm me-2"
+                        onClick={() => handleEdit(loc)}>
+                        ✏️
+                      </Button>
+                      <Button
+                        size="sm"
+                        color="white"
+                        className="text-danger border shadow-sm"
+                        onClick={() => handleDelete(loc.id || loc._id)}>
+                        🗑️
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </Table>
         </CardBody>
@@ -358,7 +434,7 @@ const LocationManagement = () => {
         </ModalHeader>
         <ModalBody className="px-4 pb-4">
           <Form onSubmit={handleSubmit}>
-            {activeTab === "country" ? (
+            {activeTab === "country" && (
               <>
                 <FormGroup>
                   <Label className="small fw-bold">Country Name *</Label>
@@ -383,7 +459,9 @@ const LocationManagement = () => {
                   />
                 </FormGroup>
               </>
-            ) : (
+            )}
+
+            {activeTab === "city" && (
               <Row className="gy-3">
                 <Col md={12}>
                   <FormGroup>
@@ -453,20 +531,16 @@ const LocationManagement = () => {
                 </Col>
                 <Col md={12}>
                   <FormGroup>
-                    <Label className="small fw-bold">
-                      City Content / Description
-                    </Label>
-                    <div className="bg-white border rounded">
-                      <ReactQuill
-                        theme="snow"
-                        value={formData.content}
-                        onChange={(val) =>
-                          setFormData({ ...formData, content: val })
-                        }
-                        modules={modules}
-                        style={{ height: "180px", marginBottom: "45px" }}
-                      />
-                    </div>
+                    <Label className="small fw-bold">City Content</Label>
+                    <ReactQuill
+                      theme="snow"
+                      value={formData.content}
+                      onChange={(val) =>
+                        setFormData({ ...formData, content: val })
+                      }
+                      modules={modules}
+                      style={{ height: "180px", marginBottom: "45px" }}
+                    />
                   </FormGroup>
                 </Col>
                 <Col md={12}>
@@ -483,6 +557,46 @@ const LocationManagement = () => {
                 </Col>
               </Row>
             )}
+
+            {activeTab === "location" && (
+              <Row className="gy-3">
+                <Col md={12}>
+                  <FormGroup>
+                    <Label className="small fw-bold">Banner Image</Label>
+                    <Input
+                      type="file"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          bannerImage: e.target.files[0],
+                        })
+                      }
+                      accept="image/*"
+                    />
+                    {isEditing && (
+                      <small className="text-muted">
+                        Leave empty to keep current image
+                      </small>
+                    )}
+                  </FormGroup>
+                </Col>
+                <Col md={12}>
+                  <FormGroup>
+                    <Label className="small fw-bold">Location Content *</Label>
+                    <ReactQuill
+                      theme="snow"
+                      value={formData.content}
+                      onChange={(val) =>
+                        setFormData({ ...formData, content: val })
+                      }
+                      modules={modules}
+                      style={{ height: "250px", marginBottom: "50px" }}
+                    />
+                  </FormGroup>
+                </Col>
+              </Row>
+            )}
+
             <Button
               type="submit"
               className="btn-gold w-100 mt-4 py-2 fw-bold"

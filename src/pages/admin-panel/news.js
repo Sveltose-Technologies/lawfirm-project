@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+"use client";
+import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import {
   Container,
@@ -39,7 +40,6 @@ const News = () => {
   const [currentId, setCurrentId] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Dropdowns
   const [categories, setCategories] = useState([]);
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
@@ -62,6 +62,14 @@ const News = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
+
+  // Helper function to truncate title to 3 words
+  const truncateTitle = (title, limit = 3) => {
+    if (!title) return "";
+    const words = title.trim().split(/\s+/);
+    if (words.length <= limit) return title;
+    return words.slice(0, limit).join(" ") + "...";
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -91,7 +99,6 @@ const News = () => {
   const toggle = () => {
     setModal(!modal);
     if (modal) {
-      // Reset on close
       setFormData({
         title: "",
         date: "",
@@ -119,66 +126,57 @@ const News = () => {
     setFormData({ ...formData, [field]: updated });
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  // Retrieve dynamic Admin ID from localStorage via authService
-  const currentAdminId = authService.getAdminId();
-
-  if (!currentAdminId) {
-    alert("Session expired. Please login again.");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const data = new FormData();
-    // Replace hardcoded "1" with the dynamic ID
-    data.append("adminId", currentAdminId);
-    data.append("title", formData.title);
-    data.append("date", formData.date);
-    data.append("year", formData.year);
-    data.append("textEditor", formData.textEditor);
-
-    // JSON strings for arrays
-    data.append(
-      "capabilityCategoryId",
-      JSON.stringify(formData.capabilityCategoryId),
-    );
-    data.append("countryId", JSON.stringify(formData.countryId));
-    data.append("cityId", JSON.stringify(formData.cityId));
-    data.append("attorneyId", JSON.stringify([]));
-
-    const socials = {
-      linkedin: formData.linkedin,
-      twitter: formData.twitter,
-      facebook: formData.facebook,
-    };
-    data.append("socialLinks", JSON.stringify(socials));
-
-    if (formData.bannerImage instanceof File)
-      data.append("bannerImage", formData.bannerImage);
-    if (formData.newsImage instanceof File)
-      data.append("newsImage", formData.newsImage);
-
-    console.log(
-      `📤 ${isEditing ? "Updating" : "Creating"} News with Admin ID: ${currentAdminId}`,
-    );
-
-    const res = isEditing
-      ? await authService.updateNews(currentId, data)
-      : await authService.createNews(data);
-
-    if (res) {
-      toggle();
-      fetchData();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const currentAdminId = authService.getAdminId();
+    if (!currentAdminId) {
+      alert("Session expired. Please login again.");
+      return;
     }
-  } catch (error) {
-    console.error("❌ Submit Error:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+
+    setLoading(true);
+    try {
+      const data = new FormData();
+      data.append("adminId", currentAdminId);
+      data.append("title", formData.title);
+      data.append("date", formData.date);
+      data.append("year", formData.year);
+      data.append("textEditor", formData.textEditor);
+      data.append(
+        "capabilityCategoryId",
+        JSON.stringify(formData.capabilityCategoryId),
+      );
+      data.append("countryId", JSON.stringify(formData.countryId));
+      data.append("cityId", JSON.stringify(formData.cityId));
+      data.append("attorneyId", JSON.stringify([]));
+
+      const socials = {
+        linkedin: formData.linkedin,
+        twitter: formData.twitter,
+        facebook: formData.facebook,
+      };
+      data.append("socialLinks", JSON.stringify(socials));
+
+      if (formData.bannerImage instanceof File)
+        data.append("bannerImage", formData.bannerImage);
+      if (formData.newsImage instanceof File)
+        data.append("newsImage", formData.newsImage);
+
+      const res = isEditing
+        ? await authService.updateNews(currentId, data)
+        : await authService.createNews(data);
+
+      if (res) {
+        toggle();
+        fetchData();
+      }
+    } catch (error) {
+      console.error("❌ Submit Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEdit = (item) => {
     const parse = (val) => {
       try {
@@ -187,9 +185,7 @@ const handleSubmit = async (e) => {
         return [];
       }
     };
-
     const socials = parse(item.socialLinks) || {};
-
     setFormData({
       title: item.title || "",
       date: item.date || "",
@@ -210,7 +206,7 @@ const handleSubmit = async (e) => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this news?")) {
+    if (window.confirm("Are you sure?")) {
       try {
         await authService.deleteNews(id);
         fetchData();
@@ -220,7 +216,6 @@ const handleSubmit = async (e) => {
     }
   };
 
-  // मल्टी-सेलेक्टर ड्रॉपडाउन हेल्पर
   const Selector = ({ label, items, field, type, nameKey }) => (
     <FormGroup>
       <Label className="fw-bold small">{label}</Label>
@@ -273,10 +268,15 @@ const handleSubmit = async (e) => {
       fluid
       className="p-3 p-md-4 min-vh-100"
       style={{ backgroundColor: "#f9f9f9" }}>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="fw-bold mb-0">News Management</h4>
+      <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-3">
+        <div>
+          <h4 className="fw-bold mb-0">News Management</h4>
+          <p className="text-muted small mb-0">
+            Manage and publish news articles.
+          </p>
+        </div>
         <Button
-          className="px-4 text-white fw-bold shadow-sm"
+          className="px-4 text-white fw-bold shadow-sm w-100 w-sm-auto"
           style={{ backgroundColor: GOLD, border: "none" }}
           onClick={toggle}>
           + Add News
@@ -285,82 +285,79 @@ const handleSubmit = async (e) => {
 
       <Card className="border-0 shadow-sm rounded-4">
         <CardBody className="p-0">
-          <Table hover className="align-middle mb-0">
-            <thead style={{ backgroundColor: LIGHT_GOLD }}>
-              <tr>
-                <th className="px-4 py-3">SR.</th>
-                <th>BANNER</th>
-                <th>NEWS TITLE</th>
-                <th>PUBLISHED</th>
-                <th className="text-end px-4">ACTION</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentItems.length > 0 ? (
-                currentItems.map((item, index) => (
-                  <tr key={item.id}>
-                    <td className="px-4 text-muted">
-                      {(currentPage - 1) * itemsPerPage + index + 1}.
-                    </td>
-                    <td>
-                      <div
-                        style={{
-                          width: "80px",
-                          height: "45px",
-                          borderRadius: "6px",
-                          overflow: "hidden",
-                          border: "1px solid #eee",
-                        }}>
+          <div className="table-responsive">
+            <Table hover className="align-middle mb-0 text-nowrap">
+              <thead style={{ backgroundColor: LIGHT_GOLD }}>
+                <tr>
+                  <th className="px-4 py-3">SR.</th>
+                  <th>BANNER</th>
+                  <th>NEWS TITLE</th>
+                  <th>PUBLISHED</th>
+                  <th className="text-end px-4">ACTION</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentItems.length > 0 ? (
+                  currentItems.map((item, index) => (
+                    <tr key={item.id}>
+                      <td className="px-4 text-muted">
+                        {(currentPage - 1) * itemsPerPage + index + 1}.
+                      </td>
+                      <td>
                         <img
                           src={authService.getImgUrl(item.bannerImage)}
                           style={{
-                            width: "100%",
-                            height: "100%",
+                            width: "60px",
+                            height: "40px",
                             objectFit: "cover",
+                            borderRadius: "4px",
+                            border: "1px solid #eee",
                           }}
                           onError={(e) =>
                             (e.target.src =
-                              "https://placehold.co/80x45?text=No+Img")
+                              "https://placehold.co/60x40?text=No+Img")
                           }
                           alt="Banner"
                         />
-                      </div>
-                    </td>
-                    <td className="fw-bold">{item.title}</td>
-                    <td className="text-muted small">
-                      {item.date} ({item.year})
-                    </td>
-                    <td className="text-end px-4">
-                      <Button
-                        size="sm"
-                        color="white"
-                        className="border shadow-sm me-2"
-                        onClick={() => handleEdit(item)}>
-                        ✏️
-                      </Button>
-                      <Button
-                        size="sm"
-                        color="white"
-                        className="text-danger border shadow-sm"
-                        onClick={() => handleDelete(item.id)}>
-                        🗑️
-                      </Button>
+                      </td>
+                      <td className="fw-bold">
+                        {truncateTitle(item.title, 3)}
+                      </td>
+                      <td className="text-muted small">
+                        {item.date} ({item.year})
+                      </td>
+                      <td className="text-end px-4">
+                        <Button
+                          size="sm"
+                          color="white"
+                          className="border shadow-sm me-2"
+                          onClick={() => handleEdit(item)}>
+                          ✏️
+                        </Button>
+                        <Button
+                          size="sm"
+                          color="white"
+                          className="text-danger border shadow-sm"
+                          onClick={() => handleDelete(item.id)}>
+                          🗑️
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="text-center py-5">
+                      No news found.
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="text-center py-5">
-                    No news found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
+                )}
+              </tbody>
+            </Table>
+          </div>
         </CardBody>
       </Card>
 
-      <div className="mt-3">
+      <div className="mt-4 d-flex justify-content-center">
         <PaginationComponent
           totalItems={newsList.length}
           itemsPerPage={itemsPerPage}
@@ -372,14 +369,14 @@ const handleSubmit = async (e) => {
       <Modal isOpen={modal} toggle={toggle} centered size="xl" scrollable>
         <ModalHeader
           toggle={toggle}
-          className="fw-bold"
+          className="fw-bold border-0"
           style={{ color: GOLD }}>
           {isEditing ? "Update News" : "Add New News"}
         </ModalHeader>
-        <ModalBody className="px-4">
+        <ModalBody className="px-4 pb-4">
           <Form onSubmit={handleSubmit}>
             <Row className="gy-3">
-              <Col md={6}>
+              <Col lg={6} md={12}>
                 <FormGroup>
                   <Label className="small fw-bold">News Title *</Label>
                   <Input
@@ -391,7 +388,7 @@ const handleSubmit = async (e) => {
                   />
                 </FormGroup>
               </Col>
-              <Col md={3}>
+              <Col lg={3} md={6} xs={6}>
                 <FormGroup>
                   <Label className="small fw-bold">Date *</Label>
                   <Input
@@ -404,7 +401,7 @@ const handleSubmit = async (e) => {
                   />
                 </FormGroup>
               </Col>
-              <Col md={3}>
+              <Col lg={3} md={6} xs={6}>
                 <FormGroup>
                   <Label className="small fw-bold">Year *</Label>
                   <Input
@@ -418,7 +415,7 @@ const handleSubmit = async (e) => {
                 </FormGroup>
               </Col>
 
-              <Col md={4}>
+              <Col md={4} xs={12}>
                 <Selector
                   label="Capability Categories"
                   items={categories}
@@ -427,7 +424,7 @@ const handleSubmit = async (e) => {
                   nameKey="categoryName"
                 />
               </Col>
-              <Col md={4}>
+              <Col md={4} xs={12}>
                 <Selector
                   label="Countries"
                   items={countries}
@@ -436,7 +433,7 @@ const handleSubmit = async (e) => {
                   nameKey="countryName"
                 />
               </Col>
-              <Col md={4}>
+              <Col md={4} xs={12}>
                 <Selector
                   label="Cities"
                   items={cities}
@@ -446,7 +443,7 @@ const handleSubmit = async (e) => {
                 />
               </Col>
 
-              <Col md={6}>
+              <Col md={6} xs={12}>
                 <FormGroup>
                   <Label className="small fw-bold">Banner Image *</Label>
                   <Input
@@ -461,9 +458,9 @@ const handleSubmit = async (e) => {
                   />
                 </FormGroup>
               </Col>
-              <Col md={6}>
+              <Col md={6} xs={12}>
                 <FormGroup>
-                  <Label className="small fw-bold">Thumbnail/News Image</Label>
+                  <Label className="small fw-bold">Thumbnail Image</Label>
                   <Input
                     type="file"
                     onChange={(e) =>
@@ -474,7 +471,7 @@ const handleSubmit = async (e) => {
                 </FormGroup>
               </Col>
 
-              <Col md={4}>
+              <Col md={4} xs={12}>
                 <Label className="small fw-bold">LinkedIn</Label>
                 <Input
                   value={formData.linkedin}
@@ -484,7 +481,7 @@ const handleSubmit = async (e) => {
                   }
                 />
               </Col>
-              <Col md={4}>
+              <Col md={4} xs={12}>
                 <Label className="small fw-bold">Twitter</Label>
                 <Input
                   value={formData.twitter}
@@ -494,7 +491,7 @@ const handleSubmit = async (e) => {
                   }
                 />
               </Col>
-              <Col md={4}>
+              <Col md={4} xs={12}>
                 <Label className="small fw-bold">Facebook</Label>
                 <Input
                   value={formData.facebook}
@@ -507,7 +504,7 @@ const handleSubmit = async (e) => {
 
               <Col xs={12}>
                 <Label className="small fw-bold">Content Details *</Label>
-                <div style={{ height: "250px", marginBottom: "50px" }}>
+                <div style={{ minHeight: "250px", marginBottom: "50px" }}>
                   <ReactQuill
                     theme="snow"
                     value={formData.textEditor}
@@ -519,7 +516,7 @@ const handleSubmit = async (e) => {
                 </div>
               </Col>
             </Row>
-            <div className="mt-4 d-flex gap-2">
+            <div className="mt-4 d-flex flex-column flex-sm-row gap-2">
               <Button
                 type="submit"
                 className="px-5 text-white fw-bold shadow-sm"
@@ -534,6 +531,28 @@ const handleSubmit = async (e) => {
           </Form>
         </ModalBody>
       </Modal>
+
+      <style jsx global>{`
+        .table-responsive::-webkit-scrollbar {
+          height: 6px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb {
+          background: #eee;
+          border-radius: 10px;
+        }
+        .dropdown-item:active {
+          background-color: #fdf8ef !important;
+          color: black !important;
+        }
+        @media (max-width: 576px) {
+          .modal-header {
+            padding: 1rem !important;
+          }
+          .modal-body {
+            padding: 1rem !important;
+          }
+        }
+      `}</style>
     </Container>
   );
 };

@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
@@ -14,6 +15,9 @@ function EventsIndex() {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+
+  // Pagination state: show 3 items initially
+  const [visibleCount, setVisibleCount] = useState(3);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilterTab, setActiveFilterTab] = useState(null);
@@ -34,7 +38,6 @@ function EventsIndex() {
       .replace(/-+/g, "-");
   };
 
-  // Helper to format 24h time to 12h AM/PM
   const formatTime = (timeString) => {
     if (!timeString) return null;
     try {
@@ -62,9 +65,7 @@ function EventsIndex() {
           getAllLocationCities(),
         ]);
 
-        if (eventRes?.success) {
-          setEventsList(eventRes.data);
-        }
+        if (eventRes?.success) setEventsList(eventRes.data);
         if (capRes?.success)
           setCapabilities(capRes.data?.data || capRes.data || []);
         if (locRes?.success) setLocations(locRes.data || []);
@@ -83,12 +84,10 @@ function EventsIndex() {
     const matchesSearch = (item.title || "")
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
-
     let matchesCap = filters.capability
       ? Number(item.capabilityCategoryId) === Number(filters.capability)
       : true;
 
-    // Fixed cityIds check to handle both stringified and array data
     let currentCityIds = [];
     try {
       currentCityIds =
@@ -102,13 +101,17 @@ function EventsIndex() {
     let matchesLoc = filters.location
       ? currentCityIds?.includes(Number(filters.location))
       : true;
-
     let itemDate = item.startDate ? item.startDate.split("T")[0] : "";
     let matchesDate = filters.date ? itemDate === filters.date : true;
 
     return matchesSearch && matchesCap && matchesLoc && matchesDate;
   });
-  console.log("filteredEvents", filteredEvents);
+
+  const displayedEvents = filteredEvents.slice(0, visibleCount);
+
+  const handleViewMore = () => {
+    setVisibleCount((prev) => prev + 3);
+  };
 
   const topBanner =
     eventsList.length > 0
@@ -118,7 +121,6 @@ function EventsIndex() {
   return (
     <div className="bg-white">
       <Head>
-        <title>Events | Core Law</title>
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
@@ -127,27 +129,17 @@ function EventsIndex() {
 
       {/* Hero Section */}
       <section
-        className="py-4 text-center position-relative"
+        className="universal-banner d-flex align-items-center justify-content-center text-center text-white position-relative"
         style={{
-          backgroundImage: topBanner
-            ? `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${topBanner})`
-            : "none",
-          backgroundColor: "#222",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          minHeight: "280px",
-          display: "flex",
-          alignItems: "center",
-          color: "white",
-          marginTop: "40px",
+          backgroundImage: topBanner ? `url(${topBanner})` : "none",
+          backgroundColor: "var(--bg-dark)",
+          minHeight: "350px",
+          marginTop: "-40px",
         }}>
-        <div className="container position-relative">
-          <h1
-            className="fw-bold mb-2 responsive-hero-title"
-            style={{ fontFamily: "Georgia, serif" }}>
-            Events
-          </h1>
-          <p className="opacity-75 responsive-hero-sub">
+        <div className="banner-overlay"></div>
+        <div className="container banner-content">
+          <h1 className="display-3 fw-bold mb-2 font-serif">Events</h1>
+          <p className="lead opacity-75">
             Opportunities for us to connect and share expertise.
           </p>
         </div>
@@ -155,8 +147,11 @@ function EventsIndex() {
 
       {/* Filter Section */}
       <section
-        className="border-top"
-        style={{ backgroundColor: "#111", borderTop: "4px solid #c5a059" }}>
+        className="shadow-sm"
+        style={{
+          backgroundColor: "var(--dark-navy)",
+          borderTop: "4px solid var(--primary-gold)",
+        }}>
         <div className="container">
           <div className="row align-items-center py-3 g-3">
             <div className="col-lg-5">
@@ -164,22 +159,21 @@ function EventsIndex() {
                 <input
                   type="text"
                   placeholder="Search Events..."
-                  className="bg-transparent border-0 text-white w-100 outline-none shadow-none"
-                  style={{ fontSize: "0.95rem", padding: "5px 0" }}
+                  className="bg-transparent border-0 text-white w-100 shadow-none"
+                  style={{
+                    fontSize: "0.95rem",
+                    padding: "5px 0",
+                    outline: "none",
+                  }}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <i className="bi bi-search text-warning small"></i>
+                <i className="bi bi-search text-gold small"></i>
               </div>
             </div>
 
             <div className="col-lg-7">
-              <div className="d-flex flex-wrap justify-content-lg-end align-items-center gap-3 text-white">
-                <span
-                  className="fw-bold d-none d-md-block"
-                  style={{ color: "#94cce9", fontSize: "0.8rem" }}>
-                  Filter by:
-                </span>
+              <div className="d-flex flex-wrap justify-content-lg-end align-items-center gap-4 text-white">
                 {["Date", "Location", "Capability"].map((label) => (
                   <span
                     key={label}
@@ -190,15 +184,15 @@ function EventsIndex() {
                           : label.toLowerCase(),
                       )
                     }
-                    className="cursor-pointer text-uppercase fw-bold"
+                    className="text-uppercase fw-bold"
                     style={{
                       color:
                         activeFilterTab === label.toLowerCase()
-                          ? "#c5a059"
+                          ? "var(--primary-gold)"
                           : "white",
                       cursor: "pointer",
                       fontSize: "0.75rem",
-                      letterSpacing: "0.5px",
+                      letterSpacing: "1px",
                     }}>
                     {label}{" "}
                     <i
@@ -211,11 +205,11 @@ function EventsIndex() {
           </div>
 
           {activeFilterTab && (
-            <div className="row pb-3">
+            <div className="row pb-3 animate-fade-in">
               <div className="col-12">
                 {activeFilterTab === "capability" && (
                   <select
-                    className="form-select rounded-0 form-select-sm"
+                    className="form-select rounded-0"
                     value={filters.capability}
                     onChange={(e) => {
                       setFilters({ ...filters, capability: e.target.value });
@@ -231,7 +225,7 @@ function EventsIndex() {
                 )}
                 {activeFilterTab === "location" && (
                   <select
-                    className="form-select rounded-0 form-select-sm"
+                    className="form-select rounded-0"
                     value={filters.location}
                     onChange={(e) => {
                       setFilters({ ...filters, location: e.target.value });
@@ -249,14 +243,14 @@ function EventsIndex() {
                   <div className="d-flex gap-2">
                     <input
                       type="date"
-                      className="form-control rounded-0 form-control-sm w-auto"
+                      className="form-control rounded-0 w-auto"
                       value={filters.date}
                       onChange={(e) =>
                         setFilters({ ...filters, date: e.target.value })
                       }
                     />
                     <button
-                      className="btn btn-warning btn-sm rounded-0 fw-bold"
+                      className="btn btn-gold btn-sm px-3"
                       onClick={() => {
                         setFilters({ ...filters, date: "" });
                         setActiveFilterTab(null);
@@ -273,51 +267,48 @@ function EventsIndex() {
 
       {/* Events List */}
       <section className="container py-5 min-vh-100">
-        <h4
-          className="fw-bold mb-4 border-bottom pb-2"
-          style={{ fontFamily: "Georgia, serif" }}>
+        <h2 className="fw-bold mb-5 font-serif border-bottom pb-2">
           Upcoming Events
-        </h4>
+        </h2>
 
         {loading ? (
           <div className="text-center py-5">
-            <div className="spinner-border text-warning spinner-border-sm"></div>
+            <div className="spinner-border text-gold"></div>
           </div>
-        ) : filteredEvents.length > 0 ? (
-          filteredEvents.map((item) => {
+        ) : displayedEvents.length > 0 ? (
+          <>
+            {displayedEvents.map((item) => {
             let parsedCityIds = [];
             try {
-              if (Array.isArray(item.cityIds)) parsedCityIds = item.cityIds;
-              else if (typeof item.cityIds === "string")
-                parsedCityIds = JSON.parse(item.cityIds);
+              const data =
+                typeof item.cityIds === "string"
+                  ? JSON.parse(item.cityIds)
+                  : item.cityIds;
+              parsedCityIds = Array.isArray(data) ? data : []; // Ensure it's always an array
             } catch (e) {
               parsedCityIds = [];
             }
+              const dynamicCityNames = parsedCityIds
+                .map(
+                  (id) =>
+                    locations.find((loc) => Number(loc.id) === Number(id))
+                      ?.cityName,
+                )
+                .filter(Boolean)
+                .join(", ");
 
-            const dynamicCityNames = Array.isArray(parsedCityIds)
-              ? parsedCityIds
-                  .map(
-                    (id) =>
-                      locations.find((loc) => Number(loc.id) === Number(id))
-                        ?.cityName,
-                  )
-                  .filter(Boolean)
-                  .join(", ")
-              : "";
+              const eventSlug = createSlug(item.title);
+              const displayStartTime = formatTime(item.startTime);
+              const displayEndTime = formatTime(item.endTime);
 
-            const eventSlug = createSlug(item.title);
-            const displayStartTime = formatTime(item.startTime);
-            const displayEndTime = formatTime(item.endTime);
-
-            return (
-              <div
-                key={item.id}
-                className="event-row border-bottom py-3 mb-1 transition-all">
-                <div className="row align-items-center">
+              return (
+                <div
+                  key={item.id}
+                  className="row border-bottom py-4 align-items-center mx-0 event-row-hover">
                   <div className="col-md-10">
                     <div
-                      className="d-flex align-items-center flex-wrap gap-2 mb-1 fw-bold text-uppercase"
-                      style={{ fontSize: "0.7rem" }}>
+                      className="d-flex align-items-center flex-wrap gap-2 mb-2 fw-bold text-uppercase"
+                      style={{ fontSize: "0.75rem", letterSpacing: "0.5px" }}>
                       <span className="text-primary">
                         {item.startDate
                           ? new Date(item.startDate).toLocaleDateString(
@@ -330,59 +321,60 @@ function EventsIndex() {
                             )
                           : "Date TBD"}
                       </span>
-
-                      {/* START TIME & END TIME DISPLAY */}
                       {(displayStartTime || displayEndTime) && (
                         <>
                           <span className="text-muted opacity-50">|</span>
                           <span className="text-dark">
                             <i className="bi bi-clock me-1"></i>
-                            {displayStartTime}{" "}
+                            {displayStartTime}
                             {displayEndTime && ` - ${displayEndTime}`}
                           </span>
                         </>
                       )}
-
                       <span className="text-muted opacity-50">•</span>
                       <span className="text-muted">EVENT</span>
                     </div>
 
                     <Link href={`/events/${eventSlug}`}>
                       <a className="text-decoration-none">
-                        <h6
-                          className="text-dark mb-1 fw-bold hover-gold"
-                          style={{
-                            fontFamily: "Georgia, serif",
-                            fontSize: "1.20rem",
-                          }}>
+                        <h4
+                          className="fw-bold mb-1 text-dark font-serif title-hover-gold"
+                          style={{ transition: "0.3s" }}>
                           {item.title}
-                        </h6>
+                        </h4>
                       </a>
                     </Link>
-                    <p
-                      className="text-secondary mb-0"
-                      style={{ fontSize: "0.85rem" }}>
-                      <i
-                        className="bi bi-geo-alt-fill text-warning me-2"
-                        style={{ fontSize: "0.75rem" }}></i>
+                    <p className="text-secondary mb-0 small">
+                      <i className="bi bi-geo-alt-fill text-gold me-2"></i>
                       {dynamicCityNames ||
                         item.locationName ||
                         "Virtual / To Be Decided"}
                     </p>
                   </div>
-                  <div className="col-md-2 text-md-end mt-2 mt-md-0">
+                  <div className="col-md-2 text-md-end mt-3 mt-md-0">
                     <Link href={`/events/${eventSlug}`}>
                       <a
-                        className="btn btn-xs btn-outline-dark rounded-0 px-3 fw-bold"
-                        style={{ fontSize: "0.7rem" }}>
+                        className="btn btn-outline-custom px-4 py-2 small fw-bold text-uppercase"
+                        style={{ fontSize: "0.7rem", letterSpacing: "1px" }}>
                         DETAILS
                       </a>
                     </Link>
                   </div>
                 </div>
+              );
+            })}
+
+            {visibleCount < filteredEvents.length && (
+              <div className="text-center mt-5">
+                <button
+                  onClick={handleViewMore}
+                  className="btn btn-link text-gold text-decoration-none fw-bold text-uppercase"
+                  style={{ letterSpacing: "1px" }}>
+                  View More +
+                </button>
               </div>
-            );
-          })
+            )}
+          </>
         ) : (
           <div className="text-center py-5">
             <p className="text-muted">
@@ -392,40 +384,31 @@ function EventsIndex() {
         )}
       </section>
 
-      <style jsx>{`
-        .hover-gold:hover {
-          color: #c5a059 !important;
-          transition: 0.3s;
+      <style jsx global>{`
+        .title-hover-gold:hover {
+          color: var(--primary-gold) !important;
         }
-        .event-row:hover {
-          background-color: #fcfcfc;
-          padding-left: 10px;
-          border-left: 3px solid #c5a059;
+        .text-gold {
+          color: var(--primary-gold) !important;
         }
-        .transition-all {
+        .event-row-hover {
           transition: all 0.3s ease;
         }
-        .form-select:focus {
-          border-color: #c5a059;
-          box-shadow: none;
+        .event-row-hover:hover {
+          background-color: #fafafa;
+          border-left: 4px solid var(--primary-gold);
+          padding-left: 15px;
         }
-        .responsive-hero-title {
-          font-size: 2rem;
+        .animate-fade-in {
+          animation: fadeIn 0.4s ease-in;
         }
-        .responsive-hero-sub {
-          font-size: 0.95rem;
-        }
-        @media (min-width: 768px) {
-          .responsive-hero-title {
-            font-size: 3rem;
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
           }
-          .responsive-hero-sub {
-            font-size: 1.1rem;
+          to {
+            opacity: 1;
           }
-        }
-        .btn-xs {
-          padding: 0.25rem 0.5rem;
-          line-height: 1.5;
         }
       `}</style>
     </div>

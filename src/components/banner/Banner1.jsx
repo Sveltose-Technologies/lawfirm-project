@@ -133,7 +133,8 @@ function Banner1() {
         style={{
           "--banner-bg": heroData?.image
             ? `url(${getImgUrl(heroData.image)})`
-            : 'url("/assets/images/bg/banner1-bg.png")',
+            : '',
+            // : 'url("/assets/images/bg/banner1-bg.png")',
         }}>
         <div className="container banner-content px-3">
           <div className="row justify-content-center m-0">

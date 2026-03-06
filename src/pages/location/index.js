@@ -143,16 +143,26 @@ import * as authService from "../../services/authService";
 function Locations() {
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
+  const [bannerData, setBannerData] = useState(null);
   const [openSections, setOpenSections] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const countryRes = await authService.getAllLocationCountries();
-        const cityRes = await authService.getAllLocationCities();
+        const [countryRes, cityRes, bannerRes] = await Promise.all([
+          authService.getAllLocationCountries(),
+          authService.getAllLocationCities(),
+          authService.getAllLocations(), // Banner API
+        ]);
+
         setCountries(countryRes?.data || []);
         setCities(cityRes?.data || []);
+
+        const locations = bannerRes?.data || bannerRes || [];
+        if (locations.length > 0) {
+          setBannerData(locations[0]);
+        }
       } catch (err) {
         console.error("Error fetching locations:", err);
       } finally {
@@ -175,24 +185,41 @@ function Locations() {
   if (loading)
     return <div className="text-center py-5">Loading Locations...</div>;
 
+  const bannerBg = bannerData?.bannerImage
+    ? {
+        backgroundImage: `url(${authService.getImgUrl(bannerData.bannerImage)})`,
+      }
+    : {}; 
+
   return (
     <>
       <Head>
         <title>Our Locations | Global Offices</title>
       </Head>
 
-      <div className="location-banner d-flex align-items-center justify-content-center text-center px-3">
+      {/* Dynamic Banner Section */}
+      <div
+        className="location-banner d-flex align-items-center justify-content-center text-center px-3"
+        style={bannerBg}>
         <div className="overlay"></div>
         <div className="container position-relative" style={{ zIndex: 2 }}>
-          <h5 className="text-gold fw-bold text-uppercase mb-3">
-            Global Reach
-          </h5>
-          <h1 className="font-serif display-3 fw-bold text-white mb-3">
-            Our Locations
-          </h1>
+          {bannerData?.content ? (
+            <div
+              className="dynamic-banner-content text-white"
+              dangerouslySetInnerHTML={{ __html: bannerData.content }}
+            />
+          ) : (
+            <>
+              <h5 className="text-gold fw-bold text-uppercase mb-3">
+                Global Reach
+              </h5>
+              <h1 className="font-serif display-3 fw-bold text-white mb-3">
+                Our Locations
+              </h1>
+            </>
+          )}
         </div>
       </div>
-
       <div className="container py-5">
         <div className="row mb-4 align-items-center">
           <div className="col-md-6">
