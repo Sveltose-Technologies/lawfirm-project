@@ -65,11 +65,13 @@ function Contact() {
   };
 
   const handleSubmit = async (e) => {
+    console.log("CONTACT US", formData);
+    
     e.preventDefault();
-    if (!formData.adminId) {
-      alert("Session expired. Please log in again.");
-      return;
-    }
+    // if (!formData.adminId) {
+    //   alert("Session expired. Please log in again.");
+    //   return;
+    // }
     if (!termsAccepted) {
       alert("Please accept the disclaimer.");
       return;
@@ -85,7 +87,7 @@ function Contact() {
       if (res.success) {
         alert("Message sent successfully!");
         setFormData({
-          adminId: formData.adminId,
+          // adminId: formData.adminId,
           firstName: "",
           lastName: "",
           email: "",

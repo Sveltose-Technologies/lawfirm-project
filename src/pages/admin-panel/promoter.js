@@ -37,6 +37,7 @@ const PromoterPage = () => {
     email: "",
     mobileNo: "",
   });
+console.log("dataList", dataList);
 
   const fetchData = useCallback(async () => {
     const res = await authService.getAllPromoters();

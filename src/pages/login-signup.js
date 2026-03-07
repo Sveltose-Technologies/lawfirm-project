@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -13,6 +12,7 @@ import {
   adminForgotPassword,
   adminVerifyOtp,
   adminResetPassword,
+  loginAttorney,
 } from "../services/authService";
 import { toastService } from "../utils/toast";
 
@@ -76,8 +76,9 @@ export default function UnifiedAuthPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+
     try {
-      let res = await loginUser({
+      let res = await loginAttorney({
         email: formData.email,
         password: formData.password,
       });

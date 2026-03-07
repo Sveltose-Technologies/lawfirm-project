@@ -184,13 +184,15 @@ const Events = () => {
       if (formData.bannerImage instanceof File) {
         data.append("bannerImage", formData.bannerImage);
       }
+console.log("State:", formData);
+console.log("FormData:", Object.fromEntries(data));
 
-      let res;
-      if (isEditing) {
-        res = await authService.updateEvent(currentId, data);
-      } else {
-        res = await authService.createEvent(data);
-      }
+let res;
+if (isEditing) {
+  res = await authService.updateEvent(currentId, data);
+} else {
+  res = await authService.createEvent(formData);
+}
 
       if (res) {
         toast.success(

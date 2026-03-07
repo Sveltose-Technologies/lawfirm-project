@@ -11,9 +11,11 @@ export const IMG_URL = "https://nodejs.nrislawfirm.com";
 export const getAdminId = () => {
   if (typeof window !== "undefined") {
     const userData = localStorage.getItem("user");
+    console.log("Admin ID", userData);
     if (userData) {
       try {
         const user = JSON.parse(userData);
+
         return user.id || null;
       } catch (error) {
         console.error("Error parsing user data from localStorage", error);
@@ -929,7 +931,7 @@ export const getAllEvents = async () => {
 
 export const createEvent = async (formData) => {
   try {
-    console.log("🚀 Creating New Event...");
+    console.log("🚀 Creating New Event...p", formData);
     const response = await API.post("/event/create", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });

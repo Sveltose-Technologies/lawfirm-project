@@ -74,7 +74,7 @@ export default function PromoterDetail() {
           <div className="col-lg-4 col-md-5">
             <div className="profile-detail-img-box shadow-sm mb-4">
               <img
-                src={`${IMG_URL}/${person.personImage}`}
+                src={`${person.personImage}`}
                 alt={person.personName}
                 className="img-fluid w-100"
               />

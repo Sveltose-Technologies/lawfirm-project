@@ -57,47 +57,49 @@ function Banner1() {
 
   const heroStatsRef = useRef(null);
   const footerStatsRef = useRef(null);
+console.log("heroData", heroData);
 
-  useEffect(() => {
-    setMounted(true);
-    const fetchData = async () => {
-      try {
-        const [typesRes, bannersRes, dataRes, counterRes, rankingRes] =
-          await Promise.all([
-            getAllLogoTypes(),
-            getAllHomeBanners(),
-            getAllHomeData(),
-            getAllCounters(),
-            getAllRanking(),
-          ]);
+useEffect(() => {
+  setMounted(true);
+  const fetchData = async () => {
+    try {
+      const [typesRes, bannersRes, dataRes, counterRes, rankingRes] =
+        await Promise.all([
+          getAllLogoTypes(),
+          getAllHomeBanners(),
+          getAllHomeData(),
+          getAllCounters(),
+          getAllRanking(),
+        ]);
 
-        const types = typesRes.data?.data || typesRes.data || [];
-        const allBanners = bannersRes.data?.data || bannersRes.data || [];
-        const homeSections = dataRes.data?.data || dataRes.data || [];
-        const counterSections = counterRes.data?.data || counterRes.data || [];
-        const rankingSections = rankingRes.data?.data || rankingRes.data || [];
+      const types = typesRes.data?.data || typesRes.data || [];
+      const allBanners = bannersRes.data?.data || bannersRes.data || [];
+      const homeSections = dataRes.data?.data || dataRes.data || [];
+      const counterSections = counterRes.data?.data || counterRes.data || [];
+      const rankingSections = rankingRes.data?.data || rankingRes.data || [];
+      console.log("allBanners", allBanners);
 
-        if (counterSections.length > 0) setCounters(counterSections[0]);
-        if (rankingSections.length > 0) setRankings(rankingSections[0]);
+      if (counterSections.length > 0) setCounters(counterSections[0]);
+      if (rankingSections.length > 0) setRankings(rankingSections[0]);
 
-        const bannerTypeObj = types.find(
-          (t) => t.type?.toLowerCase() === "banner",
+      const bannerTypeObj = types.find(
+        (t) => t.type?.toLowerCase() === "banner",
+      );
+      if (bannerTypeObj) {
+        const filteredBanners = allBanners.filter(
+          (b) => Number(b.typeId) === Number(bannerTypeObj.id),
         );
-        if (bannerTypeObj) {
-          const filteredBanners = allBanners.filter(
-            (b) => Number(b.typeId) === Number(bannerTypeObj.id),
-          );
-          if (filteredBanners.length > 0) {
-            setHeroData(filteredBanners.sort((a, b) => b.id - a.id)[0]);
-          }
+        if (filteredBanners.length > 0) {
+          setHeroData(filteredBanners.sort((a, b) => b.id - a.id)[0]);
         }
-        if (homeSections.length > 0) setHomeContent(homeSections[0]);
-      } catch (error) {
-        console.error("Data loading error:", error);
       }
-    };
-    fetchData();
-  }, []);
+      if (homeSections.length > 0) setHomeContent(homeSections[0]);
+    } catch (error) {
+      console.error("Data loading error:", error);
+    }
+  };
+  fetchData();
+}, []);
 
   useEffect(() => {
     if (!mounted) return;

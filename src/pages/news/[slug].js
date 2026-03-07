@@ -895,6 +895,7 @@ export default function NewsDetail() {
   const { slug } = router.query;
 
   const [newsItem, setNewsItem] = useState(null);
+  const [socialLinks, setSocialLinks] = useState({});
   const [capabilities, setCapabilities] = useState([]);
   const [offices, setOffices] = useState([]);
   const [relatedNews, setRelatedNews] = useState([]);
@@ -926,10 +927,41 @@ export default function NewsDetail() {
 
   const cleanHTML = (html) => (html ? html.replace(/&nbsp;/g, " ") : "");
 
+  // useEffect(() => {
+  //   async function fetchPageData() {
+  //     if (!slug) return;
+  //     setLoading(true);
+  //     try {
+  //       const [newsRes, catRes, cityRes] = await Promise.all([
+  //         getAllNews(),
+  //         getAllCapabilityCategories(),
+  //         getAllLocationCities(),
+  //       ]);
+
+  //       const allNews = newsRes?.data || [];
+  //       const matched = allNews.find((item) => createSlug(item.title) === slug);
+  //       if (matched) {
+  //         setNewsItem(matched);
+  //         setRelatedNews(
+  //           allNews.filter((n) => n.id !== matched.id).slice(0, 3),
+  //         );
+  //       }
+
+  //       setCapabilities(catRes?.data || []);
+  //       setOffices(cityRes?.data || cityRes || []);
+  //     } catch (err) {
+  //       console.error("Error fetching news detail data:", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  //   fetchPageData();
+  // }, [slug]);
   useEffect(() => {
     async function fetchPageData() {
       if (!slug) return;
       setLoading(true);
+
       try {
         const [newsRes, catRes, cityRes] = await Promise.all([
           getAllNews(),
@@ -938,9 +970,22 @@ export default function NewsDetail() {
         ]);
 
         const allNews = newsRes?.data || [];
+
         const matched = allNews.find((item) => createSlug(item.title) === slug);
+
         if (matched) {
           setNewsItem(matched);
+
+          try {
+            const parsedLinks = matched?.socialLinks
+              ? JSON.parse(matched.socialLinks)
+              : {};
+
+            setSocialLinks(parsedLinks);
+          } catch (error) {
+            console.log("Invalid socialLinks JSON");
+          }
+
           setRelatedNews(
             allNews.filter((n) => n.id !== matched.id).slice(0, 3),
           );
@@ -954,9 +999,9 @@ export default function NewsDetail() {
         setLoading(false);
       }
     }
+
     fetchPageData();
   }, [slug]);
-
   if (loading)
     return (
       <div className="p-5 text-center">
@@ -1090,10 +1135,22 @@ export default function NewsDetail() {
                 <div
                   className="d-flex flex-column gap-4 fs-5"
                   style={{ color: "#666" }}>
-                  <i className="bi bi-linkedin icon-hover"></i>
-                  <i className="bi bi-twitter-x icon-hover"></i>
-                  <i className="bi bi-facebook icon-hover"></i>
-                  <i className="bi bi-envelope icon-hover"></i>
+                  <i
+                    className="bi bi-linkedin icon-hover"
+                    onClick={() =>
+                      window.open(socialLinks?.linkedin, "_blank")
+                    }></i>
+                  <i
+                    className="bi bi-twitter-x icon-hover"
+                    onClick={() =>
+                      window.open(socialLinks?.twitter, "_blank")
+                    }></i>
+                  <i
+                    className="bi bi-facebook icon-hover"
+                    onClick={() =>
+                      window.open(socialLinks?.facebook, "_blank")
+                    }></i>
+                  {/* <i className="bi bi-envelope icon-hover"></i> */}
                   <i
                     className="bi bi-printer icon-hover"
                     onClick={() => window.print()}></i>
