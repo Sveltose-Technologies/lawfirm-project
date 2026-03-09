@@ -2,11 +2,9 @@ import API from "./api";
 
 export const IMG_URL = "https://nodejs.nrislawfirm.com";
 
-
 // export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
 // ================= HELPER FUNCTIONS =================
-
 
 export const getAdminId = () => {
   if (typeof window !== "undefined") {
@@ -290,6 +288,7 @@ export const adminResetPassword = async (
 };
 
 // ================= ADMIN PROFILE =================
+
 // ================= ADMIN PROFILE SERVICES =================
 
 export const getAdminProfile = async () => {
@@ -1182,7 +1181,6 @@ export const createLocationCity = async (formData) => {
   }
 };
 
-
 // ================= LOCATION MAIN (BANNER) APIs =================
 
 export const createLocation = async (formData) => {
@@ -1749,7 +1747,7 @@ export const getAllCounters = () => API.get("home-count/getall");
 export const updateCounters = (id, formData) =>
   API.put(`/home-count/update/${id}`, formData);
 export const deleteCountData = (id) => API.delete(`/home-count/delete/${id}`);
- 
+
 // Home Ranking API
 export const createRanking = (formData) =>
   API.post("/home-ranking/create", formData);
@@ -1757,3 +1755,35 @@ export const getAllRanking = () => API.get("/home-ranking/getall");
 export const deleteRankData = (id) => API.delete(`/home-ranking/delete/${id}`);
 export const updateRanking = (id, formData) =>
   API.put(`/home-ranking/update/${id}`, formData);
+
+// Home All Languages
+export const getAttorneylanguages = async () => {
+  try {
+    console.log("Fetching All Languages...");
+    const response = await API.get("/languages/get-all");
+    const data = response.data || response.data;
+    console.log("data Testing", data);
+    
+    return data;
+  } catch (error) {
+    console.error(
+      error.response?.data || error.message,
+    );
+    throw error;
+  }
+};
+
+// Home All Location
+export const getAttorneyLocation = async () => {
+  try {
+    console.log("Fetching All Languages...");
+    const response = await API.get("/languages/get-all");
+    const data = response.data || response.data;
+    return data;
+  } catch (error) {
+    console.error(
+      error.response?.data || error.message,
+    );
+    throw error;
+  }
+};

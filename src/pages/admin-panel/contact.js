@@ -521,7 +521,7 @@ const ContactUsPage = () => {
               active: activeTab === "inquiry",
             })}
             onClick={() => setActiveTab("inquiry")}
-            style={{ cursor: "pointer" }}>
+            style={{ cursor: "pointer", backgroundColor: "#ccc" }}>
             User Inquiries
           </NavLink>
         </NavItem>
@@ -531,7 +531,12 @@ const ContactUsPage = () => {
               active: activeTab === "description",
             })}
             onClick={() => setActiveTab("description")}
-            style={{ cursor: "pointer" }}>
+            style={{
+              cursor: "pointer",
+              marginLeft: 10,
+              color: "#ff6600",
+              backgroundColor: "#ccc",
+            }}>
             Page Content (Editor)
           </NavLink>
         </NavItem>

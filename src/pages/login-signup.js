@@ -82,6 +82,7 @@ export default function UnifiedAuthPage() {
         email: formData.email,
         password: formData.password,
       });
+
       if (res && (res.success || res.token || res.client || res.attorney)) {
         handleLoginSuccess(res);
       } else {
@@ -104,13 +105,16 @@ export default function UnifiedAuthPage() {
   const handleLoginSuccess = (res) => {
     const token =
       res.token || res.client?.token || res.attorney?.token || res.data?.token;
+    console.log("TOKEN, ATTORNY LOGIN", token);
+
     if (token) localStorage.setItem("token", token);
     let role =
       res.role ||
       res.client?.role ||
       res.attorney?.role ||
       res.data?.role ||
-      "client";
+      "attorney";
+
     const finalRole = role.toLowerCase();
     localStorage.setItem("role", finalRole);
     toastService.success("Login Successful");

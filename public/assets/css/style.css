@@ -75,6 +75,33 @@ Template Name: Corelaw- Law firm, Lawyers & Legal Service HTML Template
   -webkit-text-fill-color: var(--white);
 }
 
+/* BANNER  */
+
+@keyframes slowZoom {
+  0% {
+    background-size: 100% auto; /* Standard size */
+  }
+  50% {
+    background-size: 110% auto; /* Zoomed in slightly */
+  }
+  100% {
+    background-size: 100% auto; /* Back to standard */
+  }
+}
+
+/* If the image is vertical, use 'cover' logic instead */
+@keyframes slowZoomCover {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 @font-face {
   font-family: 'Lora';
   src: url(./fonts/Lora-Bold.ttf) format("truetype");

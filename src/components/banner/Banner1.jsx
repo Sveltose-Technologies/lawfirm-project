@@ -57,49 +57,50 @@ function Banner1() {
 
   const heroStatsRef = useRef(null);
   const footerStatsRef = useRef(null);
-console.log("heroData", heroData);
+  console.log("heroData BAnner", heroData);
 
-useEffect(() => {
-  setMounted(true);
-  const fetchData = async () => {
-    try {
-      const [typesRes, bannersRes, dataRes, counterRes, rankingRes] =
-        await Promise.all([
-          getAllLogoTypes(),
-          getAllHomeBanners(),
-          getAllHomeData(),
-          getAllCounters(),
-          getAllRanking(),
-        ]);
+  useEffect(() => {
+    setMounted(true);
+    const fetchData = async () => {
+      try {
+        const [typesRes, bannersRes, dataRes, counterRes, rankingRes] =
+          await Promise.all([
+            getAllLogoTypes(),
+            getAllHomeBanners(),
+            getAllHomeData(),
+            getAllCounters(),
+            getAllRanking(),
+          ]);
 
-      const types = typesRes.data?.data || typesRes.data || [];
-      const allBanners = bannersRes.data?.data || bannersRes.data || [];
-      const homeSections = dataRes.data?.data || dataRes.data || [];
-      const counterSections = counterRes.data?.data || counterRes.data || [];
-      const rankingSections = rankingRes.data?.data || rankingRes.data || [];
-      console.log("allBanners", allBanners);
+        const types = typesRes.data?.data || typesRes.data || [];
+        const allBanners = bannersRes.data?.data || bannersRes.data || [];
+        const homeSections = dataRes.data?.data || dataRes.data || [];
+        const counterSections = counterRes.data?.data || counterRes.data || [];
+        const rankingSections = rankingRes.data?.data || rankingRes.data || [];
+        console.log("allBanners", allBanners);
+        console.log("homeSections", homeSections);
 
-      if (counterSections.length > 0) setCounters(counterSections[0]);
-      if (rankingSections.length > 0) setRankings(rankingSections[0]);
+        if (counterSections.length > 0) setCounters(counterSections[0]);
+        if (rankingSections.length > 0) setRankings(rankingSections[0]);
 
-      const bannerTypeObj = types.find(
-        (t) => t.type?.toLowerCase() === "banner",
-      );
-      if (bannerTypeObj) {
-        const filteredBanners = allBanners.filter(
-          (b) => Number(b.typeId) === Number(bannerTypeObj.id),
+        const bannerTypeObj = types.find(
+          (t) => t.type?.toLowerCase() === "banner",
         );
-        if (filteredBanners.length > 0) {
-          setHeroData(filteredBanners.sort((a, b) => b.id - a.id)[0]);
+        if (bannerTypeObj) {
+          const filteredBanners = allBanners.filter(
+            (b) => Number(b.typeId) === Number(bannerTypeObj.id),
+          );
+          if (filteredBanners.length > 0) {
+            setHeroData(filteredBanners.sort((a, b) => b.id - a.id)[0]);
+          }
         }
+        if (homeSections.length > 0) setHomeContent(homeSections[0]);
+      } catch (error) {
+        console.error("Data loading error:", error);
       }
-      if (homeSections.length > 0) setHomeContent(homeSections[0]);
-    } catch (error) {
-      console.error("Data loading error:", error);
-    }
-  };
-  fetchData();
-}, []);
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
     if (!mounted) return;
@@ -130,7 +131,7 @@ useEffect(() => {
 
   return (
     <>
-      <div
+      {/* <div
         className="banner-section"
         style={{
           "--banner-bg": heroData?.image
@@ -144,6 +145,36 @@ useEffect(() => {
               <div className="py-3 dynamic-hero-text">
                 {heroData?.textEditor && heroData.textEditor !== "<p></p>" ? (
                   <div
+                    dangerouslySetInnerHTML={{ __html: heroData.textEditor }}
+                  />
+                ) : (
+                  <h1 className="text-white">Global Legal Excellence</h1>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> */}
+      <div
+        className="banner-section"
+        style={{
+          backgroundImage: heroData?.image
+            ? `url("${heroData.image}")`
+            : 'url("/assets/images/bg/banner1-bg.png")',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          // --- Added Features Below ---
+          animation: "slowZoomCover 20s infinite ease-in-out",
+          overflow: "hidden",
+          transition: "background-image 0.5s ease-in-out",
+        }}>
+        <div className="container banner-content px-3">
+          <div className="row justify-content-center m-0">
+            <div className="col-lg-10 text-center">
+              <div className="py-3 dynamic-hero-text">
+                {heroData?.textEditor && heroData.textEditor !== "<p></p>" ? (
+                  <div
+                    className="custom-html-content"
                     dangerouslySetInnerHTML={{ __html: heroData.textEditor }}
                   />
                 ) : (
