@@ -141,7 +141,14 @@ export default function UnifiedAuthPage() {
         throw new Error("Login failed");
       }
     } catch (err) {
-      // ... your existing catch logic for admin login
+      try {
+        let adminRes = await adminLogin(formData.email, formData.password);
+        if (adminRes.success || adminRes.data?.token) {
+          handleLoginSuccess({ ...adminRes, role: "admin" });
+        }
+      } catch (adminErr) {
+        toastService.error("Invalid Email or Password");
+      }
     } finally {
       setIsLoading(false);
     }
