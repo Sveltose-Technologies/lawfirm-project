@@ -75,7 +75,7 @@ Template Name: Corelaw- Law firm, Lawyers & Legal Service HTML Template
   -webkit-text-fill-color: var(--white);
 }
 
-/* BANNER  */
+/* Banner Zoom-in and zoom-out */
 
 @keyframes slowZoom {
   0% {

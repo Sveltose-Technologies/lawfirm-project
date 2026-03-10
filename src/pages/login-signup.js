@@ -73,6 +73,36 @@ export default function UnifiedAuthPage() {
     setFormData({ ...formData, [name]: value });
   };
 
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+
+  //   try {
+  //     let res = await loginAttorney({
+  //       email: formData.email,
+  //       password: formData.password,
+  //     });
+  //     console.log("UserLoin Information", res);
+
+  //     if (res && (res.success || res.token || res.client || res.attorney)) {
+  //       handleLoginSuccess(res);
+  //     } else {
+  //       throw new Error("Login failed");
+  //     }
+  //   } catch (err) {
+  //     try {
+  //       let adminRes = await adminLogin(formData.email, formData.password);
+  //       if (adminRes.success || adminRes.data?.token) {
+  //         handleLoginSuccess({ ...adminRes, role: "admin" });
+  //       }
+  //     } catch (adminErr) {
+  //       toastService.error("Invalid Email or Password");
+  //     }
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -83,20 +113,35 @@ export default function UnifiedAuthPage() {
         password: formData.password,
       });
 
-      if (res && (res.success || res.token || res.client || res.attorney)) {
+      console.log("UserLogin Information", res);
+
+      if (res && res.attorney) {
+        // 1. Extract the data
+        const { id, email, firstName, lastName, token } = res.attorney;
+        const fullName = `${firstName} ${lastName}`;
+
+        // 2. Store individual items
+        localStorage.setItem("userId", id);
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("userName", fullName);
+        localStorage.setItem("authToken", token); // Usually good practice to store the token too
+
+        // 3. Alternatively, store as one object (cleaner)
+        localStorage.setItem(
+          "userProfile",
+          JSON.stringify({
+            id,
+            email,
+            name: fullName,
+          }),
+        );
+
         handleLoginSuccess(res);
       } else {
         throw new Error("Login failed");
       }
     } catch (err) {
-      try {
-        let adminRes = await adminLogin(formData.email, formData.password);
-        if (adminRes.success || adminRes.data?.token) {
-          handleLoginSuccess({ ...adminRes, role: "admin" });
-        }
-      } catch (adminErr) {
-        toastService.error("Invalid Email or Password");
-      }
+      // ... your existing catch logic for admin login
     } finally {
       setIsLoading(false);
     }

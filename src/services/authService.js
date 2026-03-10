@@ -177,6 +177,20 @@ export const loginAttorney = async (payload) => {
     throw error.response?.data || error;
   }
 };
+export const getUserProfile = async (userId) => {
+  try {
+    console.log("🚀 Calling Attorney Login API:", userId);
+    const response = await API.get(`/attorney/get-by-id/${userId}`);
+    console.log("✅ Attorney userInfo:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "❌ Attorney user Error:",
+      error.response?.data || error.message,
+    );
+    throw error.response?.data || error;
+  }
+};
 
 // ================= ADMIN AUTH & OTP =================
 export const adminLogin = async (email, password) => {

@@ -1866,11 +1866,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import AttorneyLayout from "../../components/layout/AttorneyLayout";
-import { getAttorneylanguages } from "../../services/authService";
+import {
+  getAttorneylanguages,
+  getUserProfile,
+  updateAttorney,
+} from "../../services/authService";
+import { toast } from "react-toastify";
 
 export default function EditProfile() {
   const [profileComplete, setProfileComplete] = useState(75);
   const [languages, setLanguages] = useState([]);
+  const [userData, setUserData] = useState(null);
   const fileInputRef = useRef(null);
 
   // Full parameter state
@@ -1907,8 +1913,62 @@ export default function EditProfile() {
     barCouncilIndiaId: null,
     barCouncilStateId: null,
   });
+  console.log("Alll user DATA", userData);
+
+  // handle update
+
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    if (files && files[0]) {
+      setFormData((prev) => ({ ...prev, [name]: files[0] }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const userId = localStorage.getItem("userId");
+
+    // 1. Initialize FormData
+    const payload = new FormData();
+
+    // 2. Append all fields to the PAYLOAD, not the state object
+    Object.keys(formData).forEach((key) => {
+      // Only append if there is a value
+      if (formData[key] !== null && formData[key] !== "") {
+        payload.append(key, formData[key]);
+      }
+    });
+
+    // Debugging: To see what's inside FormData, you must loop through it
+    for (let pair of payload.entries()) {
+      console.log(pair[0] + ": " + pair[1]);
+    }
+
+    try {
+      // FIX: Pass 'payload' (FormData), NOT 'formData' (State Object)
+      const response = await updateAttorney(userId, payload);
+
+      // Some APIs return the status in response.data, some in response.status
+      if (
+        response.status === 200 ||
+        response.data?.success ||
+        response.success
+      ) {
+        toast.success("Profile updated successfully!");
+      } else {
+        toast.error("Failed to update profile.");
+      }
+    } catch (error) {
+      console.error("Update Error:", error);
+      toast.error(
+        error?.response?.data?.message || "An error occurred during update.",
+      );
+    }
+  };
 
   useEffect(() => {
+    const userId = localStorage.getItem("userId");
     const fetchLanguages = async () => {
       try {
         const response = await getAttorneylanguages();
@@ -1919,7 +1979,46 @@ export default function EditProfile() {
         console.error("Error fetching languages", error);
       }
     };
+    const getuserInfo = async () => {
+      try {
+        const response = await getUserProfile(userId);
+        const attorney = response?.attorney;
+        setUserData(attorney);
+
+        // Populate the form fields with fetched data
+        if (attorney) {
+          setFormData((prev) => ({
+            ...prev,
+            firstName: attorney.firstName || "",
+            lastName: attorney.lastName || "",
+            email: attorney.email || "",
+            dob: attorney.dob ? attorney.dob.split("T")[0] : "", // Formats date for <input type="date">
+            admission: attorney.admission
+              ? attorney.admission.split("T")[0]
+              : "",
+            language: attorney.language || "",
+            phoneCell: attorney.phoneCell || "",
+            phoneHome: attorney.phoneHome || "",
+            phoneOffice: attorney.phoneOffice || "",
+            street: attorney.street || "",
+            aptBlock: attorney.aptBlock || "",
+            city: attorney.city || "",
+            state: attorney.state || "",
+            zipCode: attorney.zipCode || "",
+            barCouncilIndiaNo: attorney.barCouncilIndiaNo || "",
+            barCouncilStateNo: attorney.barCouncilStateNo || "",
+            servicesOffered: attorney.servicesOffered || "",
+            education: attorney.education || "",
+            experience: attorney.experience || "",
+            familyLawPractice: attorney.familyLawPractice || "",
+          }));
+        }
+      } catch (error) {
+        console.log("Error fetching profile:", error);
+      }
+    };
     fetchLanguages();
+    getuserInfo();
   }, []);
 
   const handleInputChange = (e) => {
@@ -2260,13 +2359,23 @@ export default function EditProfile() {
                     <label className="form-label fw-bold small">
                       Profile Image
                     </label>
-                    <input type="file" className="form-control" />
+                    <input
+                      type="file"
+                      name="profileImage" // Must match state key
+                      className="form-control"
+                      onChange={handleFileChange} // Added this
+                    />
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold small">
                       Resume/CV
                     </label>
-                    <input type="file" className="form-control" />
+                    <input
+                      type="file"
+                      name="resume"
+                      className="form-control"
+                      onChange={handleFileChange}
+                    />
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold small">
@@ -2299,7 +2408,9 @@ export default function EditProfile() {
                     style={{ backgroundColor: "#002147" }}>
                     SUBMIT KYC
                   </button>
-                  <button className="btn btn-outline-dark px-4 rounded-pill fw-bold w-100">
+                  <button
+                    onClick={handleSubmit}
+                    className="btn btn-outline-dark px-4 rounded-pill fw-bold w-100">
                     SAVE ALL
                   </button>
                 </div>
