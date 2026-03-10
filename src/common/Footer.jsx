@@ -522,9 +522,7 @@ function Footer() {
           <div className="footer-bottom pt-4 pb-3">
             <div className="row d-flex align-items-center g-3">
               <div className="col-lg-4 d-flex justify-content-lg-start justify-content-center text-lg-start text-center">
-                <p className="mb-0">
-                  ©2025 NRIS LAW FIRM LLP All rights reserved.
-                </p>
+                <p className="mb-0">©2025 NRIS LAW FIRM All rights reserved.</p>
               </div>
               <div className="col-lg-4 d-flex justify-content-center align-items-center">
                 <ul className="f-bottom-list d-flex justify-content-center align-items-center mb-0">
