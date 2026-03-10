@@ -17,4 +17,6 @@ export const errorHandler = (error) => {
   } else {
     return error.message || "An unknown error occurred.";
   }
+  console.log('nothing');
+  
 };
