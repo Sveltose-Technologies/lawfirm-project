@@ -419,6 +419,7 @@ const ContactUsPage = () => {
         const res = await authService.getContactText();
         // API response: { success: true, data: [ {id: 1, contactText: "..."} ] }
         const serverData = Array.isArray(res?.data) ? res.data[0] : res.data;
+console.log("serverData ADMIKN", serverData);
 
         if (serverData) {
           setDescriptionData({

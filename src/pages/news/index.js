@@ -798,7 +798,6 @@ function NewsIndex() {
   const handleViewMore = () => {
     setVisibleCount((prev) => prev + 3);
   };
-
   const bannerImg =
     newsList.length > 0
       ? getNewsImg(newsList[0].bannerImage || newsList[0].newsImage)
@@ -811,16 +810,56 @@ function NewsIndex() {
       </Head>
 
       {/* HERO SECTION */}
+      {/* <section */}
+      {/* className="universal-banner d-flex align-items-center justify-content-center text-center position-relative"
+        style={{
+          height: "450px",
+          marginTop: "-80px",
+          backgroundImage: bannerImg
+            ? `url(${bannerImg})`
+            : url("/assets/images/bg/banner1-bg.png"),
+          // Change: Use white if no image, otherwise use your dark variable
+          backgroundColor: bannerImg ? bannerImg : "#ddd",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}>
+        {/* Change: Only show overlay if an image exists */}
+      {/* {bannerImg && <div className="banner-overlay"></div>} */}
+
+      {/* <div className="banner-content container pt-5 mt-5">
+          <h1
+            className="display-3 fw-bold mb-3 font-serif"
+            style={{ color: bannerImg ? "#ffffff" : "#002147" }} // Dark blue if white bg
+          >
+            News
+          </h1>
+          <p
+            className="lead opacity-75"
+            style={{ color: bannerImg ? "#ffffff" : "#6c757d" }} // Gray if white bg
+          >
+            Insights & Updates from Core Law
+          </p>
+        </div> */}
+      {/* </section> */}
       <section
         className="universal-banner d-flex align-items-center justify-content-center text-center position-relative"
         style={{
           height: "450px",
           marginTop: "-80px",
-          backgroundImage: bannerImg ? `url(${bannerImg})` : "none",
-          backgroundColor: "var(--bg-dark)",
+          // Fix: Both paths must be wrapped in `url("")` strings
+          backgroundImage: bannerImg
+            ? `url(${bannerImg})`
+            : `url("/assets/images/bg/banner1-bg.png")`,
+          backgroundColor: bannerImg ? "transparent" : "#ffffff",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}>
+        {/* Show overlay for both API image and default image since both are images */}
         <div className="banner-overlay"></div>
-        <div className="banner-content container pt-5 mt-5">
+
+        <div
+          className="banner-content container pt-5 mt-5"
+          style={{ zIndex: 1 }}>
           <h1 className="display-3 fw-bold mb-3 font-serif text-white">News</h1>
           <p className="lead text-white opacity-75">
             Insights & Updates from Core Law
