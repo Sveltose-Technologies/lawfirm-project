@@ -1,51 +1,3 @@
-// "use client";
-
-// import React, { useEffect, useState } from "react";
-// import { getAllTermsConditions } from "../services/authService";
-
-// const TermsPage = () => {
-//   const [terms, setTerms] = useState([]);
-
-//   useEffect(() => {
-//     fetchTerms();
-//   }, []);
-
-//   const fetchTerms = async () => {
-//     const response = await getAllTermsConditions();
-//     console.log("Terms Page Data:", response);
-
-//     if (response?.success && response?.data) {
-//       setTerms(response.data);
-//     }
-//   };
-
-//   return (
-//     <div className="bg-white p-5">
-//       {/* --- HERO SECTION --- */}
-
-//       {/* --- CONTENT SECTION --- */}
-//       <main className="container p-5" style={{ maxWidth: "850px" }}>
-//         {terms.length > 0 ? (
-//           terms.map((item) => (
-//             <div key={item.id} className="lh-lg text-secondary mb-4" style={{ fontSize: "13px" }}>
-//               <h4 className="fw-bold text-dark mb-3">{item.title}</h4>
-
-//               {/* HTML CONTENT */}
-//               <div
-//                 dangerouslySetInnerHTML={{ __html: item.content }}
-//               />
-//             </div>
-//           ))
-//         ) : (
-//           <p className="text-center text-muted">No Terms & Conditions Found</p>
-//         )}
-//       </main>
-//     </div>
-//   );
-// };
-
-// export default TermsPage;
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -80,8 +32,7 @@ const TermsPage = () => {
       {/* Content starts with padding-top to ensure it's not hidden behind the Navbar */}
       <main className="container pt-5 pb-5" style={{ maxWidth: "1000px" }}>
         {/* Simple Page Title - Starts directly below header */}
-        <div className="mb-5 border-bottom pb-2">
-        </div>
+        <div className="mb-5 border-bottom pb-2"></div>
 
         {loading ? (
           <div className="text-center py-5">
