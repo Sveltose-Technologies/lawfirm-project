@@ -1,6 +1,6 @@
 const express = require("express");
 const upload = require("../middleware/upload");
-const { attorneySignup, attorneyLogin, forgotPassword, verifyOtp, resetPassword, getAllAttorneys, updateAttorneyProfile, deleteAttorney } = require("../controllers/attorneyController");
+const { attorneySignup, attorneyLogin, forgotPassword, verifyOtp, resetPassword, getAllAttorneys, updateAttorneyProfile, deleteAttorney, getAttorneyById } = require("../controllers/attorneyController");
 const { adminOnly } = require("../middleware/auth");
 
 const router = express.Router();
@@ -43,5 +43,8 @@ router.put(
 
 // Delete Client (Admin Only)
 router.delete("/delete/:id", adminOnly, deleteAttorney);
+
+router.get("/get-by-id/:id",  getAttorneyById);
+
 
 module.exports = router;

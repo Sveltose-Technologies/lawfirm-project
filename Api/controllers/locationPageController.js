@@ -4,7 +4,7 @@ exports.createLocationPage = async (req, res) => {
   try {
     const { content } = req.body;
 
-    const bannerImage = req.file ? req.file.filename : null;
+    const bannerImage = req.file ? req.file.path : null;
 
     const data = await LocationPage.create({
       bannerImage,
@@ -76,7 +76,7 @@ exports.updateLocationPage = async (req, res) => {
       });
     }
 
-    const bannerImage = req.file ? req.file.filename : page.bannerImage;
+    const bannerImage = req.file ? req.file.path : page.bannerImage;
 
     await page.update({
       bannerImage,

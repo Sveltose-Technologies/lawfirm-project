@@ -48,7 +48,7 @@ CREATE TABLE `event` (
   KEY `fk_event_country` (`countryId`),
   CONSTRAINT `fk_event_capability_category` FOREIGN KEY (`capabilityCategoryId`) REFERENCES `capability_categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_event_country` FOREIGN KEY (`countryId`) REFERENCES `location_country` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -57,7 +57,7 @@ CREATE TABLE `event` (
 
 LOCK TABLES `event` WRITE;
 /*!40000 ALTER TABLE `event` DISABLE KEYS */;
-INSERT INTO `event` VALUES (9,'1772521911999-42541154.jpg',1,'title','2026-04-10 05:30:00','2026-04-12 00:00:00',9,'12',3,'5','https://example.com/register','description',NULL,NULL,NULL,'5','2026-03-03 12:41:52','2026-03-03 12:41:52','10:00:00','17:00:00');
+INSERT INTO `event` VALUES (9,'1772521911999-42541154.jpg',1,'title','2026-04-10 05:30:00','2026-04-12 00:00:00',9,'12',3,'5','https://example.com/register','description',NULL,NULL,NULL,'5','2026-03-03 12:41:52','2026-03-03 12:41:52','10:00:00','17:00:00'),(10,'https://res.cloudinary.com/dz7vmlvqn/image/upload/v1773147570/attorney_files/nas3xpzrkqhayqxxmlvh.jpg',1,'title','2026-04-10 05:30:00','2026-04-10 05:30:00',9,'12',3,'1',NULL,'description',NULL,NULL,NULL,'1','2026-03-10 18:28:23','2026-03-10 18:29:29','10:00:00','16:00:00');
 /*!40000 ALTER TABLE `event` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -70,4 +70,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-07 17:16:55
+-- Dump completed on 2026-03-11 11:14:13

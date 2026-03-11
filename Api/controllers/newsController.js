@@ -5,12 +5,11 @@ const News = require("../models/newsModel");
  */
 exports.createNews = async (req, res) => {
   try {
-    const data = await News.create({
-      ...req.body,
-      bannerImage: req.files?.bannerImage?.[0]?.filename,
-      newsImage: req.files?.newsImage?.[0]?.filename,
-    });
-
+ const data = await News.create({
+  ...req.body,
+  bannerImage: req.files?.bannerImage?.[0]?.path,
+  newsImage: req.files?.newsImage?.[0]?.path,
+});
     res.status(201).json({
       status: true,
       message: "News created successfully",
@@ -63,11 +62,11 @@ exports.updateNews = async (req, res) => {
     const updateData = { ...req.body };
 
     if (req.files?.bannerImage) {
-      updateData.bannerImage = req.files.bannerImage[0].filename;
+      updateData.bannerImage = req.files.bannerImage[0].path;
     }
 
     if (req.files?.newsImage) {
-      updateData.newsImage = req.files.newsImage[0].filename;
+      updateData.newsImage = req.files.newsImage[0].path;
     }
 
     const updated = await News.update(updateData, {
@@ -75,9 +74,10 @@ exports.updateNews = async (req, res) => {
     });
 
     if (!updated[0]) {
-      return res
-        .status(404)
-        .json({ status: false, message: "News not found" });
+      return res.status(404).json({
+        status: false,
+        message: "News not found",
+      });
     }
 
     const data = await News.findByPk(req.params.id);
@@ -87,8 +87,12 @@ exports.updateNews = async (req, res) => {
       message: "News updated successfully",
       data,
     });
+
   } catch (error) {
-    res.status(500).json({ status: false, error: error.message });
+    res.status(500).json({
+      status: false,
+      error: error.message,
+    });
   }
 };
 

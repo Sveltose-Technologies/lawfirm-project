@@ -4,42 +4,38 @@ const Event = require("../models/eventmodel");
  */
 exports.createEvent = async (req, res) => {
   try {
-    // Handle JSON arrays if sent as strings (from form-data)
+
     if (req.body.subcategoryIds && typeof req.body.subcategoryIds === "string") {
       req.body.subcategoryIds = JSON.parse(req.body.subcategoryIds);
     }
+
     if (req.body.cityIds && typeof req.body.cityIds === "string") {
       req.body.cityIds = JSON.parse(req.body.cityIds);
     }
+
     if (req.body.attorneyIds && typeof req.body.attorneyIds === "string") {
       req.body.attorneyIds = JSON.parse(req.body.attorneyIds);
     }
 
-    // Add bannerImage from uploaded file
     if (req.file) {
-      req.body.bannerImage = req.file.filename;
-    } else {
-      return res.status(400).json({
-        success: false,
-        message: "bannerImage is required",
-      });
+      req.body.bannerImage = req.file.path;   // ✅ Cloudinary URL
     }
 
     const event = await Event.create(req.body);
-console.log(req.body);
-    return res.status(201).json({
+
+    res.status(201).json({
       success: true,
       message: "Event created successfully",
-      data: event,
+      data: event
     });
+
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message
     });
   }
 };
-
 
 /**
  * GET ALL EVENTS
@@ -103,7 +99,7 @@ exports.updateEvent = async (req, res) => {
 
     // If new bannerImage uploaded
     if (req.file) {
-      req.body.bannerImage = req.file.filename;
+      req.body.bannerImage = req.file.path;
     }
 
     // Parse JSON fields if they are strings

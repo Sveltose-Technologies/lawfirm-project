@@ -177,11 +177,11 @@ exports.updateAttorneyProfile = async (req, res) => {
       termsAccepted,
     } = req.body;
 
-    if (!termsAccepted) {
-      return res.status(400).json({
-        message: "Please accept Terms & Conditions",
-      });
-    }
+    // if (!termsAccepted) {
+    //   return res.status(400).json({
+    //     message: "Please accept Terms & Conditions",
+    //   });
+    // }
 
     // ✅ THEN check password
     let updatedPassword = attorney.password;
@@ -207,7 +207,7 @@ exports.updateAttorneyProfile = async (req, res) => {
   phoneOffice,
   dob,
   admission,
-  language: language ? JSON.stringify(language) : attorney.language,
+  language: language ? language : attorney.language,
   servicesOffered,
   education,
   experience,
@@ -319,5 +319,32 @@ exports.resetPassword = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+/* ================= GET ATTORNEY BY ID ================= */
+exports.getAttorneyById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const attorney = await Attorney.findByPk(id, {
+      attributes: { exclude: ["password"] },
+    });
+
+    if (!attorney) {
+      return res.status(404).json({ message: "Attorney not found" });
+    }
+
+    res.status(200).json({
+      message: "Attorney fetched successfully",
+      attorney,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
   }
 };
