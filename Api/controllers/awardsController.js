@@ -9,12 +9,21 @@ exports.createAward = async (req, res) => {
       organization,
       year,
       awardTitle,
-      details,
+      details
     } = req.body;
+
+    const bannerImage = req.files?.bannerImage
+      ? req.files.bannerImage[0].path
+      : null;
+
+    const peopleImage = req.files?.peopleImage
+      ? req.files.peopleImage[0].path
+      : null;
 
     const award = await Award.create({
       adminId,
-      bannerImage: req.file?.path || req.body.bannerImage,
+      bannerImage,
+      peopleImage,
       personName,
       organization,
       year,
@@ -34,7 +43,6 @@ exports.createAward = async (req, res) => {
     });
   }
 };
-
 /* ================= GET ALL ================= */
 exports.getAllAwards = async (req, res) => {
   try {
@@ -94,9 +102,18 @@ exports.updateAward = async (req, res) => {
       });
     }
 
+    const bannerImage = req.files?.bannerImage
+      ? req.files.bannerImage[0].path
+      : award.bannerImage;
+
+    const peopleImage = req.files?.peopleImage
+      ? req.files.peopleImage[0].path
+      : award.peopleImage;
+
     await award.update({
       adminId: req.body.adminId || award.adminId,
-      bannerImage: req.file?.path || award.bannerImage,
+      bannerImage,
+      peopleImage,
       personName: req.body.personName || award.personName,
       organization: req.body.organization || award.organization,
       year: req.body.year || award.year,

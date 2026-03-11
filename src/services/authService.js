@@ -939,6 +939,57 @@ export const getAllEvents = async () => {
     return { success: false, data: [] };
   }
 };
+// create event banner
+export const createBannerEvent = async (formData) => {
+  try {
+    console.log("Creating banner Event...p", formData);
+    const response = await API.post("/event-banner/create", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    console.log("Event banner Create Response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Create Event Error:", error);
+    throw error;
+  }
+};
+export const updateBannerEvent = async (id, formData) => {
+  try {
+    console.log(`🚀 Updating Event ID: ${id}`);
+    const response = await API.put(`/event-banner/update/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    console.log("✅ Event Update Response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Update Event Error:", error);
+    throw error;
+  }
+};
+export const deleteBannerEvent = async (id) => {
+  try {
+    console.log(`🚀 Deleting Event ID: ${id}`);
+    const response = await API.delete(`/event-banner/delete/${id}`);
+    console.log("✅ Event Delete Response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Delete Event Error:", error);
+    throw error;
+  }
+};
+export const getBanner = async () => {
+  try {
+    console.log("🚀 Fetching all News...");
+    const response = await API.get("/event-banner/get-all");
+    let data =
+      response.data?.data || response.data?.banner || response.data || [];
+    console.log("✅ News Banner:", data);
+    return { success: true, data };
+  } catch (error) {
+    console.error("❌ Get News Error:", error);
+    return { success: false, data: [] };
+  }
+};
 
 export const createEvent = async (formData) => {
   try {

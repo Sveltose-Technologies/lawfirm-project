@@ -32,7 +32,7 @@ export default function Promoters() {
     );
 
   const bannerImg = promoters[0]?.bannerImage
-    ? `${IMG_URL}/${promoters[0].bannerImage}`
+    ? `${promoters[0].bannerImage}`
     : "/assets/images/promoter-banner.png";
 
   return (

@@ -24,6 +24,11 @@ const Awards = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
+    
+     peopleImage: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
 
     organization: {
       type: DataTypes.STRING(255),

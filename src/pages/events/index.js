@@ -7,9 +7,11 @@ import {
   getAllCapabilitySubCategories,
   getAllLocationCities,
   IMG_URL,
+  getBanner,
 } from "../../services/authService";
 
 function EventsIndex() {
+  const [banner, setBanner] = useState([]);
   const [eventsList, setEventsList] = useState([]);
   const [capabilities, setCapabilities] = useState([]);
   const [locations, setLocations] = useState([]);
@@ -26,6 +28,7 @@ function EventsIndex() {
     location: "",
     date: "",
   });
+  console.log("Banner IMage EVENT ", banner);
 
   const createSlug = (text) => {
     if (!text) return "";
@@ -59,16 +62,19 @@ function EventsIndex() {
     const fetchEventsData = async () => {
       setLoading(true);
       try {
-        const [eventRes, capRes, locRes] = await Promise.all([
+        const [eventRes, capRes, locRes, bannerRes] = await Promise.all([
           getAllEvents(),
           getAllCapabilitySubCategories(),
           getAllLocationCities(),
+          getBanner(),
         ]);
 
         if (eventRes?.success) setEventsList(eventRes.data);
         if (capRes?.success)
           setCapabilities(capRes.data?.data || capRes.data || []);
         if (locRes?.success) setLocations(locRes.data || []);
+        if (bannerRes?.success)
+          setBanner(bannerRes?.data[0]?.bannerImage || []);
       } catch (error) {
         console.error("Fetch Error:", error);
       } finally {
@@ -131,7 +137,7 @@ function EventsIndex() {
       <section
         className="universal-banner d-flex align-items-center justify-content-center text-center text-white position-relative"
         style={{
-          backgroundImage: topBanner ? `url(${topBanner})` : "none",
+          backgroundImage: banner ? `url(${banner})` : "none",
           backgroundColor: "var(--bg-dark)",
           minHeight: "350px",
           marginTop: "-40px",
@@ -278,16 +284,16 @@ function EventsIndex() {
         ) : displayedEvents.length > 0 ? (
           <>
             {displayedEvents.map((item) => {
-            let parsedCityIds = [];
-            try {
-              const data =
-                typeof item.cityIds === "string"
-                  ? JSON.parse(item.cityIds)
-                  : item.cityIds;
-              parsedCityIds = Array.isArray(data) ? data : []; // Ensure it's always an array
-            } catch (e) {
-              parsedCityIds = [];
-            }
+              let parsedCityIds = [];
+              try {
+                const data =
+                  typeof item.cityIds === "string"
+                    ? JSON.parse(item.cityIds)
+                    : item.cityIds;
+                parsedCityIds = Array.isArray(data) ? data : []; // Ensure it's always an array
+              } catch (e) {
+                parsedCityIds = [];
+              }
               const dynamicCityNames = parsedCityIds
                 .map(
                   (id) =>
