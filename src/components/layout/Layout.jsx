@@ -1,20 +1,32 @@
-import React from "react";
+import React, { memo, useMemo } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import Footer from "../../common/Footer";
+import dynamic from "next/dynamic";
+
 import Header from "../header/Header";
-import AdminLayout from "../admin/AdminLayout"; // AdminLayout import karein
+import Footer from "../../common/Footer";
+
+const AdminLayout = dynamic(() => import("../admin/AdminLayout"), {
+  ssr: false,
+  loading: () => <div className="text-center p-5">Loading Layout...</div>,
+});
+
+const MemoizedHeader = memo(Header);
+const MemoizedFooter = memo(Footer);
 
 function Layout({ children }) {
   const router = useRouter();
 
-  const isPanelPage =
-    router.pathname.startsWith("/admin-panel") ||
-    router.pathname.startsWith("/attorney-panel") ||
-    router.pathname.startsWith("/client-panel");
-
-  // Sirf Admin Panel ke liye check
-  const isAdminPanel = router.pathname.startsWith("/admin-panel");
+  const { isPanelPage, isAdminPanel } = useMemo(() => {
+    const path = router.pathname;
+    return {
+      isPanelPage:
+        path.startsWith("/admin-panel") ||
+        path.startsWith("/attorney-panel") ||
+        path.startsWith("/client-panel"),
+      isAdminPanel: path.startsWith("/admin-panel"),
+    };
+  }, [router.pathname]);
 
   return (
     <>
@@ -24,18 +36,31 @@ function Layout({ children }) {
         <link rel="icon" href="/assets/images/icons/logo-icon.svg" />
       </Head>
 
-      {!isPanelPage && <Header />}
+      {!isPanelPage && <MemoizedHeader />}
 
       <main>
         {isAdminPanel ? (
-          /* Automatic wrap all admin pages here */
           <AdminLayout>{children}</AdminLayout>
         ) : (
-          children
+          <div className="fade-in">{children}</div>
         )}
       </main>
 
-      {!isPanelPage && <Footer />}
+      {!isPanelPage && <MemoizedFooter />}
+
+      <style jsx>{`
+        .fade-in {
+          animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+      `}</style>
     </>
   );
 }

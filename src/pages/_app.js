@@ -1,32 +1,38 @@
-
-
-
+import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import Script from "next/script";
-import 'bootstrap/dist/css/bootstrap.min.css';
 
-// Assets CSS Imports
-import "../../public/assets/css/animate.css";
-import "../../public/assets/css/all.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "../styles/globals.css";
+
 import "../../public/assets/css/boxicons.min.css";
 import "../../public/assets/css/bootstrap-icons.css";
-import "../../public/assets/css/swiper-bundle.css";
 import "../../public/assets/css/style.css";
-import '../styles/globals.css'; 
-// Components Imports
+
+const DisclaimerPopup = dynamic(() => import("../components/DisclaimerPopup"), {
+  ssr: false, 
+});
+
 import Layout from "../components/layout/Layout";
-import DisclaimerPopup from "../components/DisclaimerPopup";
-import "react-quill/dist/quill.snow.css";
+
 function MyApp({ Component, pageProps }) {
-  // Layout Logic
-  const getLayout = Component.getLayout || ((page) => (
-    <Layout>
-      <DisclaimerPopup />
-      {page}
-    </Layout>
-  ));
-  
+  const getLayout =
+    Component.getLayout ||
+    ((page) => (
+      <Layout>
+        <DisclaimerPopup />
+        {page}
+      </Layout>
+    ));
+
   return (
     <>
+    
+      <Script
+        src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"
+        strategy="afterInteractive"
+      />
+
       {getLayout(<Component {...pageProps} />)}
     </>
   );

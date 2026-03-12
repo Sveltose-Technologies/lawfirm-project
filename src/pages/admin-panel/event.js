@@ -833,7 +833,6 @@ const Events = () => {
       setSubcategories(safeArray(subRes));
       setCountries(safeArray(countRes));
       setCities(safeArray(cityRes));
-
       setBannersList(safeArray(eventBannerRes));
       setEventsList(safeArray(eventRes));
     } catch (error) {

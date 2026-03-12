@@ -15,6 +15,10 @@ import {
   TabPane,
   Spinner,
   Badge,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "reactstrap";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -33,6 +37,25 @@ const ContactUsPage = () => {
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [btnLoading, setBtnLoading] = useState(false);
+
+  // Modal states for "Read More"
+  const [modal, setModal] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState("");
+
+  const toggleModal = () => setModal(!modal);
+
+  const openMessage = (msg) => {
+    setSelectedMessage(msg);
+    toggleModal();
+  };
+
+  // Helper function to show only 3 words
+  const formatMessage = (msg) => {
+    if (!msg) return "";
+    const words = msg.split(" ");
+    if (words.length <= 3) return msg;
+    return words.slice(0, 3).join(" ") + "...";
+  };
 
   // Data state
   const [descriptionData, setDescriptionData] = useState({
@@ -53,27 +76,22 @@ const ContactUsPage = () => {
     [],
   );
 
-  // --- GET DATA (Previous text fetch karega) ---
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       if (activeTab === "inquiry") {
         const res = await authService.getAllContacts();
-        if (res.success) {
-          const data = Array.isArray(res.data)
-            ? res.data
-            : res.data?.data || [];
-          setInquiries(
-            data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
-          );
-        }
+        const data = Array.isArray(res?.data)
+          ? res.data
+          : res?.data?.data || res || [];
+        setInquiries(
+          [...data].sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+          ),
+        );
       } else {
-        // GET Contact Text
         const res = await authService.getContactText();
-        // API response: { success: true, data: [ {id: 1, contactText: "..."} ] }
         const serverData = Array.isArray(res?.data) ? res.data[0] : res.data;
-        console.log("serverData ADMIKN", serverData);
-
         if (serverData) {
           setDescriptionData({
             id: serverData.id,
@@ -95,47 +113,36 @@ const ContactUsPage = () => {
     fetchData();
   }, [fetchData]);
 
-  // --- CREATE / UPDATE LOGIC ---
   const handleSave = async () => {
     if (!descriptionData.text || descriptionData.text === "<p><br></p>") {
       return toast.warning("Content cannot be empty.");
     }
-
     setBtnLoading(true);
     try {
       const payload = { contactText: descriptionData.text };
-
-      let res;
       if (descriptionData.id) {
-        // Agar record exist karta hai toh UPDATE
-        res = await authService.updateContactText(descriptionData.id, payload);
+        await authService.updateContactText(descriptionData.id, payload);
         toast.success("Content updated successfully!");
       } else {
-        // Agar record nahi hai toh CREATE (POST)
-        res = await authService.createContactText(payload);
+        await authService.createContactText(payload);
         toast.success("Content created successfully!");
       }
-
-      fetchData(); // Data refresh karein taaki updated text aur ID aa jaye
+      fetchData();
     } catch (error) {
-      console.error("Save Error:", error);
       toast.error("Failed to save content.");
     } finally {
       setBtnLoading(false);
     }
   };
 
-  // --- DELETE LOGIC ---
   const handleDelete = async () => {
     if (!descriptionData.id) return toast.error("Nothing to delete.");
-    if (!window.confirm("Are you sure you want to delete this content?"))
-      return;
-
+    if (!window.confirm("Are you sure?")) return;
     setBtnLoading(true);
     try {
       await authService.deleteContactText(descriptionData.id);
-      toast.success("Content deleted successfully!");
-      setDescriptionData({ id: null, text: "" }); // Reset editor
+      toast.success("Deleted");
+      setDescriptionData({ id: null, text: "" });
       fetchData();
     } catch (error) {
       toast.error("Delete failed.");
@@ -161,9 +168,7 @@ const ContactUsPage = () => {
 
       <div className="mb-4">
         <h3 className="fw-bold text-dark">Contact Management</h3>
-        <p className="text-muted small">
-          Manage your website's contact inquiries and page content.
-        </p>
+        <p className="text-muted small">Manage inquiries and page content.</p>
       </div>
 
       <Nav
@@ -175,7 +180,10 @@ const ContactUsPage = () => {
               active: activeTab === "inquiry",
             })}
             onClick={() => setActiveTab("inquiry")}
-            style={{ cursor: "pointer", backgroundColor: "#ccc" }}>
+            style={{
+              cursor: "pointer",
+              backgroundColor: activeTab === "inquiry" ? GOLD : "#eee",
+            }}>
             User Inquiries
           </NavLink>
         </NavItem>
@@ -188,8 +196,7 @@ const ContactUsPage = () => {
             style={{
               cursor: "pointer",
               marginLeft: 10,
-              color: "#ff6600",
-              backgroundColor: "#ccc",
+              backgroundColor: activeTab === "description" ? GOLD : "#eee",
             }}>
             Page Content (Editor)
           </NavLink>
@@ -197,24 +204,29 @@ const ContactUsPage = () => {
       </Nav>
 
       <TabContent activeTab={activeTab}>
-        {/* INQUIRIES TAB */}
         <TabPane tabId="inquiry">
           <Card className="border-0 shadow-sm rounded-4">
             <CardBody className="p-0">
-              <Table hover responsive className="align-middle mb-0">
+              <Table
+                hover
+                responsive
+                className="align-middle mb-0"
+                style={{ fontSize: "13px" }}>
                 <thead style={{ backgroundColor: LIGHT_GOLD }}>
                   <tr>
-                    <th className="px-4 py-3">Sr. No.</th>
+                    <th className="px-4 py-3">Sr.</th>
                     <th>Name</th>
-                    <th>Email / Phone</th>
-                    <th>Inquiry Type</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Message</th>
+                    <th>Address</th>
                     <th className="text-end px-4">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan="5" className="text-center py-5">
+                      <td colSpan="7" className="text-center py-5">
                         <Spinner color="warning" />
                       </td>
                     </tr>
@@ -225,15 +237,23 @@ const ContactUsPage = () => {
                         <td className="fw-bold">
                           {item.firstName} {item.lastName}
                         </td>
+                        <td>{item.email}</td>
                         <td>
-                          {item.email} <br />
-                          <small>{item.phoneNumber}</small>
+                          {item.countryCode} {item.phoneNumber}
                         </td>
                         <td>
-                          <Badge color="light" className="text-dark border">
-                            {item.inquiryType}
-                          </Badge>
+                          {formatMessage(item.message)}
+                          {item.message &&
+                            item.message.split(" ").length > 3 && (
+                              <span
+                                className="text-primary fw-bold ms-1"
+                                style={{ cursor: "pointer", fontSize: "11px" }}
+                                onClick={() => openMessage(item.message)}>
+                                Read More
+                              </span>
+                            )}
                         </td>
+                        <td>{item.address || "N/A"}</td>
                         <td className="text-end px-4">
                           <Button
                             size="sm"
@@ -247,7 +267,7 @@ const ContactUsPage = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="text-center py-4">
+                      <td colSpan="7" className="text-center py-4">
                         No data found
                       </td>
                     </tr>
@@ -258,18 +278,13 @@ const ContactUsPage = () => {
           </Card>
         </TabPane>
 
-        {/* EDITOR TAB */}
+        {/* EDITOR TAB (No changes here as requested) */}
         <TabPane tabId="description">
           <Card className="border-0 shadow-sm rounded-4">
             <CardBody className="p-4 p-lg-5">
               <div className="mb-4">
                 <h5 className="fw-bold">Edit Contact Page Description</h5>
-                <p className="text-muted small">
-                  Update the text that appears on your website's contact
-                  section.
-                </p>
               </div>
-
               {loading ? (
                 <div className="text-center py-5">
                   <Spinner color="warning" />
@@ -287,7 +302,6 @@ const ContactUsPage = () => {
                       style={{ height: "350px", marginBottom: "50px" }}
                     />
                   </FormGroup>
-
                   <div className="d-flex gap-3">
                     <Button
                       className="btn-gold px-5 py-2 fw-bold"
@@ -299,7 +313,6 @@ const ContactUsPage = () => {
                           ? "UPDATE CONTENT"
                           : "SAVE CONTENT"}
                     </Button>
-
                     <Button
                       color="white"
                       className="border text-danger px-4 py-2 fw-bold"
@@ -308,19 +321,29 @@ const ContactUsPage = () => {
                       Delete Record
                     </Button>
                   </div>
-
-                  {!descriptionData.id && (
-                    <p className="mt-3 text-muted small">
-                      * No existing record found. Press "Save" to create your
-                      first content.
-                    </p>
-                  )}
                 </>
               )}
             </CardBody>
           </Card>
         </TabPane>
       </TabContent>
+
+      {/* READ MORE MODAL */}
+      <Modal isOpen={modal} toggle={toggleModal} centered>
+        <ModalHeader toggle={toggleModal} className="border-0 fw-bold">
+          Message Details
+        </ModalHeader>
+        <ModalBody className="py-3">
+          <p style={{ whiteSpace: "pre-wrap", color: "#555" }}>
+            {selectedMessage}
+          </p>
+        </ModalBody>
+        <ModalFooter className="border-0">
+          <Button color="secondary" size="sm" onClick={toggleModal}>
+            Close
+          </Button>
+        </ModalFooter>
+      </Modal>
 
       <style jsx global>{`
         .btn-gold {

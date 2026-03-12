@@ -189,6 +189,23 @@ export const getUserProfile = async (userId) => {
     throw error.response?.data || error;
   }
 };
+// ================= ATTORNEY AUTH (Add these) =================
+
+export const forgotPasswordAttorney = async (payload) => {
+  const response = await API.post("/attorney/forgot-password", payload);
+  return response.data;
+};
+
+export const verifyOtpAttorney = async (payload) => {
+  const response = await API.post("/attorney/verify-otp", payload);
+  return response.data;
+};
+
+export const resetPasswordAttorney = async (payload) => {
+  const response = await API.put("/attorney/reset-password", payload);
+  return response.data;
+};
+
 
 // ================= ADMIN AUTH & OTP =================
 export const adminLogin = async (email, password) => {

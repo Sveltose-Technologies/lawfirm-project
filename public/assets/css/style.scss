@@ -3793,7 +3793,7 @@ header.style-5 {
         width: 60px;
         height: 100%;
         max-height: 60px;
-        background-image: url('../images/icons/home-icon.svg');
+        // background-image: url('../images/icons/home-icon.svg');
         background-size:auto;
         background-repeat: no-repeat;
         border-radius: 50%;
@@ -4321,7 +4321,7 @@ header.style-5 {
 15. Info-section
 =======================================*/
 .info-section{
-    background: linear-gradient(rgba(#292B31,0.9),rgba(#292B31,0.9)),url('../images/bg/info-bg.png');
+    background: linear-gradient(rgba(#292B31,0.9),rgba(#292B31,0.9)),url('../images/bg/banner1-bg.png');
     @include img-adjust();
     background-attachment: fixed;
     padding: 90px 10% 90px 12%;
@@ -5443,7 +5443,7 @@ header.style-5 {
     overflow: hidden;
 }
 .contact-section2{
-    background: linear-gradient(277.42deg, #292B31 4.86%, rgba(41, 43, 49, 0.85) 100%), url('../images/bg/contact2-bg.png');
+    background: linear-gradient(277.42deg, #292B31 4.86%, rgba(41, 43, 49, 0.85) 100%), url('../images/bg/banner1-bg.png');
     @include img-adjust();
     padding: 90px 0px;
 }
@@ -5916,7 +5916,7 @@ select .option.focus, .nice-select .option.selected.focus {
     }
 }
 .contact-image-area{
-    background: linear-gradient(rgba(41, 43, 49, 0.85),rgba(41, 43, 49, 0.85)),url(../images/bg/contact-bg.png);
+    background: linear-gradient(rgba(41, 43, 49, 0.85),rgba(41, 43, 49, 0.85)),url(../images/bg/banner1-bg.png);
     @include img-adjust();
     position: relative;
     min-height: 490px;
@@ -7010,7 +7010,7 @@ h3.comment-title{
 .error-section{
     position: relative;
     z-index: 1;
-    background: url('../images/bg/error-back.png');
+    background: url('../images/bg/banner1-bg.png');
     @include img-adjust();
     .section-bg-left{
         position: absolute;
@@ -7965,7 +7965,7 @@ h3.comment-title{
  23.  Breadcrumb-section
 =======================================*/
 .breadcrumb-section{
-    background: linear-gradient(275.93deg, rgba(32, 32, 32, 0.8) 25.55%, rgba(32, 32, 32, 0.8) 95.49%), url('../images/bg/breadcrumb-bg.png');
+    background: linear-gradient(275.93deg, rgba(32, 32, 32, 0.8) 25.55%, rgba(32, 32, 32, 0.8) 95.49%), url('../images/bg/banner1-bg.png');
     @include img-adjust();
     padding: 12.5rem 0px;
 }

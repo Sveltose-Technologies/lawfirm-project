@@ -11,7 +11,6 @@ function Locations() {
   const [openSections, setOpenSections] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  console.log("location Image city----", cities);
 
   useEffect(() => {
     const fetchData = async () => {

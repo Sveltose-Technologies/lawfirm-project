@@ -15,6 +15,7 @@ function Contact() {
     email: "",
     countryCode: "",
     phoneNumber: "",
+    address: "",
     inquiryType: "",
     message: "",
   });
@@ -93,6 +94,7 @@ function Contact() {
           email: "",
           countryCode: "",
           phoneNumber: "",
+          address : " ",
           inquiryType: "",
           message: "",
         });
@@ -232,7 +234,17 @@ function Contact() {
                   onChange={handleChange}
                 />
               </div>
-
+              <div className="mt-3">
+                <label className="form-label small fw-bold">Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  className="form-control"
+                  
+                  value={formData.address}
+                  onChange={handleChange}
+                />
+              </div>
               <div className="mt-3">
                 <label className="form-label small fw-bold">Message*</label>
                 <textarea

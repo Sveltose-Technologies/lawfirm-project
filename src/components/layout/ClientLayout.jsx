@@ -1,10 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import ClientHeader from "./ClientHeader";
 
 export default function ClientLayout({ children }) {
   const router = useRouter();
   const [showSidebar, setShowSidebar] = useState(false);
+  const [userData, setUserData] = useState({
+    name: "User",
+    email: "user@gmail.com",
+  });
+
+  useEffect(() => {
+    const name = localStorage.getItem("userName") || "User";
+    const email = localStorage.getItem("userEmail") || "user@gmail.com";
+    setUserData({ name, email });
+  }, []);
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -28,52 +39,38 @@ export default function ClientLayout({ children }) {
       path: "/client-panel/appointments",
     },
     {
-      name: "Document Management",
-      icon: "bi-calendar-event",
+      name: "Documents",
+      icon: "bi-file-earmark-pdf",
       path: "/client-panel/document-management",
     },
     {
-      name: "Transaction Management",
-      icon: "bi-calendar-event",
+      name: "Transactions",
+      icon: "bi-credit-card",
       path: "/client-panel/transaction-management",
     },
+    { name: "Messages", icon: "bi-chat", path: "/client-panel/messages" },
     {
-      name: "Messages",
-      icon: "bi-calendar-event",
-      path: "/client-panel/messages",
-    },
-    {
-      name: "Edit profile",
-      icon: "bi-calendar-event",
+      name: "Profile Settings",
+      icon: "bi-gear",
       path: "/client-panel/edit-profile",
     },
   ];
 
   return (
     <div style={{ backgroundColor: "#f4f7fa", minHeight: "100vh" }}>
-      {/* --- MOBILE HEADER (Sirf '=' button right side me) --- */}
-      <div className="d-lg-none p-2 bg-white border-bottom sticky-top d-flex justify-content-end align-items-center">
-        <button
-          className="btn border-0"
-          onClick={() => setShowSidebar(!showSidebar)}>
-          <i
-            className={`bi ${showSidebar ? "bi-x-lg" : "bi-list"} fs-1 text-dark`}></i>
-        </button>
-      </div>
+      <ClientHeader onToggleSidebar={() => setShowSidebar(!showSidebar)} />
 
-      <div className="container py-lg-5 py-3">
-        <div className="row g-4 pt-5">
-          {/* --- SIDEBAR --- */}
-          {/* Mobile par logic: agar showSidebar true hai tabhi dikhega, desktop par hamesha dikhega */}
+      <div className="container py-4">
+        <div className="row g-4">
           <aside
             className={`col-lg-3 ${showSidebar ? "sidebar-mobile-view" : "d-none d-lg-block"}`}>
             <div
               className="card border-0 shadow-sm rounded-4 overflow-hidden sticky-top"
-              style={{ top: "20px" }}>
+              style={{ top: "90px" }}>
               <div className="p-4 text-center border-bottom bg-white">
                 <div
                   className="mx-auto mb-3"
-                  style={{ width: "100px", height: "100px" }}>
+                  style={{ width: "90px", height: "90px" }}>
                   <img
                     src="/assets/images/attorney1.png"
                     className="rounded-circle shadow-sm w-100 h-100"
@@ -81,12 +78,8 @@ export default function ClientLayout({ children }) {
                     alt="user"
                   />
                 </div>
-                <h5
-                  className="fw-bold mb-1"
-                  style={{ color: "#002147", fontSize: "18px" }}>
-                  John
-                </h5>
-                <p className="text-muted mb-0 small">user@gmail.com</p>
+                <h6 className="fw-bold mb-1 text-navy">{userData.name}</h6>
+                <p className="text-muted mb-0 small">{userData.email}</p>
               </div>
               <div className="p-3 bg-white">
                 <nav className="nav flex-column sidebar-nav">
@@ -110,25 +103,27 @@ export default function ClientLayout({ children }) {
                 </nav>
               </div>
             </div>
-            {/* Background overlay: Mobile pe sidebar ke piche click karne par band ho jaye */}
-            {showSidebar && (
-              <div
-                className="overlay d-lg-none"
-                onClick={() => setShowSidebar(false)}></div>
-            )}
           </aside>
 
-          {/* --- CONTENT --- */}
           <main className="col-lg-9">
             <div className="bg-transparent">{children}</div>
           </main>
         </div>
       </div>
 
+      {showSidebar && (
+        <div
+          className="overlay d-lg-none"
+          onClick={() => setShowSidebar(false)}></div>
+      )}
+
       <style jsx>{`
+        .text-navy {
+          color: #002147;
+        }
         .sidebar-nav .nav-link {
           color: #444 !important;
-          font-size: 15px;
+          font-size: 14px;
           padding: 12px 18px;
           border-radius: 10px;
           transition: 0.3s;
@@ -147,11 +142,10 @@ export default function ClientLayout({ children }) {
           color: #de9f57 !important;
           font-weight: bold;
         }
-
         @media (max-width: 991px) {
           .sidebar-mobile-view {
             position: fixed;
-            top: 60px; /* Header ke niche se start hoga */
+            top: 70px;
             left: 0;
             width: 100%;
             padding: 15px;
@@ -164,7 +158,7 @@ export default function ClientLayout({ children }) {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.4);
             z-index: 1040;
           }
         }

@@ -102,78 +102,72 @@ export default function UnifiedAuthPage() {
   //     setIsLoading(false);
   //   }
   // };
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  const payload = { email: formData.email, password: formData.password };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
+  try {
+    // 1. Try Client Login
+    let res = await loginUser(payload);
+    handleLoginSuccess(res, "client");
+  } catch (err) {
     try {
-      let res = await loginAttorney({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      console.log("UserLogin Information", res);
-
-      if (res && res.attorney) {
-        // 1. Extract the data
-        const { id, email, firstName, lastName, token } = res.attorney;
-        const fullName = `${firstName} ${lastName}`;
-
-        // 2. Store individual items
-        localStorage.setItem("userId", id);
-        localStorage.setItem("userEmail", email);
-        localStorage.setItem("userName", fullName);
-        localStorage.setItem("authToken", token); // Usually good practice to store the token too
-
-        // 3. Alternatively, store as one object (cleaner)
-        localStorage.setItem(
-          "userProfile",
-          JSON.stringify({
-            id,
-            email,
-            name: fullName,
-          }),
-        );
-
-        handleLoginSuccess(res);
-      } else {
-        throw new Error("Login failed");
-      }
-    } catch (err) {
+      // 2. Try Attorney Login
+      let res = await loginAttorney(payload);
+      handleLoginSuccess(res, "attorney");
+    } catch (err2) {
       try {
-        let adminRes = await adminLogin(formData.email, formData.password);
-        if (adminRes.success || adminRes.data?.token) {
-          handleLoginSuccess({ ...adminRes, role: "admin" });
-        }
-      } catch (adminErr) {
-        toastService.error("Invalid Email or Password");
+        // 3. Try Admin Login
+        let res = await adminLogin(formData.email, formData.password);
+        if (res.success) handleLoginSuccess(res.data, "admin");
+        else throw new Error();
+      } catch (err3) {
+        toastService.error("Invalid Credentials or Account not found");
       }
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } finally {
+    setIsLoading(false);
+  }
+};
+ const handleLoginSuccess = (res, detectedRole) => {
+   // 1. Extract User Data based on what's available in response
+   const userData =
+     res.client || res.attorney || res.admin || res.user || res.data || res;
+   const token = res.token || userData?.token;
 
-  const handleLoginSuccess = (res) => {
-    const token =
-      res.token || res.client?.token || res.attorney?.token || res.data?.token;
-    console.log("TOKEN, ATTORNY LOGIN", token);
+   // 2. Role normalization
+   let role = detectedRole || res.role || userData?.role || "client";
+   const finalRole = role.toLowerCase();
 
-    if (token) localStorage.setItem("token", token);
-    let role =
-      res.role ||
-      res.client?.role ||
-      res.attorney?.role ||
-      res.data?.role ||
-      "attorney";
+   // 3. Save to LocalStorage
+   if (token) localStorage.setItem("token", token);
+   localStorage.setItem("role", finalRole);
 
-    const finalRole = role.toLowerCase();
-    localStorage.setItem("role", finalRole);
-    toastService.success("Login Successful");
-    if (finalRole === "admin") window.location.href = "/admin-panel";
-    else if (finalRole === "attorney") window.location.href = "/attorney-panel";
-    else window.location.href = "/client-panel";
-  };
+   // Save full user profile for easy access across the app
+   localStorage.setItem("user", JSON.stringify(userData));
+
+   // Common fields (Optional but helpful)
+   if (userData.id || userData._id)
+     localStorage.setItem("userId", userData.id || userData._id);
+   localStorage.setItem("userEmail", userData.email);
+   localStorage.setItem(
+     "userName",
+     `${userData.firstName || ""} ${userData.lastName || ""}`.trim(),
+   );
+
+   toastService.success(`${finalRole.toUpperCase()} Login Successful`);
+
+   // 4. Redirect based on role
+   if (finalRole === "admin") {
+     window.location.href = "/admin-panel";
+   } else if (finalRole === "attorney") {
+     window.location.href = "/attorney-panel";
+   } else {
+     // Default to client panel
+     window.location.href = "/client-panel";
+   }
+ };
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -207,32 +201,64 @@ export default function UnifiedAuthPage() {
     }
   };
 
-  const handleForgot = async (e) => {
-    if (e) e.preventDefault();
-    setIsLoading(true);
-    try {
-      let result = await forgotPassword({ email: formData.email });
-      if (result.success) {
-        setView("verify");
-        startTimer();
-        toastService.success("OTP Sent");
-      } else {
-        let adminRes = await adminForgotPassword(formData.email);
-        if (adminRes.success) {
-          setUserRole("Admin");
-          setView("verify");
-          startTimer();
-          toastService.success("Admin OTP Sent");
-        } else {
-          toastService.error("Email not found");
-        }
-      }
-    } catch (err) {
-      toastService.error("Request failed");
-    } finally {
-      setIsLoading(false);
+ const handleForgot = async (e) => {
+   if (e) e.preventDefault();
+   setIsLoading(true);
+   const payload = { email: formData.email };
+
+   try {
+     // Try Client
+     await forgotPassword(payload);
+     setUserRole("Client");
+     proceedToOTP();
+   } catch (err) {
+     try {
+       // Try Attorney
+       await forgotPasswordAttorney(payload);
+       setUserRole("Attorney");
+       proceedToOTP();
+     } catch (err2) {
+       try {
+         // Try Admin
+         await adminForgotPassword(formData.email);
+         setUserRole("Admin");
+         proceedToOTP();
+       } catch (err3) {
+         toastService.error("Email not registered in any role");
+       }
+     }
+   } finally {
+     setIsLoading(false);
+   }
+ };
+
+ const proceedToOTP = () => {
+   setView("verify");
+   startTimer();
+   toastService.success("OTP Sent successfully");
+ };
+const handleVerifyOtpSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  const payload = { email: formData.email, otp: otpInput };
+
+  try {
+    let result;
+    if (userRole === "Admin")
+      result = await adminVerifyOtp(formData.email, otpInput);
+    else if (userRole === "Attorney") result = await verifyOtpAttorney(payload);
+    else result = await verifyOtp(payload);
+
+    if (result.success || result.message?.includes("verified")) {
+      setView("reset");
+      toastService.success("OTP Verified");
     }
-  };
+  } catch (err) {
+    toastService.error("Invalid OTP");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light-gray">

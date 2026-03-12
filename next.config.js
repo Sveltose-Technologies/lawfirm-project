@@ -1,48 +1,25 @@
-
-
-// /** @type {import('next').NextConfig} */
-// const nextConfig = {
-//   reactStrictMode: true,
-
-//   trailingSlash: true, 
-//   swcMinify: false,
-
-//   images: {
-//     unoptimized: true,
-//   },
-
-//   eslint: { ignoreDuringBuilds: true },
-//   typescript: { ignoreBuildErrors: true },
-
-//   webpack: (config) => {
-//     config.cache = false;
-//     return config;
-//   },
-// };
-
-// module.exports = nextConfig;
-
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
 
-  trailingSlash: true,
-  swcMinify: false,
+  swcMinify: true,
 
-  turbopack: {},   
+  trailingSlash: true,
+
 
   images: {
-    unoptimized: true,
+    unoptimized: false,
+    domains: ["nodejs.nrislawfirm.com"],
   },
+
+ 
 
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 
-  webpack: (config) => {
-    config.cache = false;
-    return config;
-  },
+  compress: true,
+
+  productionBrowserSourceMaps: false,
 };
 
 module.exports = nextConfig;
