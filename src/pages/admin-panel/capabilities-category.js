@@ -45,13 +45,11 @@ const CapabilityCategory = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // ✨ डिस्क्रिप्शन को साफ़ इंग्लिश में दिखाने के लिए फंक्शन
   const stripHtml = (html) => {
     if (!html) return "";
-    // DOMParser का उपयोग करके HTML entities जैसे &nbsp; और &amp; को हटाया गया
     const doc = new DOMParser().parseFromString(html, "text/html");
     const text = doc.body.textContent || "";
-    return text.replace(/\s+/g, " ").trim(); // फालतू स्पेस हटाना
+    return text.replace(/\s+/g, " ").trim(); 
   };
 
   const modules = useMemo(
@@ -105,7 +103,6 @@ const CapabilityCategory = () => {
         data.append("bannerImage", formData.bannerImage);
       }
 
-      // टोस्ट अपने आप api.js के interceptor से आएगा
       const res = isEditing
         ? await authService.updateCapabilityCategory(currentId, data)
         : await authService.createCapabilityCategory(data);
@@ -124,7 +121,6 @@ const CapabilityCategory = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this category?")) {
       try {
-        // टोस्ट अपने आप api.js के interceptor से आएगा
         await authService.deleteCapabilityCategory(id);
         fetchData();
       } catch (error) {
@@ -201,11 +197,7 @@ const CapabilityCategory = () => {
                             border: "1px solid #eee",
                           }}>
                           <img
-                            src={
-                              item.bannerImage
-                                ? `${authService.IMG_URL}/${item.bannerImage}`
-                                : "https://placehold.co/60x40?text=No+Img"
-                            }
+                            src={authService.getImgUrl(item.bannerImage)}
                             alt="category"
                             style={{
                               width: "100%",
@@ -221,7 +213,6 @@ const CapabilityCategory = () => {
                       </td>
                       <td className="fw-bold text-dark">{item.categoryName}</td>
                       <td>
-                        {/* साफ़ इंग्लिश टेक्स्ट यहाँ दिखेगा */}
                         <div
                           className="text-muted small"
                           style={{

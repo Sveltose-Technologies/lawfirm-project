@@ -21,12 +21,17 @@ export const getAdminId = () => {
   }
   return null;
 };
+
+
 export const getImgUrl = (path) => {
-  if (!path) return "";
+   if (!path) return "";
 
-  let normalizedPath = path.replace(/\\/g, "/");
+  let normalizedPath = path.toString().replace(/\\/g, "/");
 
-  if (normalizedPath.startsWith("http")) {
+  if (
+    normalizedPath.startsWith("http://") ||
+    normalizedPath.startsWith("https://")
+  ) {
     return normalizedPath;
   }
 
@@ -34,7 +39,7 @@ export const getImgUrl = (path) => {
     normalizedPath = normalizedPath.substring(1);
   }
 
-  // 4. Logic to determine the folder structure
+  
   if (
     normalizedPath.startsWith("uploads/") ||
     normalizedPath.startsWith("public/")

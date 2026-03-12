@@ -251,12 +251,8 @@ const handleEdit = (item) => {
                             border: "1px solid #eee",
                           }}>
                           <img
-                            src={
-                              item.bannerImage
-                                ? `${authService.IMG_URL}/${item.bannerImage}`
-                                : "https://placehold.co/70x45?text=No+Img"
-                            }
-                            alt="thumb"
+                            src={authService.getImgUrl(item.bannerImage)}
+                            alt="category"
                             style={{
                               width: "100%",
                               height: "100%",
@@ -264,7 +260,7 @@ const handleEdit = (item) => {
                             }}
                             onError={(e) => {
                               e.target.src =
-                                "https://placehold.co/70x45?text=No+Img";
+                                "https://placehold.co/60x40?text=No+Img";
                             }}
                           />
                         </div>
