@@ -2,12 +2,29 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import AttorneyHeader from "./AttorneyHeader";
+import { getUserProfile } from "../../services/authService"; // Ensure path is correct
 
 export default function AttorneyLayout({ children }) {
   const router = useRouter();
   const [showSidebar, setShowSidebar] = useState(false);
-  const [userName, setUserName] = useState("");
+
+  // Dynamic States
+  const [userName, setUserName] = useState("Attorney");
   const [userEmail, setUserEmail] = useState("");
+  const [profileImg, setProfileImg] = useState("/assets/images/attorney1.png");
+
+  // Image URL Helper Logic
+  const getImgUrl = (path) => {
+    if (!path) return "/assets/images/attorney1.png";
+    let normalizedPath = path.toString().replace(/\\/g, "/");
+    if (
+      normalizedPath.startsWith("http://") ||
+      normalizedPath.startsWith("https://")
+    ) {
+      return normalizedPath;
+    }
+    return normalizedPath;
+  };
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -53,8 +70,27 @@ export default function AttorneyLayout({ children }) {
   ];
 
   useEffect(() => {
-    setUserName(localStorage.getItem("userName") || "Attorney");
-    setUserEmail(localStorage.getItem("userEmail") || "email@example.com");
+    const fetchProfile = async () => {
+      const userId = localStorage.getItem("userId");
+      if (!userId) return;
+
+      try {
+        const response = await getUserProfile(userId);
+        const attorney = response?.attorney;
+
+        if (attorney) {
+          setUserName(`${attorney.firstName} ${attorney.lastName || ""}`);
+          setUserEmail(attorney.email || "");
+          if (attorney.profileImage) {
+            setProfileImg(getImgUrl(attorney.profileImage));
+          }
+        }
+      } catch (error) {
+        console.error("Layout fetch error:", error);
+      }
+    };
+
+    fetchProfile();
   }, []);
 
   return (
@@ -73,15 +109,21 @@ export default function AttorneyLayout({ children }) {
                   className="mx-auto mb-3"
                   style={{ width: "100px", height: "100px" }}>
                   <img
-                    src="/assets/images/attorney1.png"
+                    src={profileImg} // DYNAMIC IMAGE
                     className="rounded-circle shadow-sm w-100 h-100"
                     style={{ objectFit: "cover", border: "4px solid #f8f9fa" }}
                     alt="avatar"
+                    onError={(e) => {
+                      e.target.src = "/assets/images/attorney1.png";
+                    }}
                   />
                 </div>
-                <h6 className="fw-bold mb-1 text-navy">{userName}</h6>
-                <p className="text-muted mb-0 small">{userEmail}</p>
+                <h6 className="fw-bold mb-1 text-navy">{userName}</h6>{" "}
+                {/* DYNAMIC NAME */}
+                <p className="text-muted mb-0 small">{userEmail}</p>{" "}
+                {/* DYNAMIC EMAIL */}
               </div>
+
               <div className="p-3 bg-white">
                 <nav className="nav flex-column sidebar-nav">
                   {menuItems.map((item, idx) => (
@@ -117,6 +159,7 @@ export default function AttorneyLayout({ children }) {
       )}
 
       <style jsx>{`
+        /* ... existing styles ... */
         .text-navy {
           color: #002147;
         }

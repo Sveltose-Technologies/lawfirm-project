@@ -17,7 +17,6 @@ import {
   Badge,
 } from "reactstrap";
 
-// Custom Components
 import PaginationComponent from "../../context/Pagination";
 import * as authService from "../../services/authService";
 
@@ -37,7 +36,6 @@ const AwardPage = () => {
   const [currentId, setCurrentId] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 🔹 Search & Pagination
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
@@ -63,15 +61,25 @@ const AwardPage = () => {
     [],
   );
 
-  // ✨ HTML entities को साफ़ इंग्लिश में बदलने के लिए
+  // Helper to limit text to 3 words
+  const truncateWords = (text, limit = 3) => {
+    if (!text) return "N/A";
+    const words = text.split(" ");
+    if (words.length <= limit) return text;
+    return words.slice(0, limit).join(" ") + "...";
+  };
+
+  // Helper to convert HTML to plain text for table display
   const stripHtml = (html) => {
     if (!html) return "";
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    return doc.body.textContent || "";
+    if (typeof window !== "undefined") {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      return doc.body.textContent || "";
+    }
+    return html;
   };
 
   const fetchData = useCallback(async () => {
-    console.log("🔄 Fetching Awards...");
     const res = await authService.getAllAwards();
     if (res.success) {
       setDataList(res.data || []);
@@ -108,7 +116,8 @@ const AwardPage = () => {
     setLoading(true);
     try {
       const data = new FormData();
-      data.append("adminId", "1"); // Static or from user session
+      const adminId = authService.getAdminId() || "1";
+      data.append("adminId", adminId);
       data.append("personName", formData.personName || "");
       data.append("organization", formData.organization || "");
       data.append("year", formData.year);
@@ -119,7 +128,6 @@ const AwardPage = () => {
         data.append("bannerImage", formData.bannerImage);
       }
 
-      console.log(`📤 ${isEditing ? "Updating" : "Creating"} Award...`);
       const res = isEditing
         ? await authService.updateAward(currentId, data)
         : await authService.createAward(data);
@@ -129,14 +137,13 @@ const AwardPage = () => {
         toggle();
       }
     } catch (err) {
-      console.error("❌ Submission Failed:", err);
+      console.error("Submission Failed:", err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleEdit = (item) => {
-    console.log("📝 Editing Award:", item.awardTitle);
     setFormData({
       personName: item.personName || "",
       organization: item.organization || "",
@@ -156,7 +163,7 @@ const AwardPage = () => {
         const res = await authService.deleteAward(id);
         if (res.success) fetchData();
       } catch (err) {
-        console.error("❌ Delete Failed:", err);
+        console.error("Delete Failed:", err);
       }
     }
   };
@@ -178,27 +185,27 @@ const AwardPage = () => {
     <div
       className="p-3 p-md-4 min-vh-100"
       style={{ backgroundColor: "#f9f9f9" }}>
-      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-          <h4 className="fw-bold mb-0" style={{ color: "#2c3e50" }}>
+          <h4 className="fw-bold mb-0" style={{ color: "#002147" }}>
             Awards & Recognition
           </h4>
-          <p className="text-muted small mb-0">Manage firm achievements.</p>
+          <p className="text-muted small mb-0">
+            Manage and display firm achievements.
+          </p>
         </div>
         <Button
-          className="px-4 shadow-sm text-white"
+          className="px-4 shadow-sm text-white fw-bold"
           style={{ backgroundColor: GOLD, border: "none" }}
           onClick={toggle}>
-          + Add Award
+          + ADD NEW AWARD
         </Button>
       </div>
 
-      {/* Search */}
       <Row className="mb-3">
         <Col xs="12" md="4" lg="3">
           <Input
-            placeholder="Search awards..."
+            placeholder="Search records..."
             className="rounded-pill border-0 shadow-sm px-3"
             value={search}
             onChange={(e) => {
@@ -209,25 +216,26 @@ const AwardPage = () => {
         </Col>
       </Row>
 
-      {/* Table */}
       <Card className="border-0 shadow-sm rounded-4">
         <CardBody className="p-0">
           <Table hover responsive className="align-middle mb-0">
             <thead style={{ backgroundColor: LIGHT_GOLD }}>
-              <tr>
-                <th className="px-4">SR.</th>
-                <th className="text-center">BANNER</th>
-                <th>AWARD TITLE</th>
-                <th>RECIPIENT / ORG</th>
-                <th>YEAR</th>
-                <th className="text-end px-4">ACTION</th>
+              <tr className="text-uppercase small">
+                <th className="px-4 py-3">SR.</th>
+                <th className="text-center">Banner</th>
+                <th>Award Title</th>
+                <th>Recipient</th>
+                <th>Organization</th>
+                <th className="text-center">Year</th>
+                <th>Details</th>
+                <th className="text-end px-4">Action</th>
               </tr>
             </thead>
             <tbody>
               {currentItems.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="py-5 text-center text-muted">
-                    No records found.
+                  <td colSpan="8" className="py-5 text-center text-muted">
+                    No achievements recorded yet.
                   </td>
                 </tr>
               ) : (
@@ -238,20 +246,16 @@ const AwardPage = () => {
                     </td>
                     <td className="text-center">
                       <div
+                        className="shadow-sm border"
                         style={{
-                          width: "80px",
-                          height: "45px",
-                          borderRadius: "6px",
+                          width: "60px",
+                          height: "40px",
+                          borderRadius: "4px",
                           overflow: "hidden",
-                          border: "1px solid #eee",
                           margin: "auto",
                         }}>
                         <img
-                          src={
-                            item.bannerImage
-                              ? `${authService.IMG_URL}/${item.bannerImage}`
-                              : "https://placehold.co/80x45?text=No+Img"
-                          }
+                          src={authService.getImgUrl(item.bannerImage)}
                           alt="Award"
                           style={{
                             width: "100%",
@@ -260,21 +264,17 @@ const AwardPage = () => {
                           }}
                           onError={(e) => {
                             e.target.src =
-                              "https://placehold.co/80x45?text=No+Img";
+                              "https://placehold.co/60x40?text=No+Img";
                           }}
                         />
                       </div>
                     </td>
-                    <td className="fw-bold">{item.awardTitle}</td>
-                    <td>
-                      <div className="small fw-bold text-dark">
-                        {item.personName || "N/A"}
-                      </div>
-                      <div className="small text-muted">
-                        {item.organization}
-                      </div>
+                    <td className="fw-bold" style={{ color: "#002147" }}>
+                      {truncateWords(item.awardTitle)}
                     </td>
-                    <td>
+                    <td>{truncateWords(item.personName)}</td>
+                    <td>{truncateWords(item.organization)}</td>
+                    <td className="text-center">
                       <Badge
                         pill
                         style={{
@@ -285,21 +285,26 @@ const AwardPage = () => {
                         {item.year}
                       </Badge>
                     </td>
+                    <td className="text-muted small">
+                      {truncateWords(stripHtml(item.details))}
+                    </td>
                     <td className="text-end px-4">
-                      <Button
-                        size="sm"
-                        color="white"
-                        className="me-2 border shadow-sm"
-                        onClick={() => handleEdit(item)}>
-                        ✏️
-                      </Button>
-                      <Button
-                        size="sm"
-                        color="white"
-                        className="border shadow-sm text-danger"
-                        onClick={() => handleDelete(item.id)}>
-                        🗑️
-                      </Button>
+                      <div className="d-flex gap-2 justify-content-end">
+                        <Button
+                          size="sm"
+                          color="white"
+                          className="border shadow-sm"
+                          onClick={() => handleEdit(item)}>
+                          ✏️
+                        </Button>
+                        <Button
+                          size="sm"
+                          color="white"
+                          className="border shadow-sm text-danger"
+                          onClick={() => handleDelete(item.id)}>
+                          🗑️
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -309,7 +314,7 @@ const AwardPage = () => {
         </CardBody>
       </Card>
 
-      <div className="mt-3">
+      <div className="mt-4">
         <PaginationComponent
           totalItems={filteredData.length}
           itemsPerPage={itemsPerPage}
@@ -318,15 +323,13 @@ const AwardPage = () => {
         />
       </div>
 
-      {/* MODAL */}
       <Modal isOpen={modal} toggle={toggle} size="lg" centered scrollable>
-        <ModalHeader
-          toggle={toggle}
-          className="fw-bold"
-          style={{ color: GOLD }}>
-          {isEditing ? "Update Award Details" : "Register New Award"}
+        <ModalHeader toggle={toggle} className="fw-bold border-0">
+          <span style={{ color: "#002147" }}>
+            {isEditing ? "Update Achievement" : "Add Achievement"}
+          </span>
         </ModalHeader>
-        <ModalBody className="px-4">
+        <ModalBody className="px-4 pb-4">
           <Form onSubmit={handleSubmit}>
             <Row className="gy-3">
               <Col md={8}>
@@ -334,7 +337,7 @@ const AwardPage = () => {
                   <Label className="small fw-bold">Award Title *</Label>
                   <Input
                     type="text"
-                    placeholder="e.g. Best Law Firm 2025"
+                    placeholder="Enter award name"
                     value={formData.awardTitle}
                     onChange={(e) =>
                       setFormData({ ...formData, awardTitle: e.target.value })
@@ -348,7 +351,7 @@ const AwardPage = () => {
                   <Label className="small fw-bold">Year *</Label>
                   <Input
                     type="number"
-                    placeholder="2025"
+                    placeholder="YYYY"
                     value={formData.year}
                     onChange={(e) =>
                       setFormData({ ...formData, year: e.target.value })
@@ -359,11 +362,10 @@ const AwardPage = () => {
               </Col>
               <Col md={6}>
                 <FormGroup>
-                  <Label className="small fw-bold">
-                    Person Name (Optional)
-                  </Label>
+                  <Label className="small fw-bold">Recipient Name</Label>
                   <Input
                     type="text"
+                    placeholder="Individual name"
                     value={formData.personName}
                     onChange={(e) =>
                       setFormData({ ...formData, personName: e.target.value })
@@ -376,6 +378,7 @@ const AwardPage = () => {
                   <Label className="small fw-bold">Organization</Label>
                   <Input
                     type="text"
+                    placeholder="Granting body"
                     value={formData.organization}
                     onChange={(e) =>
                       setFormData({ ...formData, organization: e.target.value })
@@ -403,7 +406,7 @@ const AwardPage = () => {
               </Col>
               <Col xs={12}>
                 <FormGroup>
-                  <Label className="small fw-bold">Description Details</Label>
+                  <Label className="small fw-bold">Achievement Details</Label>
                   <div className="bg-white border rounded">
                     <ReactQuill
                       theme="snow"
@@ -421,19 +424,15 @@ const AwardPage = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                style={{
-                  backgroundColor: GOLD,
-                  border: "none",
-                  width: "130px",
-                }}
-                className="text-white fw-bold">
-                {loading ? "Saving..." : isEditing ? "Update" : "Save"}
+                style={{ backgroundColor: "#002147", border: "none" }}
+                className="text-white fw-bold px-4">
+                {loading
+                  ? "Processing..."
+                  : isEditing
+                    ? "Save Changes"
+                    : "Create Entry"}
               </Button>
-              <Button
-                outline
-                type="button"
-                style={{ width: "130px" }}
-                onClick={toggle}>
+              <Button outline type="button" className="px-4" onClick={toggle}>
                 Cancel
               </Button>
             </div>

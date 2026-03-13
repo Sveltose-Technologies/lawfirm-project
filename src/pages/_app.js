@@ -20,19 +20,16 @@ function MyApp({ Component, pageProps }) {
     Component.getLayout ||
     ((page) => (
       <Layout>
-        <DisclaimerPopup />
         {page}
       </Layout>
     ));
 
   return (
     <>
-    
       <Script
         src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"
         strategy="afterInteractive"
       />
-
       {getLayout(<Component {...pageProps} />)}
     </>
   );

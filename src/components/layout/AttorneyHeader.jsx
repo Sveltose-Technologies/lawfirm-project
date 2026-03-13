@@ -1,14 +1,55 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { getUserProfile } from "../../services/authService"; // Ensure this path is correct
+// Import your getImgUrl helper or define it if it's in a utility file
+// import { getImgUrl } from "../../utils/helpers";
 
 export default function AttorneyHeader({ onToggleSidebar }) {
   const router = useRouter();
+
+  // Default fallback image
   const [profileImg, setProfileImg] = useState("/assets/images/attorney1.png");
+  const [adminName, setAdminName] = useState("Attorney");
+
+  // Your provided helper function
+  const getImgUrl = (path) => {
+    if (!path) return "/assets/images/attorney1.png";
+    let normalizedPath = path.toString().replace(/\\/g, "/");
+    if (
+      normalizedPath.startsWith("http://") ||
+      normalizedPath.startsWith("https://")
+    ) {
+      return normalizedPath;
+    }
+    // Add your IMG_URL base here if needed, otherwise return as is for Cloudinary
+    return normalizedPath;
+  };
 
   useEffect(() => {
-    const savedImg = localStorage.getItem("profileImage");
-    if (savedImg) setProfileImg(savedImg);
+    const fetchUserData = async () => {
+      const userId = localStorage.getItem("userId");
+      if (!userId) return;
+
+      try {
+        const response = await getUserProfile(userId);
+        // Accessing the attorney object from your provided JSON structure
+        const attorney = response?.attorney;
+
+        if (attorney) {
+          if (attorney.profileImage) {
+            setProfileImg(getImgUrl(attorney.profileImage));
+          }
+          if (attorney.firstName) {
+            setAdminName(`${attorney.firstName} ${attorney.lastName || ""}`);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading header profile:", error);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
   const handleLogout = () => {
@@ -51,13 +92,19 @@ export default function AttorneyHeader({ onToggleSidebar }) {
 
             <div className="profile-dropdown-container">
               <div
-                className="profile-trigger d-flex align-items-center"
+                className="profile-trigger d-flex align-items-center gap-2"
                 style={{ cursor: "pointer" }}>
+                <span className="small d-none d-md-inline fw-bold text-muted">
+                  {adminName}
+                </span>
                 <img
                   src={profileImg}
                   className="rounded-circle border shadow-sm"
                   style={{ width: "45px", height: "45px", objectFit: "cover" }}
                   alt="profile"
+                  onError={(e) => {
+                    e.target.src = "/assets/images/attorney1.png";
+                  }}
                 />
               </div>
 

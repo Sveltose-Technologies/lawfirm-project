@@ -8,6 +8,7 @@ import {
   ModalHeader,
   ModalBody,
   Form,
+  FormGroup,
   Label,
   Input,
   Row,
@@ -37,7 +38,6 @@ const PromoterPage = () => {
     email: "",
     mobileNo: "",
   });
-console.log("dataList", dataList);
 
   const fetchData = useCallback(async () => {
     const res = await authService.getAllPromoters();
@@ -48,9 +48,8 @@ console.log("dataList", dataList);
     fetchData();
   }, [fetchData]);
 
-  // Helper function to truncate text to exactly 3 words
   const truncateWords = (text, limit = 3) => {
-    if (!text) return "";
+    if (!text) return "N/A";
     const words = text.trim().split(/\s+/);
     if (words.length > limit) {
       return words.slice(0, limit).join(" ") + "...";
@@ -79,7 +78,7 @@ console.log("dataList", dataList);
     e.preventDefault();
     const currentAdminId = authService.getAdminId();
     if (!currentAdminId) {
-      alert("Session expired. Please login again.");
+      toast.error("Session expired. Please login again.");
       return;
     }
 
@@ -111,6 +110,7 @@ console.log("dataList", dataList);
       }
     } catch (err) {
       console.error("Submission error:", err);
+      toast.error("Failed to save profile.");
     } finally {
       setLoading(false);
     }
@@ -131,6 +131,16 @@ console.log("dataList", dataList);
     setModal(true);
   };
 
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this promoter?")) {
+      const res = await authService.deletePromoter(id);
+      if (res.success) {
+        toast.success("Deleted successfully");
+        fetchData();
+      }
+    }
+  };
+
   const filteredData = dataList.filter((item) =>
     item.personName.toLowerCase().includes(search.toLowerCase()),
   );
@@ -142,88 +152,117 @@ console.log("dataList", dataList);
 
   return (
     <div className="container-fluid py-4 bg-light min-vh-100">
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-        <h4 className="fw-bold mb-0">Promoters Management</h4>
-        <Button color="dark" className="rounded-0 px-4" onClick={toggle}>
-          + Add Promoter
+      <div className="d-flex justify-content-between align-items-center mb-4 gap-3">
+        <h4 className="fw-bold mb-0" style={{ color: "#002147" }}>
+          Promoters Management
+        </h4>
+        <Button color="dark" className="rounded-pill px-4" onClick={toggle}>
+          + ADD PROMOTER
         </Button>
       </div>
 
-      <Card className="border-0 shadow-sm rounded-0">
+      <div className="mb-3">
+        <Input
+          placeholder="Search by name..."
+          className="rounded-pill border-0 shadow-sm w-25"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      <Card className="border-0 shadow-sm rounded-4">
         <CardBody className="p-0">
           <div className="table-responsive">
             <Table hover className="align-middle mb-0">
-              <thead className="table-dark text-nowrap">
+              <thead className="bg-dark text-white small text-uppercase">
                 <tr>
-                  <th className="ps-4">Profile</th>
+                  <th className="ps-4">SR.</th>
+                  <th className="text-center">Profile</th>
+                  <th className="text-center">Banner</th>
                   <th>Name</th>
                   <th>Designation</th>
-                  <th>Contact Info</th>
+                  <th>Email</th>
+                  <th>Mobile</th>
+                  <th>Specialization</th>
                   <th className="text-end pe-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {currentItems.length > 0 ? (
-                  currentItems.map((item) => (
-                    <tr key={item.id}>
-                      <td className="ps-4">
+                  currentItems.map((item, index) => (
+                    <tr key={item.id} className="small">
+                      <td className="ps-4 text-muted">
+                        {(currentPage - 1) * itemsPerPage + index + 1}.
+                      </td>
+                      <td className="text-center">
                         <img
-                          src={`${authService.getImgUrl(item.personImage)}`}
+                          src={authService.getImgUrl(item.personImage)}
                           style={{
-                            width: "60px",
-                            height: "60px",
-                            minWidth: "60px",
+                            width: "45px",
+                            height: "45px",
+                            objectFit: "cover",
                           }}
-                          className="rounded-0 border object-fit-cover"
+                          className="rounded-circle border shadow-sm"
                           alt="profile"
                           onError={(e) => {
                             e.target.src =
-                              "https://placehold.co/60x60?text=No+Img";
+                              "https://placehold.co/45x45?text=No+Img";
                           }}
                         />
                       </td>
-                      <td className="fw-bold text-nowrap">{item.personName}</td>
+                      <td className="text-center">
+                        <img
+                          src={authService.getImgUrl(item.bannerImage)}
+                          style={{
+                            width: "60px",
+                            height: "35px",
+                            objectFit: "cover",
+                          }}
+                          className="rounded-1 border shadow-sm"
+                          alt="banner"
+                          onError={(e) => {
+                            e.target.src =
+                              "https://placehold.co/60x35?text=No+Img";
+                          }}
+                        />
+                      </td>
+                      <td className="fw-bold">
+                        {truncateWords(item.personName, 3)}
+                      </td>
                       <td>
-                        <Badge
-                          color="secondary"
-                          className="rounded-0 fw-normal"
-                          title={item.designation} // Shows full text on hover
-                        >
+                        <Badge color="light" className="text-dark border">
                           {truncateWords(item.designation, 3)}
                         </Badge>
                       </td>
-                      <td className="text-nowrap">
-                        <div className="small text-dark">
-                          {item.email || "N/A"}
-                        </div>
-                        <div className="small text-muted">
-                          {item.mobileNo || "N/A"}
-                        </div>
+                      <td>{item.email || "N/A"}</td>
+                      <td>{item.mobileNo || "N/A"}</td>
+                      <td className="text-muted">
+                        {truncateWords(item.specialization, 3)}
                       </td>
-                      <td className="text-end pe-4 text-nowrap">
-                        <Button
-                          size="sm"
-                          color="light"
-                          className="me-2 border rounded-0"
-                          onClick={() => handleEdit(item)}>
-                          ✏️
-                        </Button>
-                        <Button
-                          size="sm"
-                          color="light"
-                          className="text-danger border rounded-0"
-                          onClick={() =>
-                            authService.deletePromoter(item.id).then(fetchData)
-                          }>
-                          🗑️
-                        </Button>
+                      <td className="text-end pe-4">
+                        <div className="d-flex gap-2 justify-content-end">
+                          <Button
+                            size="sm"
+                            color="white"
+                            className="border shadow-sm"
+                            onClick={() => handleEdit(item)}>
+                            ✏️
+                          </Button>
+                          <Button
+                            size="sm"
+                            color="white"
+                            className="text-danger border shadow-sm"
+                            onClick={() => handleDelete(item.id)}>
+                            🗑️
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="text-center py-4">
-                      No Data Found
+                    <td colSpan="9" className="text-center py-5 text-muted">
+                      No records found
                     </td>
                   </tr>
                 )}
@@ -233,7 +272,7 @@ console.log("dataList", dataList);
         </CardBody>
       </Card>
 
-      <div className="mt-4 d-flex justify-content-center">
+      <div className="mt-4">
         <PaginationComponent
           totalItems={filteredData.length}
           itemsPerPage={itemsPerPage}
@@ -242,104 +281,122 @@ console.log("dataList", dataList);
         />
       </div>
 
-      <Modal
-        isOpen={modal}
-        toggle={toggle}
-        size="lg"
-        centered
-        className="rounded-0">
-        <ModalHeader toggle={toggle} className="border-bottom-0">
-          Promoter Details
+      <Modal isOpen={modal} toggle={toggle} size="lg" centered>
+        <ModalHeader toggle={toggle} className="border-0 fw-bold">
+          Promoter Configuration
         </ModalHeader>
-        <ModalBody className="pb-4">
+        <ModalBody className="px-4 pb-4">
           <Form onSubmit={handleSubmit}>
             <Row className="g-3">
               <Col md={6}>
-                <Label className="small fw-bold">Name</Label>
-                <Input
-                  className="rounded-0"
-                  value={formData.personName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, personName: e.target.value })
-                  }
-                  required
-                />
+                <FormGroup>
+                  <Label className="small fw-bold">Full Name *</Label>
+                  <Input
+                    className="rounded-3"
+                    value={formData.personName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, personName: e.target.value })
+                    }
+                    required
+                  />
+                </FormGroup>
               </Col>
               <Col md={6}>
-                <Label className="small fw-bold">Designation</Label>
-                <Input
-                  className="rounded-0"
-                  value={formData.designation}
-                  onChange={(e) =>
-                    setFormData({ ...formData, designation: e.target.value })
-                  }
-                  required
-                />
+                <FormGroup>
+                  <Label className="small fw-bold">Designation *</Label>
+                  <Input
+                    className="rounded-3"
+                    value={formData.designation}
+                    onChange={(e) =>
+                      setFormData({ ...formData, designation: e.target.value })
+                    }
+                    required
+                  />
+                </FormGroup>
               </Col>
               <Col md={6}>
-                <Label className="small fw-bold">Email</Label>
-                <Input
-                  className="rounded-0"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                />
+                <FormGroup>
+                  <Label className="small fw-bold">Primary Email</Label>
+                  <Input
+                    className="rounded-3"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                  />
+                </FormGroup>
               </Col>
               <Col md={6}>
-                <Label className="small fw-bold">Mobile Number</Label>
-                <Input
-                  className="rounded-0"
-                  type="text"
-                  value={formData.mobileNo}
-                  onChange={(e) =>
-                    setFormData({ ...formData, mobileNo: e.target.value })
-                  }
-                />
+                <FormGroup>
+                  <Label className="small fw-bold">Mobile Number</Label>
+                  <Input
+                    className="rounded-3"
+                    type="text"
+                    value={formData.mobileNo}
+                    onChange={(e) =>
+                      setFormData({ ...formData, mobileNo: e.target.value })
+                    }
+                  />
+                </FormGroup>
               </Col>
               <Col xs={12}>
-                <Label className="small fw-bold">
-                  Biography (Specialization)
-                </Label>
-                <Input
-                  className="rounded-0"
-                  type="textarea"
-                  rows="4"
-                  value={formData.specialization}
-                  onChange={(e) =>
-                    setFormData({ ...formData, specialization: e.target.value })
-                  }
-                />
+                <FormGroup>
+                  <Label className="small fw-bold">
+                    Biography / Specialization
+                  </Label>
+                  <Input
+                    className="rounded-3"
+                    type="textarea"
+                    rows="4"
+                    value={formData.specialization}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        specialization: e.target.value,
+                      })
+                    }
+                  />
+                </FormGroup>
               </Col>
               <Col md={6}>
-                <Label className="small fw-bold">Profile Photo (Square)</Label>
-                <Input
-                  className="rounded-0"
-                  type="file"
-                  onChange={(e) =>
-                    setFormData({ ...formData, personImage: e.target.files[0] })
-                  }
-                />
+                <FormGroup>
+                  <Label className="small fw-bold">Profile Image</Label>
+                  <Input
+                    className="rounded-3"
+                    type="file"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        personImage: e.target.files[0],
+                      })
+                    }
+                  />
+                </FormGroup>
               </Col>
               <Col md={6}>
-                <Label className="small fw-bold">Banner Photo (Square)</Label>
-                <Input
-                  className="rounded-0"
-                  type="file"
-                  onChange={(e) =>
-                    setFormData({ ...formData, bannerImage: e.target.files[0] })
-                  }
-                />
+                <FormGroup>
+                  <Label className="small fw-bold">Banner Image</Label>
+                  <Input
+                    className="rounded-3"
+                    type="file"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        bannerImage: e.target.files[0],
+                      })
+                    }
+                  />
+                </FormGroup>
               </Col>
             </Row>
-            <div className="mt-4 text-end">
+            <div className="mt-4">
               <Button
                 color="dark"
                 type="submit"
                 disabled={loading}
-                className="rounded-0 px-5 w-100 w-md-auto">
-                {loading ? "Saving..." : "Save Profile"}
+                className="w-100 rounded-3 py-2 fw-bold">
+                {loading ? "Processing..." : "Save Data"}
               </Button>
             </div>
           </Form>

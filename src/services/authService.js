@@ -180,6 +180,7 @@ export const loginAttorney = async (payload) => {
     throw error.response?.data || error;
   }
 };
+
 export const getUserProfile = async (userId) => {
   try {
     console.log("🚀 Calling Attorney Login API:", userId);
@@ -213,30 +214,38 @@ export const resetPasswordAttorney = async (payload) => {
 
 
 // ================= ADMIN AUTH & OTP =================
+// authService.js
+
 export const adminLogin = async (email, password) => {
   try {
+    // IMPORTANT: Clear old Attorney data before logging in as Admin
+    localStorage.clear();
+
     const response = await API.post("/admin/login", { email, password });
 
-    // Asli JWT Token extract karein
+    // Check where your backend sends the token
     const token =
       response.data?.token ||
       response.data?.admin?.token ||
-      response.data?.user?.token;
+      response.data?.data?.token;
     const adminData =
-      response.data?.admin || response.data?.user || response.data;
+      response.data?.admin || response.data?.user || response.data?.data;
 
     if (token) {
-      // ✅ Dummy "admin-token" ki jagah asli JWT save karein
-      localStorage.setItem("token", token);
+      localStorage.setItem("token", token); // Save standalone token
       localStorage.setItem("user", JSON.stringify(adminData));
       localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("role", "admin");
 
-      console.log("✅ Real JWT Token saved successfully.");
       return { success: true, data: response.data };
     }
-    return { success: false, message: "Token missing" };
+    return { success: false, message: "Token not received from server" };
   } catch (error) {
-    return { success: false, message: "Login failed" };
+    console.error("Login Error:", error.response?.data);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Login failed",
+    };
   }
 };
 // export const adminLogin = async (email, password) => {
@@ -1544,21 +1553,22 @@ export const deleteAttorney = async (id) => {
   }
 };
 
-export const updateAttorney = async (id, payload) => {
+// Add this to your authService.js
+export const updateAttorney = async (userId, payload) => {
   try {
-    console.log(`🚀 Updating Attorney ID: ${id}`, payload);
-    const response = await API.put(`/attorney/update/${id}`, payload);
-    console.log("✅ Update Attorney Success:", response.data);
+    console.log("🚀 Updating Attorney Profile for ID:", userId);
+    // Use PUT /attorney/update/:id
+    const response = await API.put(`/attorney/update/${userId}`, payload, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Update Attorney Error:",
-      error.response?.data || error.message,
-    );
+    console.error("❌ Update Error:", error.response?.data || error.message);
     throw error.response?.data || error;
   }
 };
-
 // ================= TERMS & CONDITIONS APIs =================
 
 /**
