@@ -1,17 +1,15 @@
 import API from "./api";
 
-export const IMG_URL = "https://nodejs.nrislawfirm.com";
+export const IMG_URL = "https://nodejs.bluestor.net";
 
 // ================= HELPER FUNCTIONS =================
 
 export const getAdminId = () => {
   if (typeof window !== "undefined") {
     const userData = localStorage.getItem("user");
-    console.log("Admin ID", userData);
     if (userData) {
       try {
         const user = JSON.parse(userData);
-
         return user.id || null;
       } catch (error) {
         console.error("Error parsing user data from localStorage", error);
@@ -24,32 +22,31 @@ export const getAdminId = () => {
 
 
 export const getImgUrl = (path) => {
-   if (!path) return "";
-
-  let normalizedPath = path.toString().replace(/\\/g, "/");
-
-  if (
-    normalizedPath.startsWith("http://") ||
-    normalizedPath.startsWith("https://")
-  ) {
-    return normalizedPath;
+  if (!path || path === "null" || path === "undefined") {
+    return ""; 
   }
 
-  if (normalizedPath.startsWith("/")) {
-    normalizedPath = normalizedPath.substring(1);
+  let cleanPath = path.toString().trim().replace(/\\/g, "/");
+
+ 
+  if (/^(http|https|data:image)/.test(cleanPath)) {
+    return cleanPath;
   }
 
-  
-  if (
-    normalizedPath.startsWith("uploads/") ||
-    normalizedPath.startsWith("public/")
-  ) {
-    return `${IMG_URL}/${normalizedPath}`;
+  while (cleanPath.startsWith("/")) {
+    cleanPath = cleanPath.substring(1);
   }
 
-  return `${IMG_URL}/uploads/${normalizedPath}`;
+
+  const folders = ["uploads/", "public/", "assets/", "images/", "static/"];
+  const hasFolder = folders.some((folder) => cleanPath.startsWith(folder));
+
+  if (hasFolder) {
+    return `${IMG_URL}/${cleanPath}`;
+  }
+
+  return `${IMG_URL}/uploads/${cleanPath}`;
 };
-
 /**
  * Get Current User from storage
  */
@@ -211,7 +208,6 @@ export const resetPasswordAttorney = async (payload) => {
   const response = await API.put("/attorney/reset-password", payload);
   return response.data;
 };
-
 
 // ================= ADMIN AUTH & OTP =================
 // authService.js
@@ -1876,12 +1872,10 @@ export const getAttorneylanguages = async () => {
     const response = await API.get("/languages/get-all");
     const data = response.data || response.data;
     console.log("data Testing", data);
-    
+
     return data;
   } catch (error) {
-    console.error(
-      error.response?.data || error.message,
-    );
+    console.error(error.response?.data || error.message);
     throw error;
   }
 };
@@ -1894,9 +1888,7 @@ export const getAttorneyLocation = async () => {
     const data = response.data || response.data;
     return data;
   } catch (error) {
-    console.error(
-      error.response?.data || error.message,
-    );
+    console.error(error.response?.data || error.message);
     throw error;
   }
 };
