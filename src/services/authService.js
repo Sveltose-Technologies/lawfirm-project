@@ -1850,7 +1850,25 @@ export const getAllRanking = () => API.get("/home-ranking/getall");
 export const deleteRankData = (id) => API.delete(`/home-ranking/delete/${id}`);
 export const updateRanking = (id, formData) =>
   API.put(`/home-ranking/update/${id}`, formData);
+export const getAllAdmissions = async () => {
+  try {
+    const response = await API.get("/attorney/getall-admission");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching admissions:", error);
+    return { data: [] };
+  }
+};
 
+export const getAllEducations = async () => {
+  try {
+    const response = await API.get("/attorney/getall-education");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching educations:", error);
+    return { data: [] };
+  }
+};
 // Home All Languages
 export const getAttorneylanguages = async () => {
   try {

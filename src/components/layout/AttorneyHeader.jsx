@@ -106,7 +106,6 @@ export default function AttorneyHeader({ onToggleSidebar }) {
                   style={{ width: "45px", height: "45px", objectFit: "cover" }}
                   alt="profile"
                   onError={(e) => {
-                    // This prevents infinite loops if the fallback also fails
                     if (e.target.src !== fallbackImg) {
                       e.target.src = fallbackImg;
                     }

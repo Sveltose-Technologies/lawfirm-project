@@ -30,7 +30,7 @@ export default function EditProfile() {
     phoneHome: "",
     phoneOffice: "",
     dob: "",
-    admission: "",
+    admission: "", // Isme ab College ka naam aayega
     language: "",
     servicesOffered: "",
     education: "",
@@ -46,7 +46,6 @@ export default function EditProfile() {
     facebook: "",
     gmail: "",
     status: "active",
-    // File parameters
     profileImage: null,
     resume: null,
     kycIdentity: null,
@@ -60,7 +59,6 @@ export default function EditProfile() {
 
     const loadData = async () => {
       try {
-        // Fetch dropdown data
         const [langRes, catRes, cityRes, profileRes] = await Promise.all([
           getAttorneylanguages(),
           getAllCapabilityCategories(),
@@ -68,29 +66,25 @@ export default function EditProfile() {
           getUserProfile(userId),
         ]);
 
-        // Set languages
         setLanguages(langRes?.data?.data || langRes?.data || []);
+        setCategories(catRes?.data || catRes || []);
+        setCities(cityRes?.data || cityRes || []);
 
-        // Set categories (using id and categoryName from your component)
-        const catData = catRes?.data || (Array.isArray(catRes) ? catRes : []);
-        setCategories(catData);
-
-        // Set cities
-        const cityData =
-          cityRes?.data || (Array.isArray(cityRes) ? cityRes : []);
-        setCities(cityData);
-
-        // Populate form with existing profile data
         const attorney = profileRes?.attorney;
         if (attorney) {
           setFormData((prev) => ({
             ...prev,
             ...attorney,
+            // DOB date hai isliye split zaroori hai
             dob: attorney.dob ? attorney.dob.split("T")[0] : "",
-            admission: attorney.admission
-              ? attorney.admission.split("T")[0]
-              : "",
-            // Reset files to null as they arrive as strings from API
+
+            // Admission ab string (College Name) hai, isliye split nahi karenge
+            admission: attorney.admission || "",
+
+            phoneCell: attorney.phoneCell || "",
+            phoneHome: attorney.phoneHome || "",
+            phoneOffice: attorney.phoneOffice || "",
+            password: "",
             profileImage: null,
             resume: null,
             kycIdentity: null,
@@ -124,9 +118,25 @@ export default function EditProfile() {
     const userId = localStorage.getItem("userId");
     const payload = new FormData();
 
-    // Append all text and file data
     Object.keys(formData).forEach((key) => {
-      if (formData[key] !== null && formData[key] !== "") {
+      if (key === "password" && !formData[key]) return;
+
+      // Numeric Fields logic
+      if (
+        key === "familyLawPractice" ||
+        key === "experience" ||
+        key === "categoryId" ||
+        key === "city"
+      ) {
+        const val = parseInt(formData[key]);
+        payload.append(key, isNaN(val) ? 0 : val);
+      }
+      // File logic
+      else if (formData[key] instanceof File) {
+        payload.append(key, formData[key]);
+      }
+      // Text logic (Admission College Name isme chala jayega)
+      else if (formData[key] !== null && formData[key] !== undefined) {
         payload.append(key, formData[key]);
       }
     });
@@ -135,11 +145,13 @@ export default function EditProfile() {
       const response = await updateAttorney(userId, payload);
       if (response.status === 200 || response.data?.success) {
         toast.success("Profile updated successfully!");
-      } else {
-        toast.error("Update failed.");
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Internal Server Error");
+      const errorMsg =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        "Server Error";
+      toast.error(`Error: ${errorMsg}`);
     }
   };
 
@@ -168,7 +180,7 @@ export default function EditProfile() {
                   type="text"
                   name="firstName"
                   className="form-control"
-                  value={formData.firstName}
+                  value={formData.firstName || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -178,7 +190,7 @@ export default function EditProfile() {
                   type="text"
                   name="lastName"
                   className="form-control"
-                  value={formData.lastName}
+                  value={formData.lastName || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -190,7 +202,7 @@ export default function EditProfile() {
                   type="email"
                   name="email"
                   className="form-control"
-                  value={formData.email}
+                  value={formData.email || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -200,7 +212,8 @@ export default function EditProfile() {
                   type="password"
                   name="password"
                   className="form-control"
-                  placeholder="Change password"
+                  placeholder="Leave blank to keep current"
+                  value={formData.password}
                   onChange={handleInputChange}
                 />
               </div>
@@ -211,7 +224,7 @@ export default function EditProfile() {
                 <select
                   name="categoryId"
                   className="form-select"
-                  value={formData.categoryId}
+                  value={formData.categoryId || ""}
                   onChange={handleInputChange}>
                   <option value="">Select Category</option>
                   {categories.map((cat) => (
@@ -229,7 +242,7 @@ export default function EditProfile() {
                   type="date"
                   name="dob"
                   className="form-control"
-                  value={formData.dob}
+                  value={formData.dob || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -238,7 +251,7 @@ export default function EditProfile() {
                 <select
                   name="language"
                   className="form-select"
-                  value={formData.language}
+                  value={formData.language || ""}
                   onChange={handleInputChange}>
                   <option value="">Select Language</option>
                   {languages.map((lang) => (
@@ -261,7 +274,7 @@ export default function EditProfile() {
                   type="text"
                   name="phoneCell"
                   className="form-control"
-                  value={formData.phoneCell}
+                  value={formData.phoneCell || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -271,7 +284,7 @@ export default function EditProfile() {
                   type="text"
                   name="phoneHome"
                   className="form-control"
-                  value={formData.phoneHome}
+                  value={formData.phoneHome || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -281,7 +294,7 @@ export default function EditProfile() {
                   type="text"
                   name="phoneOffice"
                   className="form-control"
-                  value={formData.phoneOffice}
+                  value={formData.phoneOffice || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -291,7 +304,7 @@ export default function EditProfile() {
                   type="text"
                   name="street"
                   className="form-control"
-                  value={formData.street}
+                  value={formData.street || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -301,7 +314,7 @@ export default function EditProfile() {
                   type="text"
                   name="aptBlock"
                   className="form-control"
-                  value={formData.aptBlock}
+                  value={formData.aptBlock || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -310,11 +323,11 @@ export default function EditProfile() {
                 <select
                   name="city"
                   className="form-select"
-                  value={formData.city}
+                  value={formData.city || ""}
                   onChange={handleInputChange}>
                   <option value="">Select City</option>
                   {cities.map((city) => (
-                    <option key={city._id || city.id} value={city.cityName}>
+                    <option key={city.id} value={city.id}>
                       {city.cityName}
                     </option>
                   ))}
@@ -326,7 +339,7 @@ export default function EditProfile() {
                   type="text"
                   name="state"
                   className="form-control"
-                  value={formData.state}
+                  value={formData.state || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -336,7 +349,7 @@ export default function EditProfile() {
                   type="text"
                   name="country"
                   className="form-control"
-                  value={formData.country}
+                  value={formData.country || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -346,7 +359,7 @@ export default function EditProfile() {
                   type="text"
                   name="zipCode"
                   className="form-control"
-                  value={formData.zipCode}
+                  value={formData.zipCode || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -356,7 +369,7 @@ export default function EditProfile() {
                   type="text"
                   name="location"
                   className="form-control"
-                  value={formData.location}
+                  value={formData.location || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -368,12 +381,16 @@ export default function EditProfile() {
                 <h5 className="fw-bold">Professional Credentials</h5>
               </div>
               <div className="col-md-3">
-                <label className="form-label small">Admission Date</label>
+                {/* Yahan maine Admission ko Text kar diya hai */}
+                <label className="form-label small">
+                  Admission (College/University)
+                </label>
                 <input
-                  type="date"
+                  type="text"
                   name="admission"
                   className="form-control"
-                  value={formData.admission}
+                  placeholder="Enter College Name"
+                  value={formData.admission || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -383,7 +400,7 @@ export default function EditProfile() {
                   type="number"
                   name="experience"
                   className="form-control"
-                  value={formData.experience}
+                  value={formData.experience || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -395,7 +412,7 @@ export default function EditProfile() {
                   type="text"
                   name="barCouncilIndiaNo"
                   className="form-control"
-                  value={formData.barCouncilIndiaNo}
+                  value={formData.barCouncilIndiaNo || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -407,7 +424,7 @@ export default function EditProfile() {
                   type="text"
                   name="barCouncilStateNo"
                   className="form-control"
-                  value={formData.barCouncilStateNo}
+                  value={formData.barCouncilStateNo || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -417,7 +434,7 @@ export default function EditProfile() {
                   name="education"
                   className="form-control"
                   rows="2"
-                  value={formData.education}
+                  value={formData.education || ""}
                   onChange={handleInputChange}></textarea>
               </div>
               <div className="col-md-6">
@@ -426,7 +443,7 @@ export default function EditProfile() {
                   name="aboutus"
                   className="form-control"
                   rows="2"
-                  value={formData.aboutus}
+                  value={formData.aboutus || ""}
                   onChange={handleInputChange}></textarea>
               </div>
               <div className="col-md-4">
@@ -435,17 +452,19 @@ export default function EditProfile() {
                   type="text"
                   name="servicesOffered"
                   className="form-control"
-                  value={formData.servicesOffered}
+                  value={formData.servicesOffered || ""}
                   onChange={handleInputChange}
                 />
               </div>
               <div className="col-md-4">
-                <label className="form-label small">Family Law Practice</label>
+                <label className="form-label small">
+                  Family Law Practice (Numbers only)
+                </label>
                 <input
-                  type="text"
+                  type="number"
                   name="familyLawPractice"
                   className="form-control"
-                  value={formData.familyLawPractice}
+                  value={formData.familyLawPractice || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -455,7 +474,7 @@ export default function EditProfile() {
                   type="text"
                   name="familyDetails"
                   className="form-control"
-                  value={formData.familyDetails}
+                  value={formData.familyDetails || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -472,7 +491,7 @@ export default function EditProfile() {
                   type="text"
                   name="linkedin"
                   className="form-control"
-                  value={formData.linkedin}
+                  value={formData.linkedin || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -482,7 +501,7 @@ export default function EditProfile() {
                   type="text"
                   name="twitter"
                   className="form-control"
-                  value={formData.twitter}
+                  value={formData.twitter || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -492,7 +511,7 @@ export default function EditProfile() {
                   type="text"
                   name="facebook"
                   className="form-control"
-                  value={formData.facebook}
+                  value={formData.facebook || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -502,13 +521,13 @@ export default function EditProfile() {
                   type="text"
                   name="gmail"
                   className="form-control"
-                  value={formData.gmail}
+                  value={formData.gmail || ""}
                   onChange={handleInputChange}
                 />
               </div>
             </div>
 
-            {/* 5. FILES & DOCUMENTS SECTION */}
+            {/* 5. FILES SECTION */}
             <div className="row g-3 mb-4">
               <div className="col-12">
                 <h5 className="fw-bold">Verification Documents</h5>

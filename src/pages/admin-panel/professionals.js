@@ -75,14 +75,14 @@ const ProfessionalsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  const stripHtml = (html) => {
-    if (!html) return "";
-    return html
-      .replace(/<[^>]*>?/gm, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  };
-
+ const stripHtml = (html) => {
+   if (!html) return "";
+   return html
+     .replace(/<[^>]*>/g, "")
+     .replace(/&nbsp;/gi, " ")
+     .replace(/\s+/g, " ")
+     .trim();
+ };
   const modules = useMemo(
     () => ({
       toolbar: [

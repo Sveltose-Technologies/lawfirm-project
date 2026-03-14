@@ -1,441 +1,387 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import Head from "next/head";
+import Link from "next/link";
+import {
+  getAllAttorneys,
+  getImgUrl,
+  getAllNews,
+  getAllEvents,
+  getAllCapabilityCategories,
+  getAllLocationCities,
+} from "../../services/authService";
 
-// Updated Data with Local Image Path
-const attorneyList = [
-  {
-    id: 1,
-    name: "Greta Habib",
-    role: "SHAREHOLDER",
-    email: "Greta.Habib@gtlaw.com",
-    phone: "+971 (0) 50 641 2088",
-    location: "Dubai",
-    practice: "CORPORATE",
-    img: "/assets/images/attorney1.png",
-  },
-  {
-    id: 2,
-    name: "Dr. Lukas Hackmann",
-    role: "SENIOR ASSOCIATE",
-    email: "Lukas.Hackmann@gtlaw.com",
-    phone: "+49 30.700.171.202",
-    location: "Berlin",
-    practice: "CORPORATE",
-    img: "/assets/images/attorney1.png",
-  },
-  {
-    id: 3,
-    name: "Fatin F. Haddad",
-    role: "OF COUNSEL",
-    email: "haddadf@gtlaw.com",
-    phone: "+1 518.689.1437",
-    location: "Albany",
-    practice: "CORPORATE",
-    img: "/assets/images/attorney1.png",
-  },
-  {
-    id: 4,
-    name: "Elizabeth Ross Hadley",
-    role: "SHAREHOLDER",
-    email: "Elizabeth.Hadley@gtlaw.com",
-    phone: "+1 512.320.7227",
-    location: "Austin",
-    practice: "GOVERNMENT LAW & POLICY",
-    img: "/assets/images/attorney1.png",
-  },
-  {
-    id: 5,
-    name: "Sebastian Haimerl",
-    role: "ASSOCIATE",
-    email: "Sebastian.Haimerl@gtlaw.com",
-    phone: "+49 30.700.171.112",
-    location: "Berlin",
-    practice: "CORPORATE",
-    img: "/assets/images/attorney1.png",
-  },
-];
-
-export default function AttorneySlugPage() {
+export default function AttorneyProfilePage() {
   const router = useRouter();
   const { slug } = router.query;
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-  // New State for Profile Detail View
-  const [selectedAttorney, setSelectedAttorney] = useState(null);
+  const [attorney, setAttorney] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showShare, setShowShare] = useState(false); // Share toggle state
+  const [news, setNews] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [categories, setCategories] = useState([]);
 
-  // Reset detail view when slug (alphabet letter) changes
-  useEffect(() => {
-    setSelectedAttorney(null);
-  }, [slug]);
-
-  const filteredAttorneys = attorneyList.filter((a) =>
-    a.name.toLowerCase().startsWith(slug?.toLowerCase()),
-  );
+  // Tabs and News Logic (SECTION NOT CHANGED AS REQUESTED)
+  const [activeTab, setActiveTab] = useState("News");
+  const isEventTab = activeTab === "Upcoming Events";
+  const displayList = isEventTab ? events.slice(0, 4) : news.slice(0, 4);
 
   const gtGold = "#c1a152";
-  const gtDark = "#333333";
-  const gtSkyBlue = "#5baed5";
+  const gtDark = "#1a1a1a";
+  const bgSidebar = "#be9144";
 
-  // --- PROFILE DETAIL VIEW (Matches your image) ---
-  if (selectedAttorney) {
+  // Slug Helpers
+  const createSlug = (text) =>
+    text
+      ?.toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-");
+
+  const createNameSlug = (fname, lname) => {
+    const name = `${fname} ${lname || ""}`;
+    return createSlug(name);
+  };
+
+  useEffect(() => {
+    if (!slug) return;
+
+    const loadPageData = async () => {
+      setLoading(true);
+      try {
+        const [attRes, newsRes, eventRes, catRes, cityRes] = await Promise.all([
+          getAllAttorneys(),
+          getAllNews(),
+          getAllEvents(),
+          getAllCapabilityCategories(),
+          getAllLocationCities(),
+        ]);
+
+        const list = attRes?.attorneys || attRes?.data || [];
+        const found = list.find(
+          (attr) =>
+            createNameSlug(attr.firstName, attr.lastName) === slug ||
+            String(attr.id) === String(slug),
+        );
+
+        if (found) setAttorney(found);
+        setNews(newsRes?.data || []);
+        setEvents(eventRes?.data || []);
+        setCategories(catRes?.data || []);
+        setCities(cityRes?.data || []);
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPageData();
+  }, [slug]);
+
+  const handlePrint = () => window.print();
+
+  if (loading)
     return (
-      <main className="bg-white min-vh-100 font-sans">
-        {/* Profile Hero Section (Dark) */}
-        <section
-          style={{ backgroundColor: gtDark }}
-          className="text-white pt-5 pb-3">
-          <div className="container">
-            <div className="row align-items-end">
-              <div className="col-md-4 text-center pt-3">
-                <img
-                  src={selectedAttorney.img}
-                  alt="Profile"
-                  className="img-fluid"
+      <div className="min-vh-100 d-flex align-items-center justify-content-center bg-white">
+        <div className="spinner-border text-warning"></div>
+      </div>
+    );
+  if (!attorney)
+    return <div className="text-center py-5">Attorney not found.</div>;
+
+  const attorneyCity = cities.find(
+    (c) => String(c.id) === String(attorney.city),
+  );
+  const attorneyCategory = categories.find(
+    (cat) => String(cat.id) === String(attorney.categoryId),
+  );
+
+  return (
+    <main
+      className="bg-white min-vh-100"
+      style={{ fontFamily: "Georgia, serif" }}>
+      <Head>
+        <title>
+          {attorney.firstName} {attorney.lastName} | Profile
+        </title>
+        <style>{`
+          @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .hero-bg { background-color: #1a1a1a !important; -webkit-print-color-adjust: exact; }
+          }
+          .hero-section { min-height: 550px; padding-top: 50px; }
+          .gt-link { color: #c1a152; text-decoration: none; transition: 0.3s; }
+          .gt-link:hover { text-decoration: underline; color: #c1a152; }
+          .sidebar-btn { font-size: 11px; letter-spacing: 1px; border-bottom: 1px solid #ddd !important; }
+          .share-popup { animation: fadeIn 0.3s ease-in-out; }
+          @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        `}</style>
+      </Head>
+
+      {/* --- HERO SECTION --- */}
+      <section
+        style={{ backgroundColor: gtDark }}
+        className="text-white hero-section position-relative hero-bg">
+        <div className="container h-100">
+          <div className="row align-items-end h-100 g-0">
+            {/* Left: Attorney Image */}
+            <div className="col-md-5 text-center">
+              <img
+                src={getImgUrl(attorney.profileImage)}
+                alt={attorney.firstName}
+                className="img-fluid"
+                style={{
+                  maxHeight: "500px",
+                  borderBottom: `8px solid ${gtGold}`,
+                }}
+              />
+            </div>
+            {/* Right: Info */}
+            <div className="col-md-7 mb-5 ps-md-5">
+              <h3
+                className="display-3 mb-1"
+                style={{ fontWeight: "400", fontFamily: "serif" }}>
+                {attorney.firstName} {attorney.lastName}
+              </h3>
+
+              <div className="d-flex align-items-center mb-4">
+                <div
                   style={{
-                    borderBottom: `8px solid ${gtGold}`,
-                    maxHeight: "400px",
+                    width: "40px",
+                    height: "1px",
+                    backgroundColor: "white",
                   }}
-                />
+                  className="me-3"></div>
+                <span className="text-uppercase small fw-bold opacity-75 tracking-widest">
+                  {attorney.servicesOffered || "ASSOCIATE"}
+                </span>
               </div>
-              <div className="col-md-8 mb-4">
-                <button
-                  onClick={() => setSelectedAttorney(null)}
-                  className="btn btn-sm btn-outline-light rounded-0 text-uppercase fw-bold mb-4">
-                  ← Back to Results
-                </button>
-                <h1
-                  className="display-4 fw-bold border-top pt-4 mb-2"
-                  style={{ fontFamily: "serif" }}>
-                  {selectedAttorney.name}
-                </h1>
-                <div className="d-flex align-items-center mb-3">
-                  <div
-                    style={{
-                      width: "40px",
-                      height: "2px",
-                      backgroundColor: gtGold,
-                    }}
-                    className="me-2"></div>
-                  <span className="text-uppercase fw-bold small tracking-widest">
-                    {selectedAttorney.role}
-                  </span>
-                </div>
-                <p className="mb-4">
-                  <a
-                    href={`mailto:${selectedAttorney.email}`}
-                    className="text-decoration-none"
-                    style={{ color: gtGold }}>
-                    {selectedAttorney.email}
-                  </a>
-                </p>
 
-                <div className="row text-uppercase small fw-bold">
-                  <div className="col-md-3">
-                    <div style={{ color: gtGold }} className="mb-1">
-                      {selectedAttorney.location}
-                    </div>
-                    <div className="fw-normal">{selectedAttorney.phone}</div>
-                  </div>
-                  <div className="col-md-3 border-start border-secondary ps-4">
-                    <div style={{ color: gtGold }} className="mb-1">
-                      New York
-                    </div>
-                    <div className="fw-normal">T +1 212.801.9200</div>
-                  </div>
-                  <div className="col-md-3 border-start border-secondary ps-4">
-                    <div style={{ color: gtGold }} className="mb-1">
-                      São Paulo ›
-                    </div>
-                    <div className="fw-normal">T +55 11 3521.7049</div>
-                  </div>
-                </div>
-                {/* <div className="text-end mt-4 small">
-                  <span className="mx-2" style={{ color: gtSkyBlue }}>Card | PDF | Print | Share +</span>
-                </div> */}
+              <div className="mb-4">
+                <a
+                  href={`mailto:${attorney.email}`}
+                  className="text-decoration-none gt-link text-white border-bottom border-secondary pb-1">
+                  {attorney.email}
+                </a>
               </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Profile Tabs & Content Area */}
-        <section className="container py-5">
-          <div className="row">
-            {/* <div className="col-md-3 d-none d-md-block">
-              {['Profile', 'Capabilities', 'Experience', 'Recognition & Leadership', 'Credentials', 'News, Insights & Events'].map((item, idx) => (
-                <button key={idx} className={`btn w-100 text-start text-uppercase fw-bold py-3 px-3 rounded-0 border-bottom mb-1 ${idx === 0 ? 'bg-warning' : 'bg-light'}`} style={{ fontSize: '11px', letterSpacing: '1px' }}>
-                  {item}
-                </button>
-              ))}
-              <button className="btn btn-outline-dark w-100 rounded-0 mt-4 py-2 text-uppercase fw-bold small">Expand All</button>
-            </div> */}
-
-            <div
-              className="col-md-9 ps-md-5 text-dark"
-              style={{ lineHeight: "1.8" }}>
-              <p>
-                With a practice that spans nearly 30 years,{" "}
-                {selectedAttorney.name.split(" ")[0]} has represented clients on
-                high-profile mergers and acquisitions, joint ventures, project
-                financings, and corporate restructurings across Ibero-America
-                and the Caribbean...
-              </p>
-              <p
-                className="text-center mt-4 fw-bold"
-                style={{ color: gtSkyBlue }}>
-                Read More +
-              </p>
-
-              <div className="mt-5 border-top pt-5">
-                <h2
-                  className="display-6 fw-bold mb-4"
-                  style={{ fontFamily: "serif" }}>
-                  Capabilities
-                </h2>
-                <div className="d-flex flex-wrap gap-3">
-                  {[
-                    "Corporate",
-                    "Infrastructure",
-                    "Mergers & Acquisitions",
-                    "Latin America Practice",
-                  ].map((tag, i) => (
+              <div className="row text-uppercase small fw-bold mt-4">
+                <div className="col-md-12">
+                  <Link
+                    href={`/location/${createSlug(attorneyCity?.cityName)}`}>
                     <span
-                      key={i}
-                      className="text-decoration-underline"
+                      className="cursor-pointer gt-link"
                       style={{ color: gtGold }}>
-                      {tag}
-                      {i < 3 && " |"}
+                      {attorneyCity?.cityName?.toUpperCase() || "GLOBAL OFFICE"}
                     </span>
-                  ))}
+                  </Link>
+                  <div className="fw-normal mt-1">
+                    T +91 {attorney.phoneOffice || attorney.phoneCell}
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-5 pt-4">
-                <h2
-                  className="display-6 fw-bold mb-4"
-                  style={{ fontFamily: "serif" }}>
-                  Experience
-                </h2>
-                {[
-                  "Mergers & Acquisitions",
-                  "Joint Ventures",
-                  "Corporate Representation",
-                  "Project Finance",
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    className="d-flex justify-content-between align-items-center py-3 border-top border-bottom">
-                    <span className="h5 mb-0 fw-bold" style={{ color: gtGold }}>
-                      {item}
-                    </span>
-                    <i
-                      className="bi bi-plus fs-2"
-                      style={{ color: gtSkyBlue }}></i>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-5 pt-5 border-top">
-                <h2
-                  className="display-6 fw-bold mb-4"
-                  style={{ fontFamily: "serif" }}>
-                  Credentials
-                </h2>
-                <div className="row small">
-                  <div className="col-md-6">
-                    <h6 className="fw-bold text-uppercase mb-3">Education</h6>
-                    <ul className="list-unstyled opacity-75">
-                      <li className="mb-2">
-                        J.D., New York University School of Law, 1998
-                      </li>
-                      <li>
-                        B.S., Finance, with honors, University of Florida, 1994
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="col-md-6">
-                    <h6 className="fw-bold text-uppercase mb-3">Admissions</h6>
-                    <ul className="list-unstyled opacity-75">
-                      <li className="mb-2">Florida | New York</li>
-                      <li>Licensed as a foreign legal consultant in Brazil</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Bottom News Section (Dark) */}
-        <section className="bg-dark text-white py-5 mt-5">
-          <div className="container">
-            <div className="row">
-              <div className="col-md-3">
-                <h2
-                  className="display-5 border-bottom pb-4 mb-4"
-                  style={{ fontFamily: "serif" }}>
-                  News, Insights & Events
-                </h2>
-              </div>
-              <div className="col-md-9 ps-md-5">
-                <div className="mb-5 d-flex gap-4 border-bottom border-secondary pb-3">
-                  {["Featured", "News", "Insights", "Past Events"].map(
-                    (tab, i) => (
-                      <span
-                        key={i}
-                        className={`fw-bold text-uppercase small ${i === 0 ? "text-white border-bottom border-white pb-3" : "text-secondary"}`}>
-                        {tab}
-                      </span>
-                    ),
+              {/* PDF | Print | Share Utility */}
+              <div className="d-flex justify-content-end gap-3 mt-5 pt-4 small fw-bold no-print position-relative">
+                <span
+                  className="cursor-pointer"
+                  onClick={handlePrint}
+                  style={{ color: "#5baed5" }}>
+                  PDF
+                </span>
+                <span className="opacity-50">|</span>
+                <span
+                  className="cursor-pointer"
+                  onClick={handlePrint}
+                  style={{ color: "#5baed5" }}>
+                  Print
+                </span>
+                <span className="opacity-50">|</span>
+                <div className="position-relative">
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => setShowShare(!showShare)}
+                    style={{ color: "#5baed5" }}>
+                    Share +
+                  </span>
+                  {/* DYNAMIC SHARE ICONS */}
+                  {showShare && (
+                    <div
+                      className="position-absolute bg-white p-2 shadow-lg rounded mt-2 share-popup d-flex gap-3"
+                      style={{ bottom: "35px", right: "0", zIndex: 100 }}>
+                      {attorney.linkedin && (
+                        <a
+                          href={attorney.linkedin}
+                          target="_blank"
+                          className="text-info">
+                          <i className="bi bi-linkedin fs-5"></i>
+                        </a>
+                      )}
+                      {attorney.facebook && (
+                        <a
+                          href={attorney.facebook}
+                          target="_blank"
+                          className="text-primary">
+                          <i className="bi bi-facebook fs-5"></i>
+                        </a>
+                      )}
+                      {attorney.twitter && (
+                        <a
+                          href={attorney.twitter}
+                          target="_blank"
+                          className="text-dark">
+                          <i className="bi bi-twitter-x fs-5"></i>
+                        </a>
+                      )}
+                      {attorney.gmail && (
+                        <a
+                          href={`mailto:${attorney.gmail}`}
+                          className="text-danger">
+                          <i className="bi bi-envelope-fill fs-5"></i>
+                        </a>
+                      )}
+                    </div>
                   )}
                 </div>
-                {[1, 2].map((item) => (
-                  <div
-                    key={item}
-                    className="mb-5 border-bottom border-secondary pb-4">
-                    <div className="small text-uppercase opacity-50 mb-2">
-                      September 11, 2024 · Press Release
-                    </div>
-                    <div className="row">
-                      <div className="col-md-10">
-                        <h3 className="h4" style={{ color: gtGold }}>
-                          Greenberg Traurig Continues Strategic Growth in Latin
-                          America...
-                        </h3>
-                      </div>
-                      <div className="col-md-2 text-md-end opacity-50 small">
-                        2 min read
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <div className="text-center mt-5">
-                  <span
-                    style={{ color: gtSkyBlue }}
-                    className="fw-bold cursor-pointer">
-                    View More +
-                  </span>
-                </div>
               </div>
             </div>
           </div>
-        </section>
-      </main>
-    );
-  }
-
-  // --- ORIGINAL LIST VIEW (Unchanged) ---
-  return (
-    <main className="bg-white overflow-hidden min-vh-100">
-      {/* 1. TOP ALPHABET NAV */}
-      <div className="container py-4 border-bottom">
-        <div className="d-flex justify-content-between overflow-auto pb-2">
-          {alphabet.map((char) => (
-            <button
-              key={char}
-              onClick={() => router.push(`/attorneys/${char.toLowerCase()}`)}
-              className={`btn btn-link text-decoration-none fw-bold fs-3 px-2 border-0 ${slug === char.toLowerCase() ? "text-warning" : "text-dark"}`}
-              style={{ fontFamily: "serif", letterSpacing: "2px" }}>
-              {char}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 2. RESULTS LIST SECTION */}
-      <section className="container mt-5 bg-white">
-        <div className="d-flex justify-content-between align-items-end border-bottom border-dark pb-3 mb-5">
-          <div>
-            <span
-              className="display-5 fw-light"
-              style={{ fontFamily: "serif" }}>
-              Results —{" "}
-            </span>
-            <span className="display-5 fw-bold" style={{ fontFamily: "serif" }}>
-              {filteredAttorneys.length}
-            </span>
-            <div className="mt-2 small text-uppercase">
-              <span className="fw-bold">Search Criteria:</span>
-              <span className="ms-2 text-warning fw-bold">
-                {slug?.toUpperCase()}
-              </span>
-            </div>
-          </div>
-          <div className="text-uppercase small fw-bold">
-            Sort By: <span className="text-secondary">Position | </span>
-            <span className="text-warning">Alphabetical</span>
-          </div>
-        </div>
-
-        <div className="pb-5">
-          {filteredAttorneys.length > 0 ? (
-            filteredAttorneys.map((attorney) => (
-              <div
-                key={attorney.id}
-                className="row g-0 py-5 border-bottom align-items-start">
-                <div className="col-auto">
-                  <img
-                    src={attorney.img}
-                    alt={attorney.name}
-                    style={{
-                      width: "160px",
-                      height: "180px",
-                      objectFit: "cover",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => setSelectedAttorney(attorney)} // Navigate to detail
-                  />
-                </div>
-                <div className="col ps-4">
-                  <h2
-                    className="text-warning mb-1"
-                    style={{
-                      fontFamily: "serif",
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => setSelectedAttorney(attorney)} // Navigate to detail
-                  >
-                    {attorney.name}
-                  </h2>
-                  <div className="small fw-bold text-secondary mb-3 tracking-widest">
-                    {attorney.role}
-                  </div>
-                  <div className="mb-1">
-                    <a
-                      href={`mailto:${attorney.email}`}
-                      className="text-decoration-none text-primary small fw-bold">
-                      {attorney.email}
-                    </a>
-                  </div>
-                  <div className="text-dark small">{attorney.phone}</div>
-                </div>
-                <div className="col-auto text-end h-100 d-flex flex-column justify-content-between">
-                  <div className="text-primary small fw-bold">
-                    {attorney.location}
-                  </div>
-                  <div className="mt-5 pt-5">
-                    <span className="border border-dark px-3 py-2 small fw-bold text-uppercase d-inline-block">
-                      {attorney.practice}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="py-5 text-center text-muted h4">
-              No professionals found starting with "{slug?.toUpperCase()}"
-            </div>
-          )}
         </div>
       </section>
 
-      <div className="container pb-5">
-        <button
-          onClick={() => router.push("/attorneys")}
-          className="btn btn-dark rounded-0 px-4 py-2">
-          ← BACK TO SEARCH
-        </button>
-      </div>
+      {/* --- MAIN BODY CONTENT --- */}
+      <section className="container py-5">
+        <div className="row">
+          {/* Sidebar Nav */}
+          <div className="col-md-3 no-print mb-4">
+           
+           
+          </div>
+
+          <div className="col-md-9 ps-md-5">
+            <div className="mb-5">
+              <p
+                className="fs-5"
+                style={{
+                  lineHeight: "1.8",
+                  textAlign: "justify",
+                  color: "#333",
+                }}
+                dangerouslySetInnerHTML={{
+                  __html: attorney.aboutus || "Biography coming soon.",
+                }}
+              />
+            </div>
+
+            {/* Dynamic Capability Link */}
+            <div className="mb-5 border-top pt-4">
+              <h2
+                className="display-6 fw-bold mb-4"
+                style={{ fontFamily: "serif" }}>
+                Capabilities
+              </h2>
+              <Link
+                href={`/capability/${createSlug(attorneyCategory?.categoryName || "general")}`}>
+                <span className="gt-link fw-bold fs-5 cursor-pointer">
+                  {attorneyCategory?.categoryName ||
+                    attorney.servicesOffered ||
+                    "General Practice"}
+                </span>
+              </Link>
+            </div>
+
+            {/* Credentials Row */}
+            <div className="mt-5 pt-5 border-top">
+              <h2
+                className="display-6 fw-bold mb-4"
+                style={{ fontFamily: "serif" }}>
+                Credentials
+              </h2>
+              <div className="row g-4">
+                <div className="col-md-6 mb-4">
+                  <h6 className="fw-bold text-uppercase mb-3 small tracking-widest">
+                    Education
+                  </h6>
+                  <ul className="ps-0 list-unstyled">
+                    <li className="mb-2 opacity-75">
+                      • {attorney.education || "Details pending."}
+                    </li>
+                  </ul>
+                </div>
+                <div className="col-md-6">
+                  <h6 className="fw-bold text-uppercase mb-3 small tracking-widest">
+                    Admissions
+                  </h6>
+                  <ul className="ps-0 list-unstyled">
+                    <li className="mb-2 opacity-75">
+                      • {attorney.admission || "N/A"}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- NEWS & EVENTS SECTION (NO CHANGES MADE HERE) --- */}
+      <section className="py-5 no-print" style={{ backgroundColor: "#1a1a1a" }}>
+        <div className="container py-4">
+          <div className="row justify-content-end">
+            <div className="col-lg-9 ps-md-5">
+              <h2
+                className="display-5 text-white mb-5"
+                style={{ fontFamily: "serif" }}>
+                News & Events
+              </h2>
+              <div className="d-flex flex-wrap border-bottom border-secondary mb-5 pb-0 gap-4">
+                {["News", "Upcoming Events"].map((tab) => (
+                  <span
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`fw-bold pb-2 cursor-pointer ${activeTab === tab ? "text-white border-bottom border-3" : "text-white-50"}`}
+                    style={{
+                      cursor: "pointer",
+                      borderColor:
+                        activeTab === tab ? "#c1a152" : "transparent",
+                      fontSize: "0.9rem",
+                    }}>
+                    {tab}
+                  </span>
+                ))}
+              </div>
+              <div className="row">
+                {displayList.map((item, idx) => (
+                  <div key={idx} className="col-12 mb-5 text-white">
+                    <div className="small text-uppercase opacity-50 mb-2">
+                      {new Date(
+                        item.createdAt || item.startDate,
+                      ).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "2-digit",
+                        year: "numeric",
+                      })}{" "}
+                      | {isEventTab ? "EVENT" : "PRESS RELEASE"}
+                    </div>
+                    <Link
+                      href={`/${isEventTab ? "events" : "news"}/${createSlug(item.title)}`}>
+                      <a className="text-decoration-none">
+                        <h5 style={{ color: gtGold, fontFamily: "serif" }}>
+                          {item.title}
+                        </h5>
+                      </a>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
