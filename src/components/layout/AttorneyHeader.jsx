@@ -1,28 +1,30 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { getUserProfile } from "../../services/authService"; // Ensure this path is correct
-// Import your getImgUrl helper or define it if it's in a utility file
-// import { getImgUrl } from "../../utils/helpers";
+import { getUserProfile } from "../../services/authService";
 
 export default function AttorneyHeader({ onToggleSidebar }) {
   const router = useRouter();
 
-  // Default fallback image
-  const [profileImg, setProfileImg] = useState("/assets/images/attorney1.png");
+  // Use a reliable placeholder URL instead of a local file that might 404
+  const fallbackImg =
+    "https://ui-avatars.com/api/?name=Attorney&background=002147&color=fff";
+
+  const [profileImg, setProfileImg] = useState(fallbackImg);
   const [adminName, setAdminName] = useState("Attorney");
 
-  // Your provided helper function
+  // Improved Image URL helper
   const getImgUrl = (path) => {
-    if (!path) return "/assets/images/attorney1.png";
-    let normalizedPath = path.toString().replace(/\\/g, "/");
-    if (
-      normalizedPath.startsWith("http://") ||
-      normalizedPath.startsWith("https://")
-    ) {
+    if (!path) return fallbackImg;
+
+    const normalizedPath = path.toString().replace(/\\/g, "/");
+
+    if (normalizedPath.startsWith("http")) {
       return normalizedPath;
     }
-    // Add your IMG_URL base here if needed, otherwise return as is for Cloudinary
+
+    // IMPORTANT: If your images are stored on your backend, add the base URL here
+    // Example: return `http://localhost:5000/${normalizedPath}`;
     return normalizedPath;
   };
 
@@ -33,7 +35,6 @@ export default function AttorneyHeader({ onToggleSidebar }) {
 
       try {
         const response = await getUserProfile(userId);
-        // Accessing the attorney object from your provided JSON structure
         const attorney = response?.attorney;
 
         if (attorney) {
@@ -79,17 +80,19 @@ export default function AttorneyHeader({ onToggleSidebar }) {
           </div>
 
           <div className="d-flex align-items-center gap-4">
+            {/* Messages Icon */}
             <Link href="/attorney-panel/messages">
               <a className="text-dark fs-4 position-relative pt-1">
                 <i className="bi bi-chat-left-text"></i>
-                <span
+                {/* <span
                   className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                   style={{ fontSize: "10px", marginTop: "5px" }}>
                   2
-                </span>
+                </span> */}
               </a>
             </Link>
 
+            {/* Profile Dropdown */}
             <div className="profile-dropdown-container">
               <div
                 className="profile-trigger d-flex align-items-center gap-2"
@@ -103,7 +106,10 @@ export default function AttorneyHeader({ onToggleSidebar }) {
                   style={{ width: "45px", height: "45px", objectFit: "cover" }}
                   alt="profile"
                   onError={(e) => {
-                    e.target.src = "/assets/images/attorney1.png";
+                    // This prevents infinite loops if the fallback also fails
+                    if (e.target.src !== fallbackImg) {
+                      e.target.src = fallbackImg;
+                    }
                   }}
                 />
               </div>
@@ -130,6 +136,7 @@ export default function AttorneyHeader({ onToggleSidebar }) {
           </div>
         </div>
       </div>
+
       <style jsx>{`
         .profile-dropdown-container {
           position: relative;
@@ -151,14 +158,8 @@ export default function AttorneyHeader({ onToggleSidebar }) {
           display: block;
           width: 100%;
           padding: 0.5rem 1rem;
-          clear: both;
-          font-weight: 400;
           color: #212529;
-          text-align: inherit;
           text-decoration: none;
-          white-space: nowrap;
-          background-color: transparent;
-          border: 0;
           font-size: 14px;
         }
         .dropdown-item:hover {
