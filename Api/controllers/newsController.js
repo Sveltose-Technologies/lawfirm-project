@@ -7,8 +7,12 @@ exports.createNews = async (req, res) => {
   try {
  const data = await News.create({
   ...req.body,
-  bannerImage: req.files?.bannerImage?.[0]?.path,
-  newsImage: req.files?.newsImage?.[0]?.path,
+   bannerImage: req.files?.bannerImage
+    ? `/uploads/${req.files.bannerImage[0].filename}`
+    : null,
+  newsImage: req.files?.newsImage
+    ? `/uploads/${req.files.newsImage[0].filename}`
+    : null,
 });
     res.status(201).json({
       status: true,
@@ -60,14 +64,14 @@ exports.getNewsById = async (req, res) => {
 exports.updateNews = async (req, res) => {
   try {
     const updateData = { ...req.body };
+    
+if (req.files?.bannerImage) {
+  updateData.bannerImage = `/uploads/${req.files.bannerImage[0].filename}`;
+}
 
-    if (req.files?.bannerImage) {
-      updateData.bannerImage = req.files.bannerImage[0].path;
-    }
-
-    if (req.files?.newsImage) {
-      updateData.newsImage = req.files.newsImage[0].path;
-    }
+if (req.files?.newsImage) {
+  updateData.newsImage = `/uploads/${req.files.newsImage[0].filename}`;
+}
 
     const updated = await News.update(updateData, {
       where: { id: req.params.id },

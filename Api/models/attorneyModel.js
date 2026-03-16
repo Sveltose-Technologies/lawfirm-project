@@ -90,6 +90,45 @@ const Attorney = sequelize.define(
       type: DataTypes.BOOLEAN,
       allowNull: false,
     },
+
+    // TextEditor Content
+    aboutus: {
+      type: DataTypes.TEXT("long"),
+      allowNull: true,
+    },
+
+    // Category Relation
+    categoryId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+
+    // Social Media Links
+    linkedin: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    twitter: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    facebook: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    gmail: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    status: {
+  type: DataTypes.ENUM("active", "dactive"),
+  defaultValue: "dactive"
+},
+
   },
   {
     tableName: "attorney",

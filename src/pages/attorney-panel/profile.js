@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import AttorneyLayout from "../../components/layout/AttorneyLayout";
 import {
@@ -13,6 +15,7 @@ export default function EditProfile() {
   const [languages, setLanguages] = useState([]);
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -30,7 +33,7 @@ export default function EditProfile() {
     phoneHome: "",
     phoneOffice: "",
     dob: "",
-    admission: "", // Isme ab College ka naam aayega
+    admission: "",
     language: "",
     servicesOffered: "",
     education: "",
@@ -55,9 +58,24 @@ export default function EditProfile() {
   });
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
+    const loadInitialData = async () => {
+      // Correctly retrieve User ID from the stored 'user' object
+      let user = null;
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        try {
+          const parsed = JSON.parse(userData);
+          user = parsed.id;
+        } catch (e) {
+          console.error("Failed to parse user data", e);
+        }
+      }
 
-    const loadData = async () => {
+      if (!user) {
+        console.error("No User ID found in localStorage");
+        return;
+      }
+
       try {
         const [langRes, catRes, cityRes, profileRes] = await Promise.all([
           getAttorneylanguages(),
@@ -66,24 +84,19 @@ export default function EditProfile() {
           getUserProfile(userId),
         ]);
 
-        setLanguages(langRes?.data?.data || langRes?.data || []);
-        setCategories(catRes?.data || catRes || []);
-        setCities(cityRes?.data || cityRes || []);
+        // Set dropdown data based on API response structure
+        setLanguages(langRes?.data || []);
+        setCategories(catRes?.data || []);
+        setCities(cityRes?.data || []);
 
         const attorney = profileRes?.attorney;
         if (attorney) {
           setFormData((prev) => ({
             ...prev,
             ...attorney,
-            // DOB date hai isliye split zaroori hai
             dob: attorney.dob ? attorney.dob.split("T")[0] : "",
-
-            // Admission ab string (College Name) hai, isliye split nahi karenge
-            admission: attorney.admission || "",
-
-            phoneCell: attorney.phoneCell || "",
-            phoneHome: attorney.phoneHome || "",
-            phoneOffice: attorney.phoneOffice || "",
+            categoryId: attorney.categoryId?.toString() || "",
+            city: attorney.city?.toString() || "",
             password: "",
             profileImage: null,
             resume: null,
@@ -94,11 +107,11 @@ export default function EditProfile() {
           }));
         }
       } catch (error) {
-        console.error("Initialization Error:", error);
+        console.error("Error loading profile data:", error);
       }
     };
 
-    loadData();
+    loadInitialData();
   }, []);
 
   const handleInputChange = (e) => {
@@ -115,71 +128,71 @@ export default function EditProfile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const userId = localStorage.getItem("userId");
+    setLoading(true);
+
+    let userId = null;
+    const userData = localStorage.getItem("user");
+    if (userData) userId = JSON.parse(userData).id;
+
     const payload = new FormData();
+    const fileFields = [
+      "profileImage",
+      "resume",
+      "kycIdentity",
+      "kycAddress",
+      "barCouncilIndiaId",
+      "barCouncilStateId",
+    ];
 
     Object.keys(formData).forEach((key) => {
       if (key === "password" && !formData[key]) return;
 
-      // Numeric Fields logic
-      if (
-        key === "familyLawPractice" ||
-        key === "experience" ||
-        key === "categoryId" ||
-        key === "city"
-      ) {
-        const val = parseInt(formData[key]);
-        payload.append(key, isNaN(val) ? 0 : val);
-      }
-      // File logic
-      else if (formData[key] instanceof File) {
-        payload.append(key, formData[key]);
-      }
-      // Text logic (Admission College Name isme chala jayega)
-      else if (formData[key] !== null && formData[key] !== undefined) {
+      if (fileFields.includes(key)) {
+        if (formData[key] instanceof File) payload.append(key, formData[key]);
+      } else if (["experience", "categoryId", "city"].includes(key)) {
+        payload.append(key, parseInt(formData[key]) || 0);
+      } else if (formData[key] !== null && formData[key] !== undefined) {
         payload.append(key, formData[key]);
       }
     });
 
     try {
-      const response = await updateAttorney(userId, payload);
-      if (response.status === 200 || response.data?.success) {
-        toast.success("Profile updated successfully!");
-      }
+      const res = await updateAttorney(userId, payload);
+      if (res) toast.success("Profile updated successfully!");
     } catch (error) {
-      const errorMsg =
-        error?.response?.data?.error ||
-        error?.response?.data?.message ||
-        "Server Error";
-      toast.error(`Error: ${errorMsg}`);
+      toast.error(error || "Update failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <AttorneyLayout>
-      <div className="container-fluid py-4">
-        <div className="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
-          <div className="mb-4">
-            <h3 className="fw-bold text-navy" style={{ color: "#002147" }}>
+      <div className="container-fluid py-2">
+        <div className="card border-0 shadow-sm rounded-0 p-3 p-md-4 bg-white">
+          <div className="mb-4 border-bottom pb-3">
+            <h4 className="fw-bold text-dark mb-1">
               Edit Professional Profile
-            </h3>
+            </h4>
             <p className="text-muted small">
-              All fields below are synchronized with your attorney records.
+              Update your firm records and account settings.
             </p>
           </div>
 
           <form onSubmit={handleSubmit}>
-            {/* 1. PERSONAL & ACCOUNT SECTION */}
-            <div className="row g-3 mb-5 border-bottom pb-4">
+            {/* 1. BASIC INFORMATION */}
+            <div className="row g-3 mb-5">
               <div className="col-12">
-                <h5 className="fw-bold">Basic Information</h5>
+                <h6 className="fw-bold text-uppercase border-start border-4 border-warning ps-2">
+                  Basic Information
+                </h6>
               </div>
               <div className="col-md-3">
                 <label className="form-label small fw-bold">First Name</label>
                 <input
                   type="text"
                   name="firstName"
-                  className="form-control"
+                  className="form-control rounded-0"
                   value={formData.firstName || ""}
                   onChange={handleInputChange}
                 />
@@ -189,19 +202,18 @@ export default function EditProfile() {
                 <input
                   type="text"
                   name="lastName"
-                  className="form-control"
+                  className="form-control rounded-0"
                   value={formData.lastName || ""}
                   onChange={handleInputChange}
                 />
               </div>
               <div className="col-md-3">
-                <label className="form-label small fw-bold">
-                  Email Address
-                </label>
+                <label className="form-label small fw-bold">Email</label>
+                {/* Email is now editable */}
                 <input
                   type="email"
                   name="email"
-                  className="form-control"
+                  className="form-control rounded-0"
                   value={formData.email || ""}
                   onChange={handleInputChange}
                 />
@@ -211,361 +223,192 @@ export default function EditProfile() {
                 <input
                   type="password"
                   name="password"
-                  className="form-control"
-                  placeholder="Leave blank to keep current"
+                  className="form-control rounded-0"
+                  placeholder="New Password"
                   value={formData.password}
                   onChange={handleInputChange}
                 />
               </div>
+
+              {/* Category Dropdown - using categoryName from JSON */}
               <div className="col-md-4">
-                <label className="form-label small fw-bold">
-                  Specialization Category
-                </label>
+                <label className="form-label small fw-bold">Category</label>
                 <select
                   name="categoryId"
-                  className="form-select"
-                  value={formData.categoryId || ""}
+                  className="form-select rounded-0"
+                  value={formData.categoryId}
                   onChange={handleInputChange}>
                   <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.categoryName}
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.categoryName}
                     </option>
                   ))}
                 </select>
               </div>
+
               <div className="col-md-4">
-                <label className="form-label small fw-bold">
-                  Date of Birth
-                </label>
+                <label className="form-label small fw-bold">DOB</label>
                 <input
                   type="date"
                   name="dob"
-                  className="form-control"
+                  className="form-control rounded-0"
                   value={formData.dob || ""}
                   onChange={handleInputChange}
                 />
               </div>
+
+              {/* Language Dropdown */}
               <div className="col-md-4">
                 <label className="form-label small fw-bold">Language</label>
                 <select
                   name="language"
-                  className="form-select"
-                  value={formData.language || ""}
+                  className="form-select rounded-0"
+                  value={formData.language}
                   onChange={handleInputChange}>
                   <option value="">Select Language</option>
-                  {languages.map((lang) => (
-                    <option key={lang.code} value={lang.code}>
-                      {lang.name}
+                  {languages.map((l) => (
+                    <option key={l.id} value={l.name || l.languageName}>
+                      {l.name || l.languageName}
                     </option>
                   ))}
                 </select>
               </div>
             </div>
 
-            {/* 2. CONTACT & LOCATION SECTION */}
-            <div className="row g-3 mb-5 border-bottom pb-4">
+            {/* 2. CONTACT & LOCATION */}
+            <div className="row g-3 mb-5">
               <div className="col-12">
-                <h5 className="fw-bold">Contact & Location</h5>
+                <h6 className="fw-bold text-uppercase border-start border-4 border-warning ps-2">
+                  Contact & Location
+                </h6>
               </div>
               <div className="col-md-4">
-                <label className="form-label small">Cell Phone</label>
+                <label className="form-label small fw-bold">Cell Phone</label>
                 <input
                   type="text"
                   name="phoneCell"
-                  className="form-control"
+                  className="form-control rounded-0"
                   value={formData.phoneCell || ""}
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="col-md-4">
-                <label className="form-label small">Home Phone</label>
-                <input
-                  type="text"
-                  name="phoneHome"
-                  className="form-control"
-                  value={formData.phoneHome || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label small">Office Phone</label>
-                <input
-                  type="text"
-                  name="phoneOffice"
-                  className="form-control"
-                  value={formData.phoneOffice || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
               <div className="col-md-6">
-                <label className="form-label small">Street Address</label>
+                <label className="form-label small fw-bold">
+                  Street Address
+                </label>
                 <input
                   type="text"
                   name="street"
-                  className="form-control"
+                  className="form-control rounded-0"
                   value={formData.street || ""}
                   onChange={handleInputChange}
                 />
               </div>
+
+              {/* City Dropdown - using cityName from JSON */}
               <div className="col-md-2">
-                <label className="form-label small">Apt/Block</label>
-                <input
-                  type="text"
-                  name="aptBlock"
-                  className="form-control"
-                  value={formData.aptBlock || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label small">City</label>
+                <label className="form-label small fw-bold">City</label>
                 <select
                   name="city"
-                  className="form-select"
-                  value={formData.city || ""}
+                  className="form-select rounded-0"
+                  value={formData.city}
                   onChange={handleInputChange}>
                   <option value="">Select City</option>
-                  {cities.map((city) => (
-                    <option key={city.id} value={city.id}>
-                      {city.cityName}
+                  {cities.map((ct) => (
+                    <option key={ct.id} value={ct.id}>
+                      {ct.cityName}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="col-md-3">
-                <label className="form-label small">State</label>
+                <label className="form-label small fw-bold">State</label>
                 <input
                   type="text"
                   name="state"
-                  className="form-control"
+                  className="form-control rounded-0"
                   value={formData.state || ""}
                   onChange={handleInputChange}
                 />
               </div>
               <div className="col-md-3">
-                <label className="form-label small">Country</label>
+                <label className="form-label small fw-bold">Country</label>
                 <input
                   type="text"
                   name="country"
-                  className="form-control"
+                  className="form-control rounded-0"
                   value={formData.country || ""}
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="col-md-3">
-                <label className="form-label small">Zip Code</label>
-                <input
-                  type="text"
-                  name="zipCode"
-                  className="form-control"
-                  value={formData.zipCode || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-md-3">
-                <label className="form-label small">Location (Area)</label>
-                <input
-                  type="text"
-                  name="location"
-                  className="form-control"
-                  value={formData.location || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
             </div>
 
-            {/* 3. PROFESSIONAL DETAILS SECTION */}
-            <div className="row g-3 mb-5 border-bottom pb-4">
+            {/* 3. PROFESSIONAL DETAILS */}
+            <div className="row g-3 mb-5">
               <div className="col-12">
-                <h5 className="fw-bold">Professional Credentials</h5>
+                <h6 className="fw-bold text-uppercase border-start border-4 border-warning ps-2">
+                  Credentials
+                </h6>
               </div>
-              <div className="col-md-3">
-                {/* Yahan maine Admission ko Text kar diya hai */}
-                <label className="form-label small">
-                  Admission (College/University)
+              <div className="col-md-4">
+                <label className="form-label small fw-bold">
+                  Admission (College)
                 </label>
                 <input
                   type="text"
                   name="admission"
-                  className="form-control"
-                  placeholder="Enter College Name"
+                  className="form-control rounded-0"
                   value={formData.admission || ""}
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="col-md-3">
-                <label className="form-label small">Experience (Years)</label>
+              <div className="col-md-4">
+                <label className="form-label small fw-bold">
+                  Experience (Years)
+                </label>
                 <input
                   type="number"
                   name="experience"
-                  className="form-control"
+                  className="form-control rounded-0"
                   value={formData.experience || ""}
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="col-md-3">
-                <label className="form-label small">
-                  Bar Council India No.
-                </label>
-                <input
-                  type="text"
-                  name="barCouncilIndiaNo"
-                  className="form-control"
-                  value={formData.barCouncilIndiaNo || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-md-3">
-                <label className="form-label small">
-                  Bar Council State No.
-                </label>
-                <input
-                  type="text"
-                  name="barCouncilStateNo"
-                  className="form-control"
-                  value={formData.barCouncilStateNo || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
               <div className="col-md-6">
-                <label className="form-label small">Education</label>
-                <textarea
-                  name="education"
-                  className="form-control"
-                  rows="2"
-                  value={formData.education || ""}
-                  onChange={handleInputChange}></textarea>
-              </div>
-              <div className="col-md-6">
-                <label className="form-label small">About Us / Bio</label>
+                <label className="form-label small fw-bold">
+                  Bio (About Us)
+                </label>
                 <textarea
                   name="aboutus"
-                  className="form-control"
-                  rows="2"
+                  className="form-control rounded-0"
+                  rows="3"
                   value={formData.aboutus || ""}
                   onChange={handleInputChange}></textarea>
               </div>
-              <div className="col-md-4">
-                <label className="form-label small">Services Offered</label>
-                <input
-                  type="text"
-                  name="servicesOffered"
-                  className="form-control"
-                  value={formData.servicesOffered || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label small">
-                  Family Law Practice (Numbers only)
-                </label>
-                <input
-                  type="number"
-                  name="familyLawPractice"
-                  className="form-control"
-                  value={formData.familyLawPractice || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label small">Family Details</label>
-                <input
-                  type="text"
-                  name="familyDetails"
-                  className="form-control"
-                  value={formData.familyDetails || ""}
-                  onChange={handleInputChange}
-                />
+              <div className="col-md-6">
+                <label className="form-label small fw-bold">Education</label>
+                <textarea
+                  name="education"
+                  className="form-control rounded-0"
+                  rows="3"
+                  value={formData.education || ""}
+                  onChange={handleInputChange}></textarea>
               </div>
             </div>
 
-            {/* 4. SOCIAL MEDIA SECTION */}
-            <div className="row g-3 mb-5 border-bottom pb-4">
-              <div className="col-12">
-                <h5 className="fw-bold">Social Media & Identity</h5>
-              </div>
-              <div className="col-md-3">
-                <label className="form-label small">LinkedIn URL</label>
-                <input
-                  type="text"
-                  name="linkedin"
-                  className="form-control"
-                  value={formData.linkedin || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-md-3">
-                <label className="form-label small">Twitter URL</label>
-                <input
-                  type="text"
-                  name="twitter"
-                  className="form-control"
-                  value={formData.twitter || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-md-3">
-                <label className="form-label small">Facebook URL</label>
-                <input
-                  type="text"
-                  name="facebook"
-                  className="form-control"
-                  value={formData.facebook || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-md-3">
-                <label className="form-label small">Gmail Handle</label>
-                <input
-                  type="text"
-                  name="gmail"
-                  className="form-control"
-                  value={formData.gmail || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-
-            {/* 5. FILES SECTION */}
-            <div className="row g-3 mb-4">
-              <div className="col-12">
-                <h5 className="fw-bold">Verification Documents</h5>
-              </div>
-              {[
-                { label: "Profile Image", name: "profileImage" },
-                { label: "Resume/CV", name: "resume" },
-                { label: "KYC Identity (Govt ID)", name: "kycIdentity" },
-                { label: "KYC Address Proof", name: "kycAddress" },
-                {
-                  label: "Bar Council India ID Card",
-                  name: "barCouncilIndiaId",
-                },
-                {
-                  label: "Bar Council State ID Card",
-                  name: "barCouncilStateId",
-                },
-              ].map((file) => (
-                <div className="col-md-4" key={file.name}>
-                  <label className="form-label small fw-bold">
-                    {file.label}
-                  </label>
-                  <input
-                    type="file"
-                    name={file.name}
-                    className="form-control"
-                    onChange={handleFileChange}
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-5">
+            <div className="mt-5 d-flex gap-2">
               <button
                 type="submit"
-                className="btn btn-primary px-5 py-2 fw-bold rounded-pill"
-                style={{ backgroundColor: "#002147", border: "none" }}>
-                SAVE ALL CHANGES
+                className="btn btn-warning rounded-0 px-5 text-white"
+                disabled={loading}>
+                {loading ? "PROCESSING..." : "SUBMIT"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline-secondary rounded-0 px-5"
+                onClick={() => window.location.reload()}>
+                CANCEL
               </button>
             </div>
           </form>

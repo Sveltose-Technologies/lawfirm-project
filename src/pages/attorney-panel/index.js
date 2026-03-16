@@ -13,9 +13,7 @@ export default function AttorneyDashboard() {
 
   return (
     <AttorneyLayout>
-      <Head>
-        <title>Lawstick | Dashboard</title>
-      </Head>
+     
 
       {/* --- DASHBOARD HEADER --- */}
       <div className="mb-5">

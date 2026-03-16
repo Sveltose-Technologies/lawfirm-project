@@ -13,6 +13,7 @@ exports.createEnquiry = async (req, res) => {
       phoneNumber,
       inquiryType,
       message,
+      address
     } = req.body;
 
     const enquiry = await Enquiry.create({
@@ -23,6 +24,7 @@ exports.createEnquiry = async (req, res) => {
       phoneNumber,
       inquiryType,
       message,
+      address
     });
 
     
@@ -170,6 +172,7 @@ exports.updateEnquiry = async (req, res) => {
       phoneNumber,
       inquiryType,
       message,
+      address
     } = req.body;
 
     const enquiry = await Enquiry.findByPk(id);
@@ -189,6 +192,7 @@ exports.updateEnquiry = async (req, res) => {
       phoneNumber,
       inquiryType,
       message,
+      address
     });
 
     res.status(200).json({

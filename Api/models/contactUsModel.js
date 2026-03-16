@@ -44,6 +44,10 @@ const Enquiry = sequelize.define(
       type: DataTypes.TEXT("long"),
       allowNull: true,
     },
+    address: {
+      type: DataTypes.TEXT,   
+      allowNull: true,
+    },
   },
   {
     tableName: "enquiries",

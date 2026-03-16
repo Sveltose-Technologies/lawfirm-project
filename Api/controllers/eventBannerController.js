@@ -4,8 +4,8 @@ const EventBanner = require("../models/eventBannerModel");
 exports.createBanner = async (req, res) => {
   try {
     const { textEditor } = req.body;
-    const bannerImage = req.file ? req.file.path : null;
-
+    // const bannerImage = req.file ? req.file.path : null;
+   const bannerImage = req.file ? `/uploads/${req.file.filename}` : null;
     const data = await EventBanner.create({
       bannerImage,
       textEditor,
@@ -70,7 +70,10 @@ exports.updateBanner = async (req, res) => {
       });
     }
 
-    const bannerImage = req.file ? req.file.path : banner.bannerImage;
+    // const bannerImage = req.file ? req.file.path : banner.bannerImage;
+  const bannerImage = req.file
+  ? `/uploads/${req.file.filename}`
+  : banner.bannerImage;
 
     await banner.update({
       bannerImage,

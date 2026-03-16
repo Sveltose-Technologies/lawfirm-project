@@ -131,9 +131,7 @@ export default function TicketManagement() {
 
   return (
     <AttorneyLayout>
-      <Head>
-        <title>Ticket Management | Lawstick</title>
-      </Head>
+  
 
       <div className="container-fluid px-0">
         {/* Header Section */}

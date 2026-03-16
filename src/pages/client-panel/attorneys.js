@@ -41,7 +41,7 @@ export default function AttorneyPage() {
 
   return (
     <ClientLayout>
-      <Head><title>Attorney Listing | Lawstick</title></Head>
+     
 
       <div className="container-fluid px-0 animate-fade">
         <h4 className="fw-bold mb-4" style={{ color: '#002147', fontSize: '22px' }}>Attorney</h4>

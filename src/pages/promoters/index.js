@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { getAllPromoters, IMG_URL } from "../../services/authService";
+// getImgUrl ko import karein
+import { getAllPromoters, getImgUrl } from "../../services/authService";
 
 export default function Promoters() {
   const router = useRouter();
   const [promoters, setPromoters] = useState([]);
   const [loading, setLoading] = useState(true);
-  console.log("promoters image", promoters);
 
   const createSlug = (text) =>
     text
@@ -17,8 +17,6 @@ export default function Promoters() {
 
   useEffect(() => {
     getAllPromoters().then((res) => {
-      console.log("respo", res);
-      setPromoters(res.data);
       if (res?.success) setPromoters(res.data);
       setLoading(false);
     });
@@ -31,8 +29,9 @@ export default function Promoters() {
       </div>
     );
 
+  // Helper function ka use karein banner ke liye
   const bannerImg = promoters[0]?.bannerImage
-    ? `${promoters[0].bannerImage}`
+    ? getImgUrl(promoters[0].bannerImage)
     : "/assets/images/promoter-banner.png";
 
   return (
@@ -54,7 +53,8 @@ export default function Promoters() {
             <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12" key={p.id}>
               <div className="custom-card-wrapper shadow-sm">
                 <div className="img-fixed-container">
-                  <img src={`${p.personImage}`} alt={p.personName} />
+                  {/* getImgUrl ka use karein */}
+                  <img src={getImgUrl(p.personImage)} alt={p.personName} />
                 </div>
 
                 <div className="p-3 text-center flex-grow-1 d-flex flex-column justify-content-between">
@@ -62,11 +62,11 @@ export default function Promoters() {
                     <h6 className="fw-bold mb-1 text-dark text-uppercase">
                       {p.personName}
                     </h6>
-
-                    {/* Added Email and Mobile Number */}
                     <div className="mb-3">
                       {p.email && (
-                        <div className="text-muted small">{p.email}</div>
+                        <div className="text-muted small text-truncate">
+                          {p.email}
+                        </div>
                       )}
                       {p.mobileNo && (
                         <div className="text-muted small">{p.mobileNo}</div>

@@ -201,13 +201,13 @@ exports.updateAdminProfile = async (req, res) => {
     }
 
     // 🔹 File handling
-    const profileImage = req.files?.profileImage
-      ? req.files.profileImage[0].path
-      : admin.profileImage;
+   const profileImage = req.files?.profileImage
+  ? `/uploads/${req.files.profileImage[0].filename}`
+  : admin.profileImage;
 
-    const websiteLogo = req.files?.websiteLogo
-      ? req.files.websiteLogo[0].path
-      : admin.websiteLogo;
+const websiteLogo = req.files?.websiteLogo
+  ? `/uploads/${req.files.websiteLogo[0].filename}`
+  : admin.websiteLogo;
 
     // 🔹 Update admin profile (partial update)
     await admin.update({

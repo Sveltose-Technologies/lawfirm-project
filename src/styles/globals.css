@@ -1,21 +1,84 @@
-/* src/styles/globals.css */
 :root {
-  --primary-gold: #de9f57;
-  --primary-blue: #003366;
-  --dark-navy: #0a1c38;
+  --primary-gold: #eebb5d; /* Your Exact Gold */
   --text-dark: #212529;
   --text-light: #ffffff;
   --bg-dark: #000000;
   --bg-light: #f4f7f6;
-  --overlay-black: rgba(0, 0, 0, 0.6);
   --font-base: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  --font-serif: "Times New Roman", Times, serif;
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+body {
+  font-family: var(--font-base);
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+}
+
+/* --- Global Button System --- */
+
+/* 1. Primary Gold Button (Sumbit / Create / Add) */
+.btn-gold-custom {
+  background-color: var(--primary-gold) !important;
+  color: #000 !important;
+  border: none !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 25px !important;
+  border-radius: 0 !important; /* Professional Square Look */
+  transition: all 0.3s ease !important;
+}
+
+.btn-gold-custom:hover {
+  background-color: #dcb04a !important; /* Slightly darker gold */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* 2. Outline Button (Cancle / Back) */
+.btn-outline-custom {
+  background-color: transparent !important;
+  color: var(--bg-dark) !important;
+  border: 2px solid var(--bg-dark) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  padding: 8px 25px !important;
+  border-radius: 0 !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-outline-custom:hover {
+  background-color: var(--bg-dark) !important;
+  color: var(--primary-gold) !important;
+}
+
+/* 3. Table Action Buttons (Edit / Delete) */
+.btn-action {
+  background-color: #fff !important;
+  border: 1px solid #dee2e6 !important;
+  padding: 5px 10px !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+  background-color: var(--bg-light) !important;
+  border-color: var(--primary-gold) !important;
+}
+
+/* --- Table Utility --- */
+.table-dark-custom {
+  background-color: var(--bg-dark) !important;
+  color: var(--text-light) !important;
+}
+
+.bg-light-gray {
+  background-color: var(--bg-light) !important;
 }
 
 html, body {

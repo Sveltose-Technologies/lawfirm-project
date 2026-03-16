@@ -1,6 +1,6 @@
 const express = require("express");
 const upload = require("../middleware/upload");
-const { attorneySignup, attorneyLogin, forgotPassword, verifyOtp, resetPassword, getAllAttorneys, updateAttorneyProfile, deleteAttorney, getAttorneyById } = require("../controllers/attorneyController");
+const { attorneySignup, attorneyLogin, forgotPassword, verifyOtp, resetPassword, getAllAttorneys, updateAttorneyProfile, deleteAttorney, getAttorneyById, getAllAdmission, getAllEducation } = require("../controllers/attorneyController");
 const { adminOnly } = require("../middleware/auth");
 
 const router = express.Router();
@@ -34,7 +34,7 @@ router.put("/reset-password", resetPassword);
 /* ================= CLIENT PROFILE ROUTES ================= */
 
 // Get All Clients (Admin Only)
-router.get("/getall", adminOnly, getAllAttorneys);
+router.get("/getall",  getAllAttorneys);
 
 // Update Client Profile
 router.put(
@@ -45,6 +45,9 @@ router.put(
 router.delete("/delete/:id", adminOnly, deleteAttorney);
 
 router.get("/get-by-id/:id",  getAttorneyById);
+
+router.get("/getall-admission",  getAllAdmission);
+router.get("/getall-education",  getAllEducation);
 
 
 module.exports = router;

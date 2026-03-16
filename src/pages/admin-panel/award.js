@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import {
@@ -42,6 +43,7 @@ const AwardPage = () => {
 
   const [formData, setFormData] = useState({
     bannerImage: null,
+    peopleImage: null, // New field for profile image
     personName: "",
     organization: "",
     year: "",
@@ -61,7 +63,6 @@ const AwardPage = () => {
     [],
   );
 
-  // Helper to limit text to 3 words
   const truncateWords = (text, limit = 3) => {
     if (!text) return "N/A";
     const words = text.split(" ");
@@ -69,7 +70,6 @@ const AwardPage = () => {
     return words.slice(0, limit).join(" ") + "...";
   };
 
-  // Helper to convert HTML to plain text for table display
   const stripHtml = (html) => {
     if (!html) return "";
     if (typeof window !== "undefined") {
@@ -95,6 +95,7 @@ const AwardPage = () => {
     if (modal) {
       setFormData({
         bannerImage: null,
+        peopleImage: null,
         personName: "",
         organization: "",
         year: "",
@@ -128,6 +129,11 @@ const AwardPage = () => {
         data.append("bannerImage", formData.bannerImage);
       }
 
+      // Handle Profile Image Upload
+      if (formData.peopleImage instanceof File) {
+        data.append("peopleImage", formData.peopleImage);
+      }
+
       const res = isEditing
         ? await authService.updateAward(currentId, data)
         : await authService.createAward(data);
@@ -151,6 +157,7 @@ const AwardPage = () => {
       awardTitle: item.awardTitle || "",
       details: item.details || "",
       bannerImage: null,
+      peopleImage: null,
     });
     setCurrentId(item.id);
     setIsEditing(true);
@@ -191,7 +198,7 @@ const AwardPage = () => {
             Awards & Recognition
           </h4>
           <p className="text-muted small mb-0">
-            Manage and display firm achievements.
+            Manage achievements and recipient profiles.
           </p>
         </div>
         <Button
@@ -222,12 +229,12 @@ const AwardPage = () => {
             <thead style={{ backgroundColor: LIGHT_GOLD }}>
               <tr className="text-uppercase small">
                 <th className="px-4 py-3">SR.</th>
+                <th className="text-center">Profile</th>
                 <th className="text-center">Banner</th>
                 <th>Award Title</th>
                 <th>Recipient</th>
                 <th>Organization</th>
                 <th className="text-center">Year</th>
-                <th>Details</th>
                 <th className="text-end px-4">Action</th>
               </tr>
             </thead>
@@ -244,19 +251,43 @@ const AwardPage = () => {
                     <td className="px-4 text-muted">
                       {(currentPage - 1) * itemsPerPage + index + 1}.
                     </td>
+                    {/* Recipient Profile Image */}
                     <td className="text-center">
                       <div
-                        className="shadow-sm border"
+                        className="rounded-circle border"
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          overflow: "hidden",
+                          margin: "auto",
+                        }}>
+                        <img
+                          src={authService.getImgUrl(item.peopleImage)}
+                          alt="Profile"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                          onError={(e) => {
+                            e.target.src = "https://placehold.co/40x40?text=U";
+                          }}
+                        />
+                      </div>
+                    </td>
+                    {/* Award Banner Image */}
+                    <td className="text-center">
+                      <div
+                        className="shadow-sm border rounded"
                         style={{
                           width: "60px",
                           height: "40px",
-                          borderRadius: "4px",
                           overflow: "hidden",
                           margin: "auto",
                         }}>
                         <img
                           src={authService.getImgUrl(item.bannerImage)}
-                          alt="Award"
+                          alt="Banner"
                           style={{
                             width: "100%",
                             height: "100%",
@@ -284,9 +315,6 @@ const AwardPage = () => {
                         }}>
                         {item.year}
                       </Badge>
-                    </td>
-                    <td className="text-muted small">
-                      {truncateWords(stripHtml(item.details))}
                     </td>
                     <td className="text-end px-4">
                       <div className="d-flex gap-2 justify-content-end">
@@ -337,7 +365,6 @@ const AwardPage = () => {
                   <Label className="small fw-bold">Award Title *</Label>
                   <Input
                     type="text"
-                    placeholder="Enter award name"
                     value={formData.awardTitle}
                     onChange={(e) =>
                       setFormData({ ...formData, awardTitle: e.target.value })
@@ -351,7 +378,6 @@ const AwardPage = () => {
                   <Label className="small fw-bold">Year *</Label>
                   <Input
                     type="number"
-                    placeholder="YYYY"
                     value={formData.year}
                     onChange={(e) =>
                       setFormData({ ...formData, year: e.target.value })
@@ -365,7 +391,6 @@ const AwardPage = () => {
                   <Label className="small fw-bold">Recipient Name</Label>
                   <Input
                     type="text"
-                    placeholder="Individual name"
                     value={formData.personName}
                     onChange={(e) =>
                       setFormData({ ...formData, personName: e.target.value })
@@ -378,7 +403,6 @@ const AwardPage = () => {
                   <Label className="small fw-bold">Organization</Label>
                   <Input
                     type="text"
-                    placeholder="Granting body"
                     value={formData.organization}
                     onChange={(e) =>
                       setFormData({ ...formData, organization: e.target.value })
@@ -386,7 +410,28 @@ const AwardPage = () => {
                   />
                 </FormGroup>
               </Col>
-              <Col xs={12}>
+
+              {/* Profile Image Input */}
+              <Col md={6}>
+                <FormGroup>
+                  <Label className="small fw-bold">
+                    Recipient Profile Image
+                  </Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        peopleImage: e.target.files[0],
+                      })
+                    }
+                  />
+                </FormGroup>
+              </Col>
+
+              {/* Banner Image Input */}
+              <Col md={6}>
                 <FormGroup>
                   <Label className="small fw-bold">
                     Banner Image {isEditing ? "(Optional)" : "*"}
@@ -404,6 +449,7 @@ const AwardPage = () => {
                   />
                 </FormGroup>
               </Col>
+
               <Col xs={12}>
                 <FormGroup>
                   <Label className="small fw-bold">Achievement Details</Label>

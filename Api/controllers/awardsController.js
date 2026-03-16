@@ -12,13 +12,13 @@ exports.createAward = async (req, res) => {
       details
     } = req.body;
 
-    const bannerImage = req.files?.bannerImage
-      ? req.files.bannerImage[0].path
-      : null;
+const bannerImage = req.files?.bannerImage
+  ? `/uploads/${req.files.bannerImage[0].filename}`
+  : null;
 
-    const peopleImage = req.files?.peopleImage
-      ? req.files.peopleImage[0].path
-      : null;
+const peopleImage = req.files?.peopleImage
+  ? `/uploads/${req.files.peopleImage[0].filename}`
+  : null;
 
     const award = await Award.create({
       adminId,
@@ -101,15 +101,13 @@ exports.updateAward = async (req, res) => {
         message: "Award not found",
       });
     }
+const bannerImage = req.files?.bannerImage
+  ? `/uploads/${req.files.bannerImage[0].filename}`
+  : award.bannerImage;
 
-    const bannerImage = req.files?.bannerImage
-      ? req.files.bannerImage[0].path
-      : award.bannerImage;
-
-    const peopleImage = req.files?.peopleImage
-      ? req.files.peopleImage[0].path
-      : award.peopleImage;
-
+const peopleImage = req.files?.peopleImage
+  ? `/uploads/${req.files.peopleImage[0].filename}`
+  : award.peopleImage;
     await award.update({
       adminId: req.body.adminId || award.adminId,
       bannerImage,

@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+const { Op } = require("sequelize");
 const sendEmail = require("../services/email");
 const Attorney = require("../models/attorneyModel");
 
@@ -175,6 +175,14 @@ exports.updateAttorneyProfile = async (req, res) => {
       familyLawPractice,
       familyDetails,
       termsAccepted,
+      aboutus,
+      categoryId,
+      linkedin,
+      twitter,
+      facebook,
+      gmail,
+      status
+
     } = req.body;
 
     // if (!termsAccepted) {
@@ -216,13 +224,37 @@ exports.updateAttorneyProfile = async (req, res) => {
   familyLawPractice,
   familyDetails,
 
-  kycIdentity: req.files?.kycIdentity?.[0]?.path,
-  kycAddress: req.files?.kycAddress?.[0]?.path,
-  profileImage: req.files?.profileImage?.[0]?.path,
-  resume: req.files?.resume?.[0]?.path,
-  barCouncilIndiaId: req.files?.barCouncilIndiaId?.[0]?.path,
-  barCouncilStateId: req.files?.barCouncilStateId?.[0]?.path,
+kycIdentity: req.files?.kycIdentity?.[0]
+  ? `/uploads/${req.files.kycIdentity[0].filename}`
+  : null,
 
+kycAddress: req.files?.kycAddress?.[0]
+  ? `/uploads/${req.files.kycAddress[0].filename}`
+  : null,
+
+profileImage: req.files?.profileImage?.[0]
+  ? `/uploads/${req.files.profileImage[0].filename}`
+  : null,
+
+resume: req.files?.resume?.[0]
+  ? `/uploads/${req.files.resume[0].filename}`
+  : null,
+
+barCouncilIndiaId: req.files?.barCouncilIndiaId?.[0]
+  ? `/uploads/${req.files.barCouncilIndiaId[0].filename}`
+  : null,
+
+barCouncilStateId: req.files?.barCouncilStateId?.[0]
+  ? `/uploads/${req.files.barCouncilStateId[0].filename}`
+  : null,
+  aboutus,
+      categoryId,
+      linkedin,
+      twitter,
+      facebook,
+      gmail,
+      status,
+ 
   termsAccepted,
 });
     res.status(200).json({
@@ -338,6 +370,52 @@ exports.getAttorneyById = async (req, res) => {
     res.status(200).json({
       message: "Attorney fetched successfully",
       attorney,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+
+
+/* ================= GET ALL ADMISSION ================= */
+exports.getAllAdmission = async (req, res) => {
+  try {
+    const attorneys = await Attorney.findAll({
+      attributes: ["admission"],   // only admission field
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json({
+      count: attorneys.length,
+      data: attorneys,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+/* ================= GET ALL EDUCATION ================= */
+exports.getAllEducation = async (req, res) => {
+  try {
+    const attorneys = await Attorney.findAll({
+      attributes: ["education"],   // return only education column
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json({
+      count: attorneys.length,
+      data: attorneys,
     });
 
   } catch (error) {

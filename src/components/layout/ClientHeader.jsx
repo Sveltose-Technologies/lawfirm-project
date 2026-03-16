@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 
 export default function ClientHeader({ onToggleSidebar }) {
   const router = useRouter();
-  const [profileImg, setProfileImg] = useState("/assets/images/attorney1.png");
+
 
   useEffect(() => {
     const savedImg = localStorage.getItem("profileImage");

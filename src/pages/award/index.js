@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
-import * as authService from "../../services/authService";
+// getImgUrl ko import karein
+import { getAllAwards, getImgUrl } from "../../services/authService";
 
 function AwardsAccolades() {
   const router = useRouter();
@@ -40,7 +41,7 @@ function AwardsAccolades() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await authService.getAllAwards();
+        const res = await getAllAwards();
         if (res && res.success) {
           const data = res.data || [];
           setAllAwards(data);
@@ -128,9 +129,10 @@ function AwardsAccolades() {
   if (loading)
     return <div className="p-5 text-center fw-bold">Loading Awards...</div>;
 
+  // Manual concatenation hatakar helper function ka use kiya
   const bannerImg =
     allAwards.length > 0 && allAwards[0].bannerImage
-      ? `${authService.IMG_URL}/${allAwards[0].bannerImage}`
+      ? getImgUrl(allAwards[0].bannerImage)
       : "/assets/images/our-firm4.png";
 
   return (
@@ -149,7 +151,6 @@ function AwardsAccolades() {
       </div>
 
       <div className="container py-5">
-        {/* Responsive Search Bar */}
         <div className="card shadow-sm border-0 mb-5 p-4 overflow-visible">
           <form onSubmit={handleSearch}>
             <div className="row g-3">
@@ -254,7 +255,6 @@ function AwardsAccolades() {
           </form>
         </div>
 
-        {/* Responsive Table Section */}
         <div className="table-responsive shadow-sm rounded bg-white">
           <table className="table table-hover align-middle mb-0 border">
             <thead className="table-dark-custom">

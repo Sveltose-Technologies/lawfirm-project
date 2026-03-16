@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { getAllPromoters, IMG_URL } from "../../services/authService";
+// getImgUrl ko import karein
+import { getAllPromoters, getImgUrl } from "../../services/authService";
 
 export default function PromoterDetail() {
   const router = useRouter();
@@ -47,13 +48,13 @@ export default function PromoterDetail() {
       </div>
     );
 
+  // getImgUrl handle karega absolute vs relative paths
   const bannerImg = person.bannerImage
-    ? `${IMG_URL}/${person.bannerImage}`
+    ? getImgUrl(person.bannerImage)
     : "/assets/images/promoter-banner.png";
 
   return (
     <div className="bg-white min-vh-100">
-      {/* Universal Banner Section */}
       <div
         className="universal-banner"
         style={{ backgroundImage: `url(${bannerImg})` }}>
@@ -70,11 +71,11 @@ export default function PromoterDetail() {
 
       <div className="container py-5">
         <div className="row g-5">
-          {/* LEFT SIDEBAR - CORRECTED STRUCTURE */}
           <div className="col-lg-4 col-md-5">
             <div className="profile-detail-img-box shadow-sm mb-4">
+              {/* getImgUrl ka use karein */}
               <img
-                src={`${person.personImage}`}
+                src={getImgUrl(person.personImage)}
                 alt={person.personName}
                 className="img-fluid w-100"
               />
@@ -87,7 +88,6 @@ export default function PromoterDetail() {
                 Professional Info
               </h5>
 
-              {/* Designation */}
               <div className="mb-3">
                 <label
                   className="text-uppercase fw-bold text-muted d-block mb-0"
@@ -97,7 +97,6 @@ export default function PromoterDetail() {
                 <div className="text-dark fw-bold">{person.designation}</div>
               </div>
 
-              {/* Email */}
               {person.email && (
                 <div className="mb-2">
                   <label
@@ -109,7 +108,6 @@ export default function PromoterDetail() {
                 </div>
               )}
 
-              {/* Phone */}
               {person.mobileNo && (
                 <div className="mb-3">
                   <label
@@ -122,7 +120,6 @@ export default function PromoterDetail() {
               )}
             </div>
 
-            {/* Back Button */}
             <div className="mt-4">
               <button
                 className="btn btn-outline-custom w-100 py-2 text-uppercase small"
@@ -132,7 +129,6 @@ export default function PromoterDetail() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN - BIOGRAPHY */}
           <div className="col-lg-8 col-md-7">
             <div className="biography-section">
               <h3 className="biography-heading">Biography</h3>

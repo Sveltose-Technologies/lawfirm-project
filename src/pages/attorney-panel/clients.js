@@ -77,9 +77,7 @@ export default function ClientTransactionPage() {
 
   return (
     <AttorneyLayout>
-      <Head>
-        <title>Client & Transactions | Lawstick</title>
-      </Head>
+      
 
       <div className="container-fluid px-0">
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">

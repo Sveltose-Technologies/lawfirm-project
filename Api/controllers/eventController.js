@@ -17,9 +17,9 @@ exports.createEvent = async (req, res) => {
       req.body.attorneyIds = JSON.parse(req.body.attorneyIds);
     }
 
-    if (req.file) {
-      req.body.bannerImage = req.file.path;   // ✅ Cloudinary URL
-    }
+if (req.file) {
+  req.body.bannerImage = `/uploads/${req.file.filename}`;
+}
 
     const event = await Event.create(req.body);
 
@@ -97,11 +97,11 @@ exports.updateEvent = async (req, res) => {
       });
     }
 
-    // If new bannerImage uploaded
-    if (req.file) {
-      req.body.bannerImage = req.file.path;
-    }
-
+ if (req.file) {
+  req.body.bannerImage = `/uploads/${req.file.filename}`;
+} else {
+  req.body.bannerImage = event.bannerImage;
+}
     // Parse JSON fields if they are strings
     if (req.body.subcategoryIds && typeof req.body.subcategoryIds === "string") {
       req.body.subcategoryIds = JSON.parse(req.body.subcategoryIds);

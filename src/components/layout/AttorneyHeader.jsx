@@ -1,32 +1,15 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { getUserProfile } from "../../services/authService";
+import { getUserProfile, getImgUrl } from "../../services/authService";
 
 export default function AttorneyHeader({ onToggleSidebar }) {
   const router = useRouter();
-
-  // Use a reliable placeholder URL instead of a local file that might 404
   const fallbackImg =
-    "https://ui-avatars.com/api/?name=Attorney&background=002147&color=fff";
+    "https://ui-avatars.com/api/?name=Attorney&background=eebb5d&color=000";
 
   const [profileImg, setProfileImg] = useState(fallbackImg);
   const [adminName, setAdminName] = useState("Attorney");
-
-  // Improved Image URL helper
-  const getImgUrl = (path) => {
-    if (!path) return fallbackImg;
-
-    const normalizedPath = path.toString().replace(/\\/g, "/");
-
-    if (normalizedPath.startsWith("http")) {
-      return normalizedPath;
-    }
-
-    // IMPORTANT: If your images are stored on your backend, add the base URL here
-    // Example: return `http://localhost:5000/${normalizedPath}`;
-    return normalizedPath;
-  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -35,21 +18,22 @@ export default function AttorneyHeader({ onToggleSidebar }) {
 
       try {
         const response = await getUserProfile(userId);
-        const attorney = response?.attorney;
+        const attorneyData = response?.attorney || response?.data?.attorney;
 
-        if (attorney) {
-          if (attorney.profileImage) {
-            setProfileImg(getImgUrl(attorney.profileImage));
+        if (attorneyData) {
+          if (attorneyData.profileImage) {
+            setProfileImg(getImgUrl(attorneyData.profileImage));
           }
-          if (attorney.firstName) {
-            setAdminName(`${attorney.firstName} ${attorney.lastName || ""}`);
+          if (attorneyData.firstName) {
+            setAdminName(
+              `${attorneyData.firstName} ${attorneyData.lastName || ""}`,
+            );
           }
         }
       } catch (error) {
         console.error("Error loading header profile:", error);
       }
     };
-
     fetchUserData();
   }, []);
 
@@ -72,63 +56,44 @@ export default function AttorneyHeader({ onToggleSidebar }) {
               onClick={onToggleSidebar}>
               <i className="bi bi-list fs-4"></i>
             </button>
-            <h5
-              className="mb-0 fw-bold d-none d-sm-block"
-              style={{ color: "#002147" }}>
+            <h5 className="mb-0 fw-bold d-none d-sm-block text-dark">
               ATTORNEY PANEL
             </h5>
           </div>
 
           <div className="d-flex align-items-center gap-4">
-            {/* Messages Icon */}
             <Link href="/attorney-panel/messages">
-              <a className="text-dark fs-4 position-relative pt-1">
+              <a className="text-dark fs-4 pt-1">
                 <i className="bi bi-chat-left-text"></i>
-                {/* <span
-                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                  style={{ fontSize: "10px", marginTop: "5px" }}>
-                  2
-                </span> */}
               </a>
             </Link>
 
-            {/* Profile Dropdown */}
             <div className="profile-dropdown-container">
               <div
-                className="profile-trigger d-flex align-items-center gap-2"
+                className="d-flex align-items-center gap-2"
                 style={{ cursor: "pointer" }}>
                 <span className="small d-none d-md-inline fw-bold text-muted">
                   {adminName}
                 </span>
                 <img
                   src={profileImg}
-                  className="rounded-circle border shadow-sm"
+                  className="rounded-circle border"
                   style={{ width: "45px", height: "45px", objectFit: "cover" }}
                   alt="profile"
                   onError={(e) => {
-                    if (e.target.src !== fallbackImg) {
-                      e.target.src = fallbackImg;
-                    }
+                    e.target.src = fallbackImg;
                   }}
                 />
               </div>
 
-              <div className="profile-hover-menu shadow-lg border-0 rounded-3">
-                <div className="p-3 border-bottom bg-light rounded-top">
-                  <span className="small fw-bold text-muted">
-                    Account Settings
-                  </span>
-                </div>
+              <div className="profile-hover-menu shadow-lg border-0">
                 <Link href="/attorney-panel/profile">
-                  <a className="dropdown-item py-2 px-3">
-                    <i className="bi bi-person me-2"></i> My Profile
-                  </a>
+                  <a className="dropdown-item py-2 px-3">My Profile</a>
                 </Link>
-                <div className="dropdown-divider m-0"></div>
                 <button
                   className="dropdown-item py-2 px-3 text-danger fw-bold"
                   onClick={handleLogout}>
-                  <i className="bi bi-box-arrow-right me-2"></i> Logout
+                  Logout
                 </button>
               </div>
             </div>
@@ -145,10 +110,11 @@ export default function AttorneyHeader({ onToggleSidebar }) {
           position: absolute;
           top: 100%;
           right: 0;
-          width: 200px;
+          width: 160px;
           background: white;
           display: none;
           z-index: 1050;
+          border: 1px solid #eee;
         }
         .profile-dropdown-container:hover .profile-hover-menu {
           display: block;
@@ -156,14 +122,14 @@ export default function AttorneyHeader({ onToggleSidebar }) {
         .dropdown-item {
           display: block;
           width: 100%;
-          padding: 0.5rem 1rem;
+          padding: 10px 15px;
           color: #212529;
           text-decoration: none;
           font-size: 14px;
         }
         .dropdown-item:hover {
-          background-color: #f8f9fa;
-          color: #de9f57;
+          background-color: #fdf8ef;
+          color: #eebb5d;
         }
       `}</style>
     </header>

@@ -115,9 +115,7 @@ export default function CaseDetails() {
 
   return (
     <AttorneyLayout>
-      <Head>
-        <title>Case Details | Lawstick</title>
-      </Head>
+      
 
       <div className="container-fluid px-0">
         <div className="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">

@@ -6,7 +6,7 @@ exports.createSubcategory = async (req, res) => {
     const { categoryId, subcategoryName, description } = req.body;
 
    const adminId = req.user ? req.user.id : req.body.adminId;
-    const bannerImage = req.file ? req.file.path : null;
+const bannerImage = req.file ? `/uploads/${req.file.filename}` : null;
 
     const subcategory = await CapabilitySubcategory.create({
       adminId,
@@ -51,10 +51,12 @@ exports.updateSubcategory = async (req, res) => {
     }
 
     await subcategory.update({
-      subcategoryName: req.body.subcategoryName,
-      description: req.body.description,
-      bannerImage: req.file ? req.file.path : subcategory.bannerImage,
-    });
+  subcategoryName: req.body.subcategoryName || subcategory.subcategoryName,
+  description: req.body.description || subcategory.description,
+  bannerImage: req.file
+    ? `/uploads/${req.file.filename}`
+    : subcategory.bannerImage,
+});
 
     res.status(200).json({
       success: true,

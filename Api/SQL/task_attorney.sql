@@ -62,9 +62,18 @@ CREATE TABLE `attorney` (
   `termsAccepted` tinyint(1) NOT NULL,
   `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `aboutus` longtext,
+  `categoryId` int DEFAULT NULL,
+  `linkedin` varchar(255) DEFAULT NULL,
+  `twitter` varchar(255) DEFAULT NULL,
+  `facebook` varchar(255) DEFAULT NULL,
+  `gmail` varchar(255) DEFAULT NULL,
+  `status` enum('active','dactive') DEFAULT 'dactive',
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   KEY `fk_attorney_city` (`city`),
+  KEY `fk_attorney_category` (`categoryId`),
+  CONSTRAINT `fk_attorney_category` FOREIGN KEY (`categoryId`) REFERENCES `capability_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_attorney_city` FOREIGN KEY (`city`) REFERENCES `location_city` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -75,7 +84,7 @@ CREATE TABLE `attorney` (
 
 LOCK TABLES `attorney` WRITE;
 /*!40000 ALTER TABLE `attorney` DISABLE KEYS */;
-INSERT INTO `attorney` VALUES (1,'parag','singh','hemu@gmail.com','$2b$10$HWbZgaweXnRFgJdVO1RsyOp5hsjUZQhJbnVTTal2avT2yYb2516i2',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'[{\"code\": \"bi\", \"name\": \"Bislama\", \"local\": \"Bislama\"}]',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-07 15:29:20','2026-03-10 14:34:07');
+INSERT INTO `attorney` VALUES (1,'parag','singh','hemu@gmail.com','$2b$10$HWbZgaweXnRFgJdVO1RsyOp5hsjUZQhJbnVTTal2avT2yYb2516i2',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'[{\"code\": \"bi\", \"name\": \"Bislama\", \"local\": \"Bislama\"}]',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,'2026-03-07 15:29:20','2026-03-13 17:58:36','<p>I am an experienced attorney specializing in family law and civil litigation with more than 10 years of experience helping clients resolve complex legal issues.</p>',NULL,'https://www.linkedin.com/in/john-attorney','https://twitter.com/johnattorney','https://facebook.com/johnattorney','johnattorney@gmail.com','active');
 /*!40000 ALTER TABLE `attorney` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -88,4 +97,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-11 17:49:34
+-- Dump completed on 2026-03-16 17:47:27

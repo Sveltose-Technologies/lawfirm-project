@@ -9,7 +9,7 @@ exports.createBlog = async (req, res) => {
       return res.status(400).json({ message: "Title is required" });
     }
 
-    const image = req.file ? req.file.filename : null;
+ const image = req.file ? `/uploads/${req.file.filename}` : null;
 
     const newBlog = await Blog.create({
       title,
@@ -47,7 +47,7 @@ exports.updateBlog = async (req, res) => {
     if (!blog) return res.status(404).json({ message: "Blog not found" });
 
     const { title, video_url } = req.body;
-    const image = req.file ? req.file.filename : blog.image;
+  const image = req.file ? `/uploads/${req.file.filename}` : null;
 
     await blog.update({
       title: title ?? blog.title,

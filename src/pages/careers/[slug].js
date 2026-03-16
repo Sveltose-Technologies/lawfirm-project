@@ -85,13 +85,7 @@ export default function CareerOpenings() {
 
   return (
     <>
-      <Head>
-        <title>Search Jobs | Lawstick</title>
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
-        />
-      </Head>
+   
 
       <div className="bg-light min-vh-100">
         {/* --- DYNAMIC HERO BANNER UI --- */}

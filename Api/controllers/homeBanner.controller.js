@@ -12,8 +12,7 @@ exports.createHomeBanner = async (req, res) => {
       });
     }
 
-    const image = req.file ? req.file.path : null;
-
+   const image = req.file ? `/uploads/${req.file.filename}` : null;
     const data = await HomeBannerText.create({
       typeId,
       image,
@@ -97,19 +96,17 @@ exports.updateHomeBanner = async (req, res) => {
         message: "Data not found",
       });
     }
+let image = data.image;
 
-    let image = data.image;
+if (req.file) {
+  image = `/uploads/${req.file.filename}`;
+}
 
-    if (req.file) {
-      image = req.file.path;
-    }
-
-    await data.update({
-      typeId: typeId || data.typeId,
-      textEditor: textEditor || data.textEditor,
-      image,
-    });
-
+await data.update({
+  typeId: typeId || data.typeId,
+  textEditor: textEditor || data.textEditor,
+  image,
+});
     res.status(200).json({
       status: true,
       message: "Updated successfully",

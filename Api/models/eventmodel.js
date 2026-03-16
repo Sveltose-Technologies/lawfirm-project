@@ -84,7 +84,10 @@ const Event = sequelize.define(
     twitter: {
       type: DataTypes.STRING,
     },
-
+   
+    gmail: {
+      type: DataTypes.STRING,
+    },
     attorneyIds: {
       type: DataTypes.JSON,
       allowNull: false,

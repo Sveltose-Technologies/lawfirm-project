@@ -21,7 +21,8 @@ exports.createCity = async (req, res) => {
       });
     }
 
-    const image = req.file ? req.file.path : null;
+    // const image = req.file ? req.file.filename : null;
+      const image = req.file ? `/uploads/${req.file.filename}` : null;
 
     const city = await LocationCity.create({
       adminId,
@@ -101,7 +102,7 @@ exports.updateCity = async (req, res) => {
       address: req.body.address,
       phoneNo: req.body.phoneNo,
       faxNo: req.body.faxNo,
-      image: req.file ? req.file.path : city.image,
+      image : req.file ? `/uploads/${req.file.filename}` : null,
       content: req.body.content
     });
 

@@ -12,7 +12,7 @@ exports.createProfessionals = async (req, res) => {
       });
     }
 
-    const bannerImage = req.file ? req.file.path : null;
+    const bannerImage = req.file ? `/uploads/${req.file.filename}` : null;
 
     const data = await Professionals.create({
       bannerImage,
@@ -90,11 +90,12 @@ exports.updateProfessionals = async (req, res) => {
       });
     }
 
-    let bannerImage = data.bannerImage;
+     let bannerImage = data.bannerImage;
 
     if (req.file) {
-      bannerImage = req.file.path;
+      bannerImage = `/uploads/${req.file.filename}`;
     }
+
 
     await data.update({
       bannerImage,

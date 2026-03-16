@@ -14,9 +14,16 @@ exports.createPromoter = async (req, res) => {
 
     const promoter = await Promoter.create({
       adminId,
-      bannerImage: req.files?.bannerImage?.[0]?.path || req.body.bannerImage,
-      personName,
-      personImage: req.files?.personImage?.[0]?.path || req.body.personImage,
+
+  bannerImage: req.files?.bannerImage
+  ? `/uploads/${req.files.bannerImage[0].filename}`
+  : req.body.bannerImage || null,
+
+  personName,
+personImage: req.files?.personImage
+  ? `/uploads/${req.files.personImage[0].filename}`
+  : req.body.personImage || null,
+
       designation,
       specialization,
       email,
@@ -70,16 +77,24 @@ exports.updatePromoter = async (req, res) => {
     const promoter = await Promoter.findByPk(id);
     if (!promoter) return res.status(404).json({ success: false, message: "Promoter not found" });
 
-    await promoter.update({
-      adminId: req.body.adminId || promoter.adminId,
-      bannerImage: req.files?.bannerImage?.[0]?.path || promoter.bannerImage,
-      personName: req.body.personName || promoter.personName,
-      personImage: req.files?.personImage?.[0]?.path || promoter.personImage,
-      designation: req.body.designation || promoter.designation,
-      specialization: req.body.specialization || promoter.specialization,
-      email: req.body.email || promoter.email,
-      mobileNo: req.body.mobileNo || promoter.mobileNo
-    });
+   await promoter.update({
+  adminId: req.body.adminId || promoter.adminId,
+
+  bannerImage: req.files?.bannerImage
+    ? `/uploads/${req.files.bannerImage[0].filename}`
+    : promoter.bannerImage,
+
+  personName: req.body.personName || promoter.personName,
+
+  personImage: req.files?.personImage
+    ? `/uploads/${req.files.personImage[0].filename}`
+    : promoter.personImage,
+
+  designation: req.body.designation || promoter.designation,
+  specialization: req.body.specialization || promoter.specialization,
+  email: req.body.email || promoter.email,
+  mobileNo: req.body.mobileNo || promoter.mobileNo
+});
 
     res.status(200).json({ success: true, message: "Promoter updated successfully", data: promoter });
   } catch (error) {

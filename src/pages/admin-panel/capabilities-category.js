@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import {
@@ -16,20 +18,15 @@ import {
   Label,
   Input,
 } from "reactstrap";
-
+import { toast } from "react-toastify";
 import * as authService from "../../services/authService";
 import PaginationComponent from "../../context/Pagination";
 
 import "react-quill/dist/quill.snow.css";
 
-const ReactQuill = dynamic(() => import("react-quill"), {
-  ssr: false,
-});
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const CapabilityCategory = () => {
-  const GOLD = "#eebb5d";
-  const LIGHT_GOLD = "#fdf8ef";
-
   const [categories, setCategories] = useState([]);
   const [modal, setModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -45,11 +42,12 @@ const CapabilityCategory = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  const stripHtml = (html) => {
+  const stripHtmlToTwoWords = (html) => {
     if (!html) return "";
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    const text = doc.body.textContent || "";
-    return text.replace(/\s+/g, " ").trim(); 
+    let text = html.replace(/<[^>]*>/g, "");
+    const words = text.trim().split(/\s+/);
+    if (words.length <= 2) return text;
+    return words.slice(0, 2).join(" ") + "...";
   };
 
   const modules = useMemo(
@@ -68,10 +66,9 @@ const CapabilityCategory = () => {
     setLoading(true);
     try {
       const res = await authService.getAllCapabilityCategories();
-      const finalData = res.data || (Array.isArray(res) ? res : []);
-      setCategories(finalData);
+      setCategories(res.data || (Array.isArray(res) ? res : []));
     } catch (error) {
-      console.error("Fetch Data Failed:", error);
+      toast.error(error || "Failed to load categories");
     } finally {
       setLoading(false);
     }
@@ -98,33 +95,33 @@ const CapabilityCategory = () => {
       data.append("adminId", "1");
       data.append("categoryName", formData.categoryName.trim());
       data.append("description", formData.description);
-
-      if (formData.bannerImage instanceof File) {
+      if (formData.bannerImage instanceof File)
         data.append("bannerImage", formData.bannerImage);
-      }
 
       const res = isEditing
         ? await authService.updateCapabilityCategory(currentId, data)
         : await authService.createCapabilityCategory(data);
 
       if (res) {
+        toast.success(res.message || "Operation successful");
         toggle();
         fetchData();
       }
     } catch (error) {
-      console.error("Submission Error:", error);
+      toast.error(error || "Submission failed");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this category?")) {
+    if (window.confirm("Delete this category?")) {
       try {
-        await authService.deleteCapabilityCategory(id);
+        const res = await authService.deleteCapabilityCategory(id);
+        toast.success(res.message || "Deleted successfully");
         fetchData();
       } catch (error) {
-        console.error("Delete Failed");
+        toast.error(error || "Delete failed");
       }
     }
   };
@@ -146,116 +143,88 @@ const CapabilityCategory = () => {
   );
 
   return (
-    <Container
-      fluid
-      className="p-3 p-md-4 min-vh-100"
-      style={{ backgroundColor: "#f9f9f9" }}>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h4 className="fw-bold mb-0" style={{ color: "#2c3e50" }}>
-            Capability Categories
-          </h4>
-          <p className="text-muted small">
-            Manage practice areas for your firm.
+    <Container fluid className="py-4 bg-light-gray min-vh-100">
+      <Row className="mb-4 align-items-center g-3">
+        <Col xs={12} md={6}>
+          <h4 className="fw-bold text-blue mb-0">Capability Categories</h4>
+          <p className="text-muted small mb-0">
+            Manage law firm practice areas.
           </p>
-        </div>
-        <Button
-          className="px-4 shadow-sm"
-          style={{ backgroundColor: GOLD, border: "none" }}
-          onClick={toggle}>
-          + Add Category
-        </Button>
-      </div>
+        </Col>
+        <Col xs={12} md={6} className="text-md-end">
+          <Button
+            className="btn-gold w-100 w-md-auto shadow-sm"
+            onClick={toggle}>
+            + Add Category
+          </Button>
+        </Col>
+      </Row>
 
-      <Card className="border-0 shadow-sm rounded-4">
+      <Card className="border-0 card-shadow">
         <CardBody className="p-0">
           <div className="table-responsive">
             <Table hover className="align-middle mb-0">
-              <thead style={{ backgroundColor: LIGHT_GOLD }}>
+              <thead className="table-dark-custom">
                 <tr>
                   <th className="px-4">SR.</th>
                   <th>IMAGE</th>
-                  <th>CATEGORY NAME</th>
-                  <th>DESCRIPTION</th>
+                  <th>CATEGORY</th>
+                  <th className="d-none d-md-table-cell">SUMMARY</th>
                   <th className="text-end px-4">ACTION</th>
                 </tr>
               </thead>
               <tbody>
-                {currentItems.length > 0 ? (
-                  currentItems.map((item, index) => (
-                    <tr key={item.id}>
-                      <td className="px-4 text-muted">
-                        {(currentPage - 1) * itemsPerPage + index + 1}.
-                      </td>
-                      <td>
-                        <div
-                          style={{
-                            width: "60px",
-                            height: "40px",
-                            borderRadius: "6px",
-                            overflow: "hidden",
-                            border: "1px solid #eee",
-                          }}>
-                          <img
-                            src={authService.getImgUrl(item.bannerImage)}
-                            alt="category"
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                            }}
-                            onError={(e) => {
-                              e.target.src =
-                                "https://placehold.co/60x40?text=No+Img";
-                            }}
-                          />
-                        </div>
-                      </td>
-                      <td className="fw-bold text-dark">{item.categoryName}</td>
-                      <td>
-                        <div
-                          className="text-muted small"
-                          style={{
-                            maxWidth: "300px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}>
-                          {stripHtml(item.description)}
-                        </div>
-                      </td>
-                      <td className="text-end px-4">
+                {currentItems.map((item, index) => (
+                  <tr key={item.id}>
+                    <td className="px-4">
+                      {(currentPage - 1) * itemsPerPage + index + 1}
+                    </td>
+                    <td>
+                      <img
+                        src={authService.getImgUrl(item.bannerImage)}
+                        className="rounded border"
+                        style={{
+                          width: "50px",
+                          height: "35px",
+                          objectFit: "cover",
+                        }}
+                        alt="img"
+                        onError={(e) =>
+                          (e.target.src = "https://placehold.co/50x35?text=NA")
+                        }
+                      />
+                    </td>
+                    <td className="fw-bold">{item.categoryName}</td>
+                    <td className="d-none d-md-table-cell text-muted">
+                      {stripHtmlToTwoWords(item.description)}
+                    </td>
+                    <td className="text-end px-4">
+                      <div className="d-flex justify-content-end gap-2">
                         <Button
+                          color="light"
                           size="sm"
-                          color="white"
-                          className="border shadow-sm me-2"
+                          className="border shadow-sm"
                           onClick={() => handleEdit(item)}>
                           ✏️
                         </Button>
                         <Button
+                          color="light"
                           size="sm"
-                          color="white"
-                          className="text-danger border shadow-sm"
+                          className="border shadow-sm text-danger"
                           onClick={() => handleDelete(item.id)}>
                           🗑️
                         </Button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="text-center py-5">
-                      {loading ? "Loading..." : "No data available"}
+                      </div>
                     </td>
                   </tr>
-                )}
+                ))}
               </tbody>
             </Table>
           </div>
         </CardBody>
       </Card>
 
-      <div className="mt-3">
+      <div className="mt-4 d-flex justify-content-center">
         <PaginationComponent
           totalItems={categories.length}
           itemsPerPage={itemsPerPage}
@@ -265,60 +234,70 @@ const CapabilityCategory = () => {
       </div>
 
       <Modal isOpen={modal} toggle={toggle} centered size="lg">
-        <ModalHeader
-          toggle={toggle}
-          className="fw-bold"
-          style={{ color: GOLD }}>
-          {isEditing ? "Update Capability Category" : "Add Capability Category"}
+        <ModalHeader toggle={toggle} className="text-gold fw-bold">
+          {isEditing ? "Update Category" : "New Category"}
         </ModalHeader>
-        <ModalBody className="px-4">
+        <ModalBody className="p-4">
           <Form onSubmit={handleSubmit}>
-            <FormGroup>
-              <Label className="small fw-bold">Category Name *</Label>
-              <Input
-                value={formData.categoryName}
-                onChange={(e) =>
-                  setFormData({ ...formData, categoryName: e.target.value })
-                }
-                required
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label className="small fw-bold">
-                Banner Image {isEditing ? "(Optional)" : "*"}
-              </Label>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  setFormData({ ...formData, bannerImage: e.target.files[0] })
-                }
-                required={!isEditing}
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label className="small fw-bold">Description *</Label>
-              <div style={{ height: "250px", marginBottom: "50px" }}>
-                <ReactQuill
-                  theme="snow"
-                  modules={modules}
-                  value={formData.description}
-                  onChange={(val) =>
-                    setFormData({ ...formData, description: val })
-                  }
-                  style={{ height: "200px" }}
-                />
-              </div>
-            </FormGroup>
-            <div className="d-flex gap-2">
+            <Row className="g-3">
+              <Col md={6}>
+                <FormGroup>
+                  <Label className="fw-bold small">Category Name *</Label>
+                  <Input
+                    value={formData.categoryName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, categoryName: e.target.value })
+                    }
+                    required
+                  />
+                </FormGroup>
+              </Col>
+              <Col md={6}>
+                <FormGroup>
+                  <Label className="fw-bold small">
+                    Banner Image {isEditing && "(Optional)"}
+                  </Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        bannerImage: e.target.files[0],
+                      })
+                    }
+                    required={!isEditing}
+                  />
+                </FormGroup>
+              </Col>
+              <Col xs={12}>
+                <FormGroup>
+                  <Label className="fw-bold small">Description *</Label>
+                  <div className="bg-white" style={{ marginBottom: "50px" }}>
+                    <ReactQuill
+                      theme="snow"
+                      value={formData.description}
+                      onChange={(v) =>
+                        setFormData({ ...formData, description: v })
+                      }
+                      modules={modules}
+                      style={{ height: "200px" }}
+                    />
+                  </div>
+                </FormGroup>
+              </Col>
+            </Row>
+            <div className="d-flex flex-column flex-md-row gap-2 mt-4 mt-md-0">
               <Button
                 type="submit"
-                style={{ backgroundColor: GOLD, border: "none" }}
-                disabled={loading}
-                className="px-5">
-                {loading ? "Processing..." : isEditing ? "Update" : "Save"}
+                className="btn-gold px-5 order-0 order-md-1"
+                disabled={loading}>
+                {loading ? "Processing..." : "Save Changes"}
               </Button>
-              <Button outline onClick={toggle} className="px-4">
+              <Button
+                outline
+                onClick={toggle}
+                className="btn-outline-custom px-4 order-1 order-md-0">
                 Cancel
               </Button>
             </div>

@@ -19,6 +19,7 @@ import {
   Dropdown,
   DropdownToggle,
   DropdownMenu,
+  FormText,
   ModalFooter,
 } from "reactstrap";
 import { ToastContainer, toast } from "react-toastify";
@@ -35,6 +36,7 @@ const ReactQuill = dynamic(() => import("react-quill"), {
 
 const Events = () => {
   const GOLD = "#b36b39";
+  const LIGHT_GOLD = "#fdf8ef";
 
   // --- UI STATE ---
   const [activeTab, setActiveTab] = useState("Event Banners");
@@ -46,7 +48,11 @@ const Events = () => {
   const [subcategories, setSubcategories] = useState([]);
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
-  const [attorneys, setAttorneys] = useState([]);
+  const [attorneys] = useState([
+    { id: 1, firstName: "John", lastName: "Doe" },
+    { id: 2, firstName: "Jane", lastName: "Smith" },
+    { id: 3, firstName: "Robert", lastName: "Brown" },
+  ]);
 
   // --- MODALS ---
   const [modal, setModal] = useState(false);
@@ -67,7 +73,6 @@ const Events = () => {
     linkedin: "",
     facebook: "",
     twitter: "",
-    gmail: "",
     bannerImage: null,
     capabilityCategoryId: "",
     subcategoryIds: [],
@@ -88,45 +93,30 @@ const Events = () => {
     if (Array.isArray(res)) return res;
     if (res?.data && Array.isArray(res.data)) return res.data;
     if (res?.data?.data && Array.isArray(res.data.data)) return res.data.data;
-    if (res?.attorneys && Array.isArray(res.attorneys)) return res.attorneys;
     return [];
   };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [
-        eventBannerRes,
-        eventRes,
-        attornyRes,
-        catRes,
-        subRes,
-        countRes,
-        cityRes,
-      ] = await Promise.all([
-        authService.getBanner().catch(() => []),
-        authService.getAllEvents().catch(() => []),
-        authService.getAllAttorneys().catch(() => ({ attorneys: [] })),
-        authService.getAllCapabilityCategories().catch(() => []),
-        authService.getAllCapabilitySubCategories().catch(() => []),
-        authService.getAllCountries().catch(() => []),
-        authService.getAllCities().catch(() => []),
-      ]);
+      const eventBannerRes = await authService.getBanner().catch(() => []);
+      const eventRes = await authService.getAllEvents().catch(() => []);
+      const catRes = await authService
+        .getAllCapabilityCategories()
+        .catch(() => []);
+      const subRes = await authService
+        .getAllCapabilitySubCategories()
+        .catch(() => []);
+      const countRes = await authService.getAllCountries().catch(() => []);
+      const cityRes = await authService.getAllCities().catch(() => []);
 
-      const processedAttorneys = safeArray(attornyRes).map((item) => ({
-        id: item.id,
-        name:
-          `${item.firstName || ""} ${item.lastName || ""}`.trim() ||
-          "Unknown Attorney",
-      }));
-
-      setAttorneys(processedAttorneys);
       setEventsList(safeArray(eventRes));
       setCategories(safeArray(catRes));
       setSubcategories(safeArray(subRes));
       setCountries(safeArray(countRes));
       setCities(safeArray(cityRes));
       setBannersList(safeArray(eventBannerRes));
+      setEventsList(safeArray(eventRes));
     } catch (error) {
       console.error("Fetch Error:", error);
     } finally {
@@ -187,20 +177,42 @@ const Events = () => {
     });
   };
 
+  // --- NEW: EDIT BANNER HANDLER ---
+  const handleEditBanner = (item) => {
+    setBannerData({
+      image: null,
+      description: item.textEditor || "",
+    });
+    setCurrentId(item.id);
+    setIsEditing(true);
+    setBannerModal(true);
+  };
+
+  // --- NEW: DELETE BANNER HANDLER ---
+  const handleDeleteBanner = async (id) => {
+    if (window.confirm("Are you sure you want to delete this banner?")) {
+      try {
+        await authService.deleteBannerEvent(id);
+        fetchData();
+      } catch (err) {
+      }
+    }
+  };
+
   const saveBanner = async (e) => {
     if (e) e.preventDefault();
-    const adminData = authService.getAdminId();
-    const currentAdminId =
-      typeof adminData === "object" ? adminData?.id : adminData;
-
+    const currentAdminId = authService.getAdminId();
     if (!currentAdminId) return toast.error("Session expired.");
-    if (!isEditing && !bannerData.image)
+
+    if (!isEditing && !bannerData.image) {
       return toast.error("Please select a banner image.");
+    }
 
     setLoading(true);
     try {
       const data = new FormData();
       data.append("textEditor", bannerData.description);
+
       if (bannerData.image instanceof File) {
         data.append("bannerImage", bannerData.image);
       }
@@ -210,12 +222,11 @@ const Events = () => {
         : await authService.createBannerEvent(data);
 
       if (res) {
-        toast.success(isEditing ? "Banner Updated!" : "Banner Created!");
         toggleBannerModal();
         fetchData();
       }
     } catch (err) {
-      toast.error("Operation failed");
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -223,12 +234,7 @@ const Events = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Fix: Extract numeric ID from the object seen in your console
-    const adminData = authService.getAdminId();
-    const currentAdminId =
-      typeof adminData === "object" ? adminData?.id : adminData;
-
+    const currentAdminId = authService.getAdminId();
     if (!currentAdminId) return toast.error("Session expired.");
 
     setLoading(true);
@@ -241,15 +247,13 @@ const Events = () => {
       data.append("endDate", formData.endDate);
       data.append("startTime", formData.startTime);
       data.append("endTime", formData.endTime);
-      data.append("linkedin", formData.linkedin || "");
-      data.append("facebook", formData.facebook || "");
-      data.append("twitter", formData.twitter || "");
-      data.append("gmail", formData.gmail || "");
+      data.append("linkedin", formData.linkedin);
+      data.append("facebook", formData.facebook);
+      data.append("twitter", formData.twitter);
+      data.append("gmail", formData.gmail);
       data.append("description", formData.description);
       data.append("capabilityCategoryId", formData.capabilityCategoryId);
       data.append("countryId", formData.countryId);
-
-      // Arrays sent as strings
       data.append("subcategoryIds", JSON.stringify(formData.subcategoryIds));
       data.append("cityIds", JSON.stringify(formData.cityIds));
       data.append("attorneyIds", JSON.stringify(formData.attorneyIds));
@@ -258,18 +262,16 @@ const Events = () => {
         data.append("bannerImage", formData.bannerImage);
       }
 
-      // API Integration
       let res = isEditing
         ? await authService.updateEvent(currentId, data)
         : await authService.createEvent(data);
 
       if (res) {
-        toast.success(isEditing ? "Updated!" : "Created!");
+        // toast.success(isEditing ? "Updated!" : "Created!");
         toggle();
         fetchData();
       }
     } catch (err) {
-      console.error("Submission Error:", err);
       toast.error("Operation failed");
     } finally {
       setLoading(false);
@@ -282,8 +284,8 @@ const Events = () => {
       bannerImage: null,
       startDate: item.startDate ? item.startDate.split("T")[0] : "",
       endDate: item.endDate ? item.endDate.split("T")[0] : "",
-      capabilityCategoryId: String(item.capabilityCategoryId || ""),
-      countryId: String(item.countryId || ""),
+      capabilityCategoryId: String(item.capabilityCategoryId),
+      countryId: String(item.countryId),
       subcategoryIds: Array.isArray(item.subcategoryIds)
         ? item.subcategoryIds.map(Number)
         : [],
@@ -295,25 +297,6 @@ const Events = () => {
     setCurrentId(item.id);
     setIsEditing(true);
     setModal(true);
-  };
-
-  const handleEditBanner = (item) => {
-    setBannerData({ image: null, description: item.textEditor || "" });
-    setCurrentId(item.id);
-    setIsEditing(true);
-    setBannerModal(true);
-  };
-
-  const handleDeleteBanner = async (id) => {
-    if (window.confirm("Are you sure you want to delete this banner?")) {
-      try {
-        await authService.deleteBannerEvent(id);
-        toast.success("Banner deleted successfully");
-        fetchData();
-      } catch (err) {
-        toast.error("Failed to delete banner");
-      }
-    }
   };
 
   const Selector = ({ label, items, field, type, nameKey }) => (
@@ -347,7 +330,9 @@ const Events = () => {
                 checked={(formData[field] || []).includes(Number(item.id))}
                 onChange={() => handleCheckboxChange(item.id, field)}
               />
-              <span className="small">{item[nameKey]}</span>
+              <span className="small">
+                {item[nameKey] || `${item.firstName} ${item.lastName || ""}`}
+              </span>
             </div>
           ))}
         </DropdownMenu>
@@ -367,10 +352,15 @@ const Events = () => {
       style={{ backgroundColor: "#f9f9f9" }}
     >
       <ToastContainer />
+
       <div className="mb-4">
         <h2 className="fw-bold" style={{ color: "#1a365d" }}>
           Events Management
         </h2>
+        <p className="text-muted small">
+          Manage global conferences and webinars.
+        </p>
+
         <div className="d-flex border-bottom mb-4 overflow-auto">
           {["Event Banners", "Events"].map((tab) => (
             <Button
@@ -384,6 +374,7 @@ const Events = () => {
             </Button>
           ))}
         </div>
+
         <div className="d-flex justify-content-start mb-3">
           <Button
             className="text-white fw-bold shadow-sm"
@@ -408,7 +399,9 @@ const Events = () => {
                   <th className="px-4" width="10%">
                     ID
                   </th>
-                  <th width="15%">BANNER</th>
+                  <th width="15%">
+                    {activeTab === "Event Banners" ? "BANNER" : "BANNER"}
+                  </th>
                   <th width="55%">
                     {activeTab === "Event Banners"
                       ? "DESCRIPTION"
@@ -420,8 +413,9 @@ const Events = () => {
                 </tr>
               </thead>
               <tbody>
-                {activeTab === "Event Banners"
-                  ? bannersList.map((b, i) => (
+                {activeTab === "Event Banners" ? (
+                  bannersList.length > 0 ? (
+                    bannersList.map((b, i) => (
                       <tr key={b.id || i}>
                         <td className="px-4">{i + 1}</td>
                         <td>
@@ -432,13 +426,19 @@ const Events = () => {
                               height: "40px",
                               width: "70px",
                               objectFit: "cover",
+                              borderRadius: "4px",
                             }}
+                            onError={(e) =>
+                              (e.target.src =
+                                "https://placehold.co/70x40?text=No+Img")
+                            }
                           />
                         </td>
-                        <td
-                          className="small"
-                          dangerouslySetInnerHTML={{ __html: b.textEditor }}
-                        />
+                        <td className="small">
+                          <div
+                            dangerouslySetInnerHTML={{ __html: b.textEditor }}
+                          />
+                        </td>
                         <td className="text-end px-4">
                           <Button
                             size="sm"
@@ -458,63 +458,91 @@ const Events = () => {
                         </td>
                       </tr>
                     ))
-                  : currentItems.map((item, index) => (
-                      <tr key={item.id}>
-                        <td className="px-4">
-                          {(currentPage - 1) * itemsPerPage + index + 1}
-                        </td>
-                        <td>
-                          <img
-                            src={authService.getImgUrl(item.bannerImage)}
-                            alt="Event"
-                            style={{
-                              height: "40px",
-                              width: "70px",
-                              objectFit: "cover",
-                            }}
-                          />
-                        </td>
-                        <td className="fw-bold">{item.title}</td>
-                        <td className="text-end px-4">
-                          <Button
-                            size="sm"
-                            color="link"
-                            onClick={() => handleEdit(item)}
-                          >
-                            ✏️
-                          </Button>
-                          <Button
-                            size="sm"
-                            color="link"
-                            className="text-danger"
-                            onClick={() => {
-                              if (window.confirm("Delete?"))
-                                authService
-                                  .deleteEvent(item.id)
-                                  .then(fetchData);
-                            }}
-                          >
-                            🗑️
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="4"
+                        className="text-center py-5 text-muted small"
+                      >
+                        No Banners Added Yet
+                      </td>
+                    </tr>
+                  )
+                ) : currentItems.length > 0 ? (
+                  currentItems.map((item, index) => (
+                    <tr key={item.id}>
+                      <td className="px-4 text-muted">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+                      <td>
+                        <img
+                          src={authService.getImgUrl(item.bannerImage)}
+                          alt="Event Banner"
+                          style={{
+                            height: "40px",
+                            width: "70px",
+                            objectFit: "cover",
+                            borderRadius: "4px",
+                          }}
+                          onError={(e) =>
+                            (e.target.src =
+                              "https://placehold.co/70x40?text=No+Img")
+                          }
+                        />
+                      </td>
+                      <td className="fw-bold">{item.title}</td>
+                      <td className="text-end px-4">
+                        <Button
+                          size="sm"
+                          color="link"
+                          onClick={() => handleEdit(item)}
+                        >
+                          ✏️
+                        </Button>
+                        <Button
+                          size="sm"
+                          color="link"
+                          className="text-danger"
+                          onClick={() => {
+                            if (window.confirm("Delete?"))
+                              authService.deleteEvent(item.id).then(fetchData);
+                          }}
+                        >
+                          🗑️
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="4"
+                      className="text-center py-5 text-muted small"
+                    >
+                      No Events Found
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </Table>
           </div>
         </CardBody>
       </Card>
 
-      <PaginationComponent
-        totalItems={
-          activeTab === "Event Banners" ? bannersList.length : eventsList.length
-        }
-        itemsPerPage={itemsPerPage}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-      />
+      <div className="mt-3">
+        <PaginationComponent
+          totalItems={
+            activeTab === "Event Banners"
+              ? bannersList.length
+              : eventsList.length
+          }
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
+      </div>
 
-      {/* EVENT MODAL */}
+      {/* --- EVENT MODAL --- */}
       <Modal isOpen={modal} toggle={toggle} centered size="xl" scrollable>
         <ModalHeader toggle={toggle} style={{ color: GOLD }}>
           {isEditing ? "Update Event" : "Create New Event"}
@@ -524,7 +552,7 @@ const Events = () => {
             <Row className="gy-3">
               <Col md={12}>
                 <FormGroup>
-                  <Label className="small fw-bold">Title *</Label>
+                  <Label className="fw-bold small">Event Title *</Label>
                   <Input
                     value={formData.title}
                     onChange={(e) =>
@@ -536,7 +564,7 @@ const Events = () => {
               </Col>
               <Col md={3}>
                 <FormGroup>
-                  <Label className="small fw-bold">Start Date</Label>
+                  <Label className="fw-bold small">Start Date *</Label>
                   <Input
                     type="date"
                     value={formData.startDate}
@@ -549,7 +577,7 @@ const Events = () => {
               </Col>
               <Col md={3}>
                 <FormGroup>
-                  <Label className="small fw-bold">End Date</Label>
+                  <Label className="fw-bold small">End Date *</Label>
                   <Input
                     type="date"
                     value={formData.endDate}
@@ -562,7 +590,7 @@ const Events = () => {
               </Col>
               <Col md={3}>
                 <FormGroup>
-                  <Label className="small fw-bold">Start Time</Label>
+                  <Label className="fw-bold small">Start Time</Label>
                   <Input
                     type="time"
                     value={formData.startTime}
@@ -574,7 +602,7 @@ const Events = () => {
               </Col>
               <Col md={3}>
                 <FormGroup>
-                  <Label className="small fw-bold">End Time</Label>
+                  <Label className="fw-bold small">End Time</Label>
                   <Input
                     type="time"
                     value={formData.endTime}
@@ -585,43 +613,47 @@ const Events = () => {
                 </FormGroup>
               </Col>
               <Col md={6}>
-                <Label className="small fw-bold">Main Category</Label>
-                <Input
-                  type="select"
-                  value={formData.capabilityCategoryId}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      capabilityCategoryId: e.target.value,
-                    })
-                  }
-                  required
-                >
-                  <option value="">-- Select --</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.categoryName}
-                    </option>
-                  ))}
-                </Input>
+                <FormGroup>
+                  <Label className="fw-bold small">Main Category *</Label>
+                  <Input
+                    type="select"
+                    value={formData.capabilityCategoryId}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        capabilityCategoryId: e.target.value,
+                      })
+                    }
+                    required
+                  >
+                    <option value="">-- Select Category --</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.categoryName}
+                      </option>
+                    ))}
+                  </Input>
+                </FormGroup>
               </Col>
               <Col md={6}>
-                <Label className="small fw-bold">Country</Label>
-                <Input
-                  type="select"
-                  value={formData.countryId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, countryId: e.target.value })
-                  }
-                  required
-                >
-                  <option value="">-- Select --</option>
-                  {countries.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.countryName}
-                    </option>
-                  ))}
-                </Input>
+                <FormGroup>
+                  <Label className="fw-bold small">Country *</Label>
+                  <Input
+                    type="select"
+                    value={formData.countryId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, countryId: e.target.value })
+                    }
+                    required
+                  >
+                    <option value="">-- Select Country --</option>
+                    {countries.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.countryName}
+                      </option>
+                    ))}
+                  </Input>
+                </FormGroup>
               </Col>
               <Col md={4}>
                 <Selector
@@ -647,11 +679,51 @@ const Events = () => {
                   items={attorneys}
                   field="attorneyIds"
                   type="attor"
-                  nameKey="name"
+                  nameKey="firstName"
+                />
+              </Col>
+              <Col>
+                <Label className="small fw-bold">LinkedIn</Label>
+                <Input
+                  value={formData.linkedin}
+                  placeholder="Enter linkedin link"
+                  onChange={(e) =>
+                    setFormData({ ...formData, linkedin: e.target.value })
+                  }
+                />
+              </Col>
+              <Col md={4}>
+                <Label className="small fw-bold">Facebook</Label>
+                <Input
+                  value={formData.facebook}
+                  placeholder="Enter linkedin link"
+                  onChange={(e) =>
+                    setFormData({ ...formData, facebook: e.target.value })
+                  }
+                />
+              </Col>
+              <Col md={4}>
+                <Label className="small fw-bold">Twitter</Label>
+                <Input
+                  value={formData.twitter}
+                  placeholder="Enter twitter link"
+                  onChange={(e) =>
+                    setFormData({ ...formData, twitter: e.target.value })
+                  }
+                />
+              </Col>
+              <Col md={4}>
+                <Label className="small fw-bold">Gmail</Label>
+                <Input
+                  placeholder="Enter Gmail Id"
+                  value={formData.gmail}
+                  onChange={(e) =>
+                    setFormData({ ...formData, gmail: e.target.value })
+                  }
                 />
               </Col>
               <Col md={12}>
-                <Label className="small fw-bold">Description</Label>
+                <Label className="fw-bold small">Description *</Label>
                 <ReactQuill
                   theme="snow"
                   value={formData.description}
@@ -660,25 +732,30 @@ const Events = () => {
                 />
               </Col>
               <Col md={6}>
-                <Label className="small fw-bold">Banner Image</Label>
-                <Input
-                  type="file"
-                  onChange={(e) =>
-                    setFormData({ ...formData, bannerImage: e.target.files[0] })
-                  }
-                />
+                <FormGroup>
+                  <Label className="fw-bold small">Banner Image</Label>
+                  <Input
+                    type="file"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        bannerImage: e.target.files[0],
+                      })
+                    }
+                  />
+                </FormGroup>
               </Col>
             </Row>
             <div className="mt-4 d-flex gap-2">
               <Button
                 type="submit"
+                className="px-5 text-white fw-bold shadow-sm"
                 style={{ backgroundColor: GOLD, border: "none" }}
-                className="px-5 text-white fw-bold"
                 disabled={loading}
               >
                 {loading ? "Saving..." : "Save Event"}
               </Button>
-              <Button outline onClick={toggle} className="px-5">
+              <Button outline className="px-5 fw-bold" onClick={toggle}>
                 Cancel
               </Button>
             </div>
@@ -686,7 +763,7 @@ const Events = () => {
         </ModalBody>
       </Modal>
 
-      {/* BANNER MODAL */}
+      {/* --- BANNER MODAL --- */}
       <Modal
         isOpen={bannerModalOpen}
         toggle={toggleBannerModal}
@@ -694,7 +771,7 @@ const Events = () => {
         centered
       >
         <ModalHeader toggle={toggleBannerModal}>
-          {isEditing ? "Edit Banner" : "Add Banner"}
+          {isEditing ? "Edit Banner" : "Add Home Banner"}
         </ModalHeader>
         <ModalBody>
           <FormGroup>
@@ -705,9 +782,14 @@ const Events = () => {
                 setBannerData({ ...bannerData, image: e.target.files[0] })
               }
             />
+            {isEditing && (
+              <FormText color="muted">
+                Leave blank to keep current image
+              </FormText>
+            )}
           </FormGroup>
           <FormGroup>
-            <Label className="fw-bold">Description</Label>
+            <Label className="fw-bold">Description Text</Label>
             <ReactQuill
               theme="snow"
               value={bannerData.description}
@@ -725,7 +807,11 @@ const Events = () => {
             onClick={saveBanner}
             disabled={loading}
           >
-            {loading ? "Saving..." : "Save Banner"}
+            {loading
+              ? "Saving..."
+              : isEditing
+                ? "Update Banner"
+                : "Save Banner"}
           </Button>
         </ModalFooter>
       </Modal>

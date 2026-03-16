@@ -17,7 +17,7 @@ exports.createCareer = async (req, res) => {
       return res.status(400).json({ message: "All required fields must be filled" });
     }
 
-    const bannerImage = req.file ? req.file.path : null;
+const bannerImage = req.file ? `/uploads/${req.file.filename}` : null;
 
     const job = await Career.create({
       adminId,
@@ -76,13 +76,14 @@ exports.updateCareer = async (req, res) => {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    const bannerImage = req.file ? req.file.path : job.bannerImage;
+    const bannerImage = req.file
+  ? `/uploads/${req.file.filename}`
+  : job.bannerImage;
 
-    await job.update({
-      ...req.body,
-      bannerImage,
-    });
-
+await job.update({
+  ...req.body,
+  bannerImage,
+});
     res.status(200).json({
       message: "Job updated successfully",
       job,

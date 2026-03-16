@@ -29,7 +29,7 @@ export default function OrganizationUsers() {
 
   return (
     <AttorneyLayout>
-      <Head><title>Lawstick | Organization Users List</title></Head>
+     
 
       <div className="container-fluid px-0">
         <div className="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white w-100">

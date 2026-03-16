@@ -18,16 +18,27 @@ exports.createOurFirm = async (req, res) => {
       });
     }
 
-    const data = {
-      adminId,
-      bannerImage: req.files?.bannerImage?.[0]?.path,
-      innovationContent,
-      innovationImage: req.files?.innovationImage?.[0]?.path,
-      peopleContent,
-      peopleImage: req.files?.peopleImage?.[0]?.path,
-      historyContent,
-      historyImage: req.files?.historyImage?.[0]?.path,
-    };
+const data = {
+  adminId,
+  bannerImage: req.files?.bannerImage
+    ? `/uploads/${req.files.bannerImage[0].filename}`
+    : null,
+
+  innovationContent,
+  innovationImage: req.files?.innovationImage
+    ? `/uploads/${req.files.innovationImage[0].filename}`
+    : null,
+
+  peopleContent,
+  peopleImage: req.files?.peopleImage
+    ? `/uploads/${req.files.peopleImage[0].filename}`
+    : null,
+
+  historyContent,
+  historyImage: req.files?.historyImage
+    ? `/uploads/${req.files.historyImage[0].filename}`
+    : null,
+};
 
     const result = await OurFirm.create(data);
 
@@ -106,22 +117,22 @@ exports.updateOurFirm = async (req, res) => {
     const updatedData = {
       adminId: req.body.adminId || record.adminId,
       bannerImage:
-        req.files?.bannerImage?.[0]?.path || record.bannerImage,
+        req.files?.bannerImage?.[0]?.filename || null,
 
       innovationContent:
         req.body.innovationContent || record.innovationContent,
       innovationImage:
-        req.files?.innovationImage?.[0]?.path || record.innovationImage,
+        req.files?.innovationImage?.[0]?.filename || null,
 
       peopleContent:
         req.body.peopleContent || record.peopleContent,
       peopleImage:
-        req.files?.peopleImage?.[0]?.path || record.peopleImage,
+        req.files?.peopleImage?.[0]?.filename || null,
 
       historyContent:
         req.body.historyContent || record.historyContent,
       historyImage:
-        req.files?.historyImage?.[0]?.path || record.historyImage,
+        req.files?.historyImage?.[0]?.filename || null,
     };
 
     await record.update(updatedData);

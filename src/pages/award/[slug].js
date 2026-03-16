@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { getAllAwards, IMG_URL } from "../../services/authService";
+// Import helper function
+import { getAllAwards, getImgUrl } from "../../services/authService";
 
 export default function AwardDetail() {
   const router = useRouter();
@@ -54,15 +55,14 @@ export default function AwardDetail() {
       </div>
     );
 
-  const awardImg = award.bannerImage
-    ? `${IMG_URL}/${award.bannerImage}`
-    : "/assets/images/our-firm4.png";
+  // Logic: Use peopleImage for the main left slot
+  const profileImg =
+    getImgUrl(award.peopleImage) || "/assets/images/default-user.png";
 
   return (
     <div className="bg-light w-100 min-vh-100 pb-5">
-      {/* Container with top margin to prevent back button from hiding */}
       <div className="container pt-5 mt-5">
-        {/* Back Button Section */}
+        {/* Navigation */}
         <div className="row mb-3">
           <div className="col-12">
             <button
@@ -73,7 +73,7 @@ export default function AwardDetail() {
           </div>
         </div>
 
-        {/* Award Title Header (Right Aligned as per screenshot) */}
+        {/* Title Header */}
         <div className="row mb-4">
           <div className="col-12 text-md-start">
             <h1 className="fw-bold display-5 mb-1" style={{ color: "#002d5b" }}>
@@ -85,16 +85,15 @@ export default function AwardDetail() {
           </div>
         </div>
 
-        {/* Image and Info Box Row (Equal Height) */}
         <div className="row g-4 align-items-stretch">
-          {/* Left Column: Image */}
+          {/* Left Column: Profile Image (formerly Banner slot) */}
           <div className="col-md-6 col-lg-7">
-            <div className="h-100 shadow-sm rounded overflow-hidden">
+            <div className="h-100 shadow-sm rounded overflow-hidden bg-white">
               <img
-                src={awardImg}
-                alt={award.awardTitle}
+                src={profileImg}
+                alt={award.personName}
                 className="w-100 h-100 border-0"
-                style={{ objectFit: "cover", minHeight: "350px" }}
+                style={{ objectFit: "cover", minHeight: "450px" }}
               />
             </div>
           </div>
@@ -134,7 +133,7 @@ export default function AwardDetail() {
           </div>
         </div>
 
-        {/* Bottom Section: Description (Centered) */}
+        {/* Bottom Section: Description */}
         <div className="row justify-content-center mt-5">
           <div className="col-lg-10 col-md-11">
             <div
@@ -147,7 +146,6 @@ export default function AwardDetail() {
               </h2>
               <hr className="mb-4 opacity-75" />
 
-              {/* text-break class prevents text from overflowing out of the container */}
               <div
                 className="fs-5 text-break"
                 style={{

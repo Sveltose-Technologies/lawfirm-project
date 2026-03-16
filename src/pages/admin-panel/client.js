@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useEffect, useState, useCallback } from "react";
 import {
@@ -10,6 +10,7 @@ import {
   Button,
   Badge,
 } from "reactstrap";
+import { toast } from "react-toastify";
 import * as authService from "../../services/authService";
 import PaginationComponent from "../../context/Pagination";
 
@@ -19,23 +20,29 @@ const Clients = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  const fetchUsers = useCallback(async () => {
-    try {
-      const res = await authService.getAllClients();
-      setUsers(res?.clients || []);
-    } catch (err) {
-      console.error(err);
-    }
-  }, []);
+const fetchUsers = useCallback(async () => {
+  try {
+    const res = await authService.getAllClients();
+    setUsers(res?.clients || []);
+  } catch (err) {
+    // 'err' will now contain the string "Admin access only"
+    toast.error(err);
+  }
+}, []);
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
   const handleDelete = async (id) => {
-    if (window.confirm("Delete this client?")) {
-      await authService.deleteClient(id);
-      fetchUsers();
+    if (window.confirm("Are you sure you want to delete this client?")) {
+      try {
+        const res = await authService.deleteClient(id);
+        toast.success(res?.message || "Client deleted successfully");
+        fetchUsers();
+      } catch (err) {
+        toast.error(err || "Failed to delete client");
+      }
     }
   };
 
@@ -57,20 +64,25 @@ const Clients = () => {
       style={{ backgroundColor: "#f9f9f9" }}>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h4 className="fw-bold">Client Management</h4>
-        <Badge color="warning" className="px-3 py-2">
+        <Badge color="warning" className="px-3 py-2 text-dark">
           Total: {filteredData.length}
         </Badge>
       </div>
+
       <Card className="border-0 shadow-sm rounded-4">
         <CardBody className="p-0">
           <div className="p-3 border-bottom">
             <Input
-              placeholder="Search..."
+              placeholder="Search by name or email..."
               className="rounded-pill bg-light border-0 px-4"
               style={{ maxWidth: "350px" }}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
             />
           </div>
+
           <div className="table-responsive">
             <Table
               hover
@@ -78,45 +90,58 @@ const Clients = () => {
               style={{ fontSize: "13px" }}>
               <thead style={{ backgroundColor: "#fdf8ef" }}>
                 <tr>
-                  <th className="px-4">SR.</th>
-                  <th>NAME</th>
-                  <th>EMAIL</th>
-                  <th className="text-center">STATUS</th>
-                  <th className="text-end px-4">ACTION</th>
+                  <th className="px-4 py-3">SR.</th>
+                  <th className="py-3">NAME</th>
+                  <th className="py-3">EMAIL</th>
+                  <th className="py-3 text-center">STATUS</th>
+                  <th className="py-3 text-end px-4">ACTION</th>
                 </tr>
               </thead>
               <tbody>
-                {currentItems.map((u, index) => (
-                  <tr key={u.id}>
-                    <td className="px-4">
-                      {(currentPage - 1) * itemsPerPage + index + 1}
-                    </td>
-                    <td className="fw-bold">
-                      {u.firstName} {u.lastName}
-                    </td>
-                    <td>{u.email}</td>
-                    <td className="text-center">
-                      <Badge color={u.isActive ? "success" : "secondary"}>
-                        {u.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </td>
-                    <td className="text-end px-4">
-                      <Button
-                        size="sm"
-                        color="white"
-                        className="text-danger border"
-                        onClick={() => handleDelete(u.id)}>
-                        Delete
-                      </Button>
+                {currentItems.length > 0 ? (
+                  currentItems.map((u, index) => (
+                    <tr key={u.id || index}>
+                      <td className="px-4">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+                      <td className="fw-bold text-dark">
+                        {u.firstName} {u.lastName}
+                      </td>
+                      <td className="text-muted">{u.email}</td>
+                      <td className="text-center">
+                        <Badge
+                          pill
+                          color={u.isActive ? "success" : "secondary"}
+                          className="px-2">
+                          {u.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </td>
+                      <td className="text-end px-4">
+                        <Button
+                          size="sm"
+                          outline
+                          color="danger"
+                          className="rounded-pill px-3"
+                          onClick={() => handleDelete(u.id)}>
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="text-center py-5 text-muted">
+                      No clients found.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </Table>
           </div>
         </CardBody>
       </Card>
-      <div className="mt-3">
+
+      <div className="mt-4 d-flex justify-content-center">
         <PaginationComponent
           totalItems={filteredData.length}
           itemsPerPage={itemsPerPage}
@@ -127,4 +152,5 @@ const Clients = () => {
     </Container>
   );
 };
+
 export default Clients;

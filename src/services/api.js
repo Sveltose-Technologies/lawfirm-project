@@ -1,11 +1,11 @@
+
+
 import axios from "axios";
-import { toast } from "react-toastify";
 import { errorHandler } from "./errorHandler";
 import { responseHandler } from "./responseHandler";
 
 const API = axios.create({
-  baseURL: "https://nodejs.bluestor.net",
-
+  baseURL: "https://nodejs.nrislawfirm.com",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -14,69 +14,38 @@ const API = axios.create({
 
 API.interceptors.request.use(
   (config) => {
-    const isAuthRoute =
-      config.url.includes("/login-signup") ||
-      config.url.includes("/signup") ||
-      config.url.includes("/forgot-password") ||
-      config.url.includes("/verify-otp") ||
-      config.url.includes("/admin/login");
+    if (typeof window !== "undefined") {
+      // 1. Check direct token key
+      let token = localStorage.getItem("token");
 
-    if (!isAuthRoute) {
-      let token = null;
-
-      const userData =
-        typeof window !== "undefined" ? localStorage.getItem("user") : null;
-      if (userData) {
-        try {
-          const parsed = JSON.parse(userData);
-          token = parsed.token;
-        } catch (e) {
-          console.error("Token parsing error");
+      // 2. If not found, check inside user object
+      if (!token) {
+        const userData = localStorage.getItem("user");
+        if (userData) {
+          try {
+            const parsed = JSON.parse(userData);
+            token = parsed.token;
+          } catch (e) {
+            token = null;
+          }
         }
       }
 
-      if (!token) {
-        token =
-          typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      }
-
-      if (token && token !== "admin-token") {
+      // 3. Attach to header
+      if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log(`🚀 Real JWT Token attached for: ${config.url}`);
-      } else {
-        console.error(
-          `🚨 No valid JWT found for: ${config.url}. Please login again.`,
-        );
       }
     }
     return config;
   },
   (error) => Promise.reject(error),
 );
+
 API.interceptors.response.use(
-  (response) => {
-    const handledRes = responseHandler(response);
-
-    const method = response.config.method.toLowerCase();
-    if (method !== "get") {
-      console.log(` [${method.toUpperCase()}] Success:`, handledRes.message);
-      toast.success(handledRes.message);
-    }
-
-    return response;
-  },
+  (response) => responseHandler(response),
   (error) => {
     const errorMessage = errorHandler(error);
-
-    console.error(" API Global Error:", errorMessage);
-
-    // Auto logout if unauthorized (optional but professional)
-    if (error.response?.status === 401) {
-      console.error("Unauthorized access - 401");
-    }
-
-    toast.error(errorMessage);
-    return Promise.reject(error);
+    return Promise.reject(errorMessage);
   },
 );
 

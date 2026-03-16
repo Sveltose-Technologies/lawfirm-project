@@ -36,7 +36,7 @@ export default function Messages() {
 
   return (
     <ClientLayout>
-      <Head><title>Messages | Lawstick</title></Head>
+ 
 
       <div className="container-fluid px-0">
         {/* Page Header */}

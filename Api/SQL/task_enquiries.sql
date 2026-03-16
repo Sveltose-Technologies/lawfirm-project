@@ -33,8 +33,9 @@ CREATE TABLE `enquiries` (
   `message` longtext,
   `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `address` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,7 +44,7 @@ CREATE TABLE `enquiries` (
 
 LOCK TABLES `enquiries` WRITE;
 /*!40000 ALTER TABLE `enquiries` DISABLE KEYS */;
-INSERT INTO `enquiries` VALUES (3,'Tarun','Varma','tarun@gmail.com','19','9876543210','fulltime','Message','2026-02-19 11:45:07','2026-02-19 11:45:07'),(4,'Tarun','Varma','tarun@gmail.com','19','9876543210','fulltime','Message','2026-02-19 11:46:58','2026-02-19 11:46:58');
+INSERT INTO `enquiries` VALUES (3,'Tarun','Varma','tarun@gmail.com','19','9876543210','fulltime','Message','2026-02-19 11:45:07','2026-02-19 11:45:07',NULL),(4,'Tarun','Varma','tarun@gmail.com','19','9876543210','fulltime','Message','2026-02-19 11:46:58','2026-02-19 11:46:58',NULL),(5,'Amit','Sharma','amitsharma@gmail.com','+91','9123456789','Support','I am facing an issue while submitting the form on your website.','2026-03-12 11:05:05','2026-03-12 11:05:36','12 Indore, Madhya Pradesh, India');
 /*!40000 ALTER TABLE `enquiries` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-11 17:49:33
+-- Dump completed on 2026-03-16 17:47:30

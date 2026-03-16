@@ -1,30 +1,21 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import AttorneyHeader from "./AttorneyHeader";
-import { getUserProfile } from "../../services/authService"; // Ensure path is correct
+import { getUserProfile, getImgUrl } from "../../services/authService";
 
 export default function AttorneyLayout({ children }) {
   const router = useRouter();
   const [showSidebar, setShowSidebar] = useState(false);
 
-  // Dynamic States
   const [userName, setUserName] = useState("Attorney");
   const [userEmail, setUserEmail] = useState("");
-  const [profileImg, setProfileImg] = useState("/assets/images/attorney1.png");
-
-  // Image URL Helper Logic
-  const getImgUrl = (path) => {
-    if (!path) return "/assets/images/attorney1.png";
-    let normalizedPath = path.toString().replace(/\\/g, "/");
-    if (
-      normalizedPath.startsWith("http://") ||
-      normalizedPath.startsWith("https://")
-    ) {
-      return normalizedPath;
-    }
-    return normalizedPath;
-  };
+  // प्रोफेशनल प्लेसहोल्डर इमेज
+  const [profileImg, setProfileImg] = useState(
+    "https://ui-avatars.com/api/?name=Attorney&background=eebb5d&color=000",
+  );
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -76,13 +67,16 @@ export default function AttorneyLayout({ children }) {
 
       try {
         const response = await getUserProfile(userId);
-        const attorney = response?.attorney;
+        // यहाँ चेक करें कि response.attorney मौजूद है या नहीं
+        const attorneyData = response?.attorney || response?.data?.attorney;
 
-        if (attorney) {
-          setUserName(`${attorney.firstName} ${attorney.lastName || ""}`);
-          setUserEmail(attorney.email || "");
-          if (attorney.profileImage) {
-            setProfileImg(getImgUrl(attorney.profileImage));
+        if (attorneyData) {
+          setUserName(
+            `${attorneyData.firstName} ${attorneyData.lastName || ""}`,
+          );
+          setUserEmail(attorneyData.email || "");
+          if (attorneyData.profileImage) {
+            setProfileImg(getImgUrl(attorneyData.profileImage));
           }
         }
       } catch (error) {
@@ -102,26 +96,27 @@ export default function AttorneyLayout({ children }) {
           <aside
             className={`col-lg-3 ${showSidebar ? "sidebar-open" : "d-none d-lg-block"}`}>
             <div
-              className="card border-0 shadow-sm rounded-4 overflow-hidden sticky-top"
+              className="card border-0 shadow-sm rounded-0 overflow-hidden sticky-top"
               style={{ top: "90px" }}>
               <div className="p-4 text-center border-bottom bg-white">
                 <div
                   className="mx-auto mb-3"
                   style={{ width: "100px", height: "100px" }}>
                   <img
-                    src={profileImg} // DYNAMIC IMAGE
-                    className="rounded-circle shadow-sm w-100 h-100"
-                    style={{ objectFit: "cover", border: "4px solid #f8f9fa" }}
+                    src={profileImg}
+                    className="shadow-sm w-100 h-100"
+                    style={{ objectFit: "cover", border: "2px solid #eebb5d" }}
                     alt="avatar"
                     onError={(e) => {
-                      e.target.src = "/assets/images/attorney1.png";
+                      e.target.src =
+                        "https://ui-avatars.com/api/?name=User&background=eebb5d&color=000";
                     }}
                   />
                 </div>
-                <h6 className="fw-bold mb-1 text-navy">{userName}</h6>{" "}
-                {/* DYNAMIC NAME */}
-                <p className="text-muted mb-0 small">{userEmail}</p>{" "}
-                {/* DYNAMIC EMAIL */}
+                <h6 className="fw-bold mb-1" style={{ color: "#000" }}>
+                  {userName}
+                </h6>
+                <p className="text-muted mb-0 small">{userEmail}</p>
               </div>
 
               <div className="p-3 bg-white">
@@ -159,15 +154,10 @@ export default function AttorneyLayout({ children }) {
       )}
 
       <style jsx>{`
-        /* ... existing styles ... */
-        .text-navy {
-          color: #002147;
-        }
         .sidebar-nav .nav-link {
           color: #444 !important;
           font-size: 14px;
           padding: 12px 20px;
-          border-radius: 10px;
           transition: 0.3s;
           margin-bottom: 5px;
           font-weight: 500;
@@ -176,12 +166,13 @@ export default function AttorneyLayout({ children }) {
         }
         .sidebar-nav .nav-link:hover {
           background: #f8f9fa;
-          color: #de9f57 !important;
+          color: #eebb5d !important;
         }
         .sidebar-nav .nav-link.active {
-          background: #fcf6ef;
-          color: #de9f57 !important;
+          background: #fdf8ef;
+          color: #eebb5d !important;
           font-weight: bold;
+          border-left: 4px solid #eebb5d;
         }
         @media (max-width: 991px) {
           .sidebar-open {
@@ -191,9 +182,7 @@ export default function AttorneyLayout({ children }) {
             width: 280px;
             height: 100vh;
             z-index: 1060;
-            overflow-y: auto;
             background: white;
-            padding: 15px;
           }
           .sidebar-overlay {
             position: fixed;

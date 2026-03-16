@@ -18,7 +18,7 @@ export default function Appointments() {
 
   return (
     <ClientLayout>
-      <Head><title>Appointments | Lawstick</title></Head>
+
       
       {/* HEADER SECTION */}
       <div className="d-flex justify-content-between align-items-center mb-5">

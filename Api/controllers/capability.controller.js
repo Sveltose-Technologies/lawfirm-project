@@ -13,7 +13,7 @@ exports.createCapability = async (req, res) => {
       });
     }
 
-    const bannerImage = req.file ? req.file.path : null;
+    const bannerImage = req.file ? `/uploads/${req.file.filename}` : null;
 
     const capability = await Capability.create({
       bannerImage,
@@ -92,7 +92,9 @@ exports.updateCapability = async (req, res) => {
       });
     }
 
-    const bannerImage = req.file ? req.file.path : capability.bannerImage;
+ const bannerImage = req.file
+  ? `/uploads/${req.file.filename}`
+  : capability.bannerImage;
 
     await capability.update({
       bannerImage,

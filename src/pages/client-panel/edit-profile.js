@@ -15,7 +15,7 @@ export default function EditProfile() {
 
   return (
     <ClientLayout>
-      <Head><title>Edit Profile | Lawstick</title></Head>
+    
 
       <div className="animate-fade">
         {/* Page Header */}

@@ -8,6 +8,7 @@ import {
   getAllLocationCities,
   IMG_URL,
   getBanner,
+  getImgUrl
 } from "../../services/authService";
 
 function EventsIndex() {
@@ -73,8 +74,8 @@ function EventsIndex() {
         if (capRes?.success)
           setCapabilities(capRes.data?.data || capRes.data || []);
         if (locRes?.success) setLocations(locRes.data || []);
-        if (bannerRes?.success)
-          setBanner(bannerRes?.data[0]?.bannerImage || []);
+       if (bannerRes?.success)
+         setBanner(getImgUrl(bannerRes?.data[0]?.bannerImage));
       } catch (error) {
         console.error("Fetch Error:", error);
       } finally {
@@ -119,10 +120,7 @@ function EventsIndex() {
     setVisibleCount((prev) => prev + 3);
   };
 
-  const topBanner =
-    eventsList.length > 0
-      ? `${IMG_URL}/uploads/${eventsList[0].bannerImage}`
-      : null;
+  
 
   return (
     <div className="bg-white">
