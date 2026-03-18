@@ -99,21 +99,7 @@ function Footer() {
                     </li>
                   </ul>
 
-                  <div className="open-hour">
-                    <h6>Global Presence</h6>
-                    <ul className="list-unstyled p-0 m-0 d-flex flex-wrap gap-2">
-                      {cities.map((city, index) => (
-                        <li key={city.id || city._id}>
-                          <Link href={`/location/${createSlug(city.cityName)}`}>
-                            <a className="text-white text-decoration-none hover-gold">
-                              {city.cityName}
-                              {index < cities.length - 1 ? "," : ""}
-                            </a>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+               
                 </div>
               </div>
 
@@ -174,40 +160,18 @@ function Footer() {
               {/* Column 4 */}
               <div className="col-lg-3 col-md-6 d-flex justify-content-lg-end">
                 <div className="footer-item">
-                  <h4>Office Highlights</h4>
-                  <ul className="recent-caselist">
-                    <li>
-                      <div className="image">
-                        <img
-                          src="/assets/images/blog/recent-case2.png"
-                          alt="image"
-                        />
-                      </div>
-                      <div className="text">
-                        <span>Europe</span>
-                        <h5>
-                          <Link href="#">
-                            <a>Berlin Office</a>
-                          </Link>
-                        </h5>
-                      </div>
-                    </li>
-                    <li>
-                      <div className="image">
-                        <img
-                          src="/assets/images/blog/recent-case2.png"
-                          alt="image"
-                        />
-                      </div>
-                      <div className="text">
-                        <span>Asia</span>
-                        <h5>
-                          <Link href="#">
-                            <a>Seoul Office</a>
-                          </Link>
-                        </h5>
-                      </div>
-                    </li>
+                  <h4>Global Presence</h4>
+                  <ul className="list-unstyled p-0 m-0 d-flex flex-wrap gap-2 text-white">
+                    {cities.map((city, index) => (
+                      <li key={city.id || city._id}>
+                        <Link href={`/location/${createSlug(city.cityName)}`}>
+                          <a className="text-white text-decoration-none hover-gold">
+                            {city.cityName}
+                            {index < cities.length - 1 ? "," : ""}
+                          </a>
+                        </Link>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>

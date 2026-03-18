@@ -981,8 +981,8 @@ function Header() {
                     <img
                       src={profileImg}
                       className="rounded-circle border"
-                      width="208"
-                      height="208"
+                      width="38"
+                      height="38"
                       style={{ objectFit: "cover" }}
                       alt="profile"
                     />
