@@ -56,59 +56,77 @@ export default function EditProfile() {
     barCouncilIndiaId: null,
     barCouncilStateId: null,
   });
+useEffect(() => {
+  const loadInitialData = async () => {
+    const userData = localStorage.getItem("user");
+    if (!userData) return;
+    const currentUserId = JSON.parse(userData).id;
 
-  useEffect(() => {
-    const loadInitialData = async () => {
-      let currentUserId = null;
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        try {
-          currentUserId = JSON.parse(userData).id;
-        } catch (e) {
-          console.error(e);
-        }
+    try {
+      const [langRes, catRes, cityRes, profileRes] = await Promise.all([
+        getAttorneylanguages(),
+        getAllCapabilityCategories(),
+        getAllLocationCities(),
+        getUserProfile(currentUserId),
+      ]);
+
+      setLanguages(langRes?.data || []);
+      setCategories(catRes?.data || []);
+      setCities(cityRes?.data || []);
+
+      const attorney =
+        profileRes?.attorney ||
+        profileRes?.attorneys?.[0] ||
+        profileRes?.data?.attorney;
+
+      if (attorney) {
+        setFormData({
+          firstName: attorney.firstName || "",
+          lastName: attorney.lastName || "",
+          email: attorney.email || "",
+          password: "",
+          street: attorney.street || "",
+          aptBlock: attorney.aptBlock || "",
+          city: attorney.city?.toString() || "",
+          state: attorney.state || "",
+          country: attorney.country || "",
+          zipCode: attorney.zipCode || "",
+          phoneCell: attorney.phoneCell || "",
+          phoneHome: attorney.phoneHome || "",
+          phoneOffice: attorney.phoneOffice || "",
+          dob: attorney.dob ? attorney.dob.split("T")[0] : "",
+          admission: attorney.admission || "",
+          language: attorney.language || "",
+          servicesOffered: attorney.servicesOffered || "",
+          education: attorney.education || "",
+          experience: attorney.experience || "",
+          barCouncilIndiaNo: attorney.barCouncilIndiaNo || "",
+          barCouncilStateNo: attorney.barCouncilStateNo || "",
+          familyLawPractice: attorney.familyLawPractice?.toString() || "false",
+          familyDetails: attorney.familyDetails || "",
+          aboutus: attorney.aboutus || "",
+          categoryId: attorney.categoryId?.toString() || "",
+          linkedin: attorney.linkedin || "",
+          twitter: attorney.twitter || "",
+          facebook: attorney.facebook || "",
+          gmail: attorney.gmail || "",
+          status: attorney.status || "active",
+          // Keep files null
+          profileImage: null,
+          resume: null,
+          kycIdentity: null,
+          kycAddress: null,
+          barCouncilIndiaId: null,
+          barCouncilStateId: null,
+        });
       }
-
-      if (!currentUserId) return;
-
-      try {
-        const [langRes, catRes, cityRes, profileRes] = await Promise.all([
-          getAttorneylanguages(),
-          getAllCapabilityCategories(),
-          getAllLocationCities(),
-          getUserProfile(currentUserId),
-        ]);
-
-        setLanguages(langRes?.data || []);
-        setCategories(catRes?.data || []);
-        setCities(cityRes?.data || []);
-
-        const attorney = profileRes?.attorney || profileRes?.attorneys?.[0];
-        if (attorney) {
-          setFormData((prev) => ({
-            ...prev,
-            ...attorney,
-            dob: attorney.dob ? attorney.dob.split("T")[0] : "",
-            categoryId: attorney.categoryId?.toString() || "",
-            city: attorney.city?.toString() || "",
-            familyLawPractice:
-              attorney.familyLawPractice?.toString() || "false",
-            password: "", // Security: Don't show password
-            // Reset files to null so strings from DB don't break file inputs
-            profileImage: null,
-            resume: null,
-            kycIdentity: null,
-            kycAddress: null,
-            barCouncilIndiaId: null,
-            barCouncilStateId: null,
-          }));
-        }
-      } catch (error) {
-        toast.error("Error loading data");
-      }
-    };
-    loadInitialData();
-  }, []);
+    } catch (error) {
+      console.error("Load Error:", error);
+      toast.error("Error loading data");
+    }
+  };
+  loadInitialData();
+}, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -122,43 +140,69 @@ export default function EditProfile() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-    const userData = localStorage.getItem("user");
-    const userId = userData ? JSON.parse(userData).id : null;
+  const userData = localStorage.getItem("user");
+  const userId = userData ? JSON.parse(userData).id : null;
 
-    const payload = new FormData();
-    const fileFields = [
-      "profileImage",
-      "resume",
-      "kycIdentity",
-      "kycAddress",
-      "barCouncilIndiaId",
-      "barCouncilStateId",
-    ];
+  if (!userId) {
+    toast.error("User ID not found");
+    setLoading(false);
+    return;
+  }
 
-    Object.keys(formData).forEach((key) => {
-      if (key === "password" && !formData[key]) return;
+  const payload = new FormData();
 
-      if (fileFields.includes(key)) {
-        if (formData[key] instanceof File) payload.append(key, formData[key]);
-      } else {
-        payload.append(key, formData[key] === null ? "" : formData[key]);
+  const fileFields = [
+    "profileImage",
+    "resume",
+    "kycIdentity",
+    "kycAddress",
+    "barCouncilIndiaId",
+    "barCouncilStateId",
+  ];
+
+  // List of fields allowed to be sent to the server
+  const allowedFields = Object.keys(formData);
+
+  allowedFields.forEach((key) => {
+    // 1. Handle Password: Only send if not empty
+    if (key === "password" && !formData[key]) return;
+
+    // 2. Handle Files: Only append if a new File object is selected
+    if (fileFields.includes(key)) {
+      if (formData[key] instanceof File) {
+        payload.append(key, formData[key]);
       }
-    });
-
-    try {
-      await updateAttorney(userId, payload);
-      toast.success("Profile updated successfully!");
-    } catch (error) {
-      toast.error("Update failed");
-    } finally {
-      setLoading(false);
     }
-  };
+    // 3. Handle Regular Fields
+    else {
+      let value = formData[key];
 
+      // Convert specific fields to proper types if necessary
+      if ((key === "categoryId" || key === "city") && value === "") {
+        return; // Don't send empty strings for ID fields
+      }
+
+      payload.append(key, value === null ? "" : value);
+    }
+  });
+
+  try {
+    // Note: ensure updateAttorney handles the FormData and the URL correctly
+    const res = await updateAttorney(userId, payload);
+    toast.success("Profile updated successfully!");
+  } catch (error) {
+    console.error("Update Error:", error.response?.data || error.message);
+    toast.error(
+      error.response?.data?.message || "Update failed (Server Error 500)",
+    );
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <AttorneyLayout>
       <div className="container-fluid py-2">

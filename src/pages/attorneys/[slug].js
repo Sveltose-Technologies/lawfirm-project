@@ -348,15 +348,8 @@ export default function AttorneyProfilePage() {
         .cursor-pointer {
           cursor: pointer;
         }
-        ul {
-          list-style: none;
-          padding-left: 0;
-        }
-        ul li {
-          position: relative;
-          padding-left: 20px;
-          margin-bottom: 10px;
-        }
+      
+       
      
         .cursor-pointer {
           cursor: pointer;
