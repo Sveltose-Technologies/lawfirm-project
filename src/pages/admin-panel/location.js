@@ -125,67 +125,102 @@ const LocationManagement = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const currentAdminId = authService.getAdminId();
-    if (!currentAdminId) {
-      toast.error("Session expired. Please login again.");
-      return;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  const currentAdminId = authService.getAdminId();
+
+  if (!currentAdminId) {
+    toast.error("Session expired. Please login again.");
+    return;
+  }
+
+  setLoading(true);
+  console.log("Submit Initialized:", { activeTab, isEditing, currentId });
+
+  try {
+    let res;
+
+    // --- 1. COUNTRY TAB ---
+    if (activeTab === "country") {
+      const payload = {
+        adminId: parseInt(currentAdminId),
+        countryName: formData.countryName.trim(),
+        content: formData.content,
+      };
+      console.log("Sending Country Payload:", payload);
+      res = isEditing
+        ? await authService.updateLocationCountry(currentId, payload)
+        : await authService.createLocationCountry(payload);
     }
 
-    setLoading(true);
-    try {
-      let res;
-      if (activeTab === "country") {
-        const payload = isEditing
-          ? { countryName: formData.countryName, content: formData.content }
-          : {
-              adminId: currentAdminId,
-              countryName: formData.countryName,
-              content: formData.content,
-            };
-        res = isEditing
-          ? await authService.updateLocationCountry(currentId, payload)
-          : await authService.createLocationCountry(payload);
-      } else if (activeTab === "city") {
-        const data = new FormData();
-        if (!isEditing) {
-          data.append("adminId", currentAdminId);
-          data.append("countryId", formData.countryId);
-        }
-        data.append("cityName", formData.cityName);
-        data.append("address", formData.address || "");
-        data.append("phoneNo", formData.phoneNo || "");
-        data.append("faxNo", formData.faxNo || "");
-        data.append("content", formData.content || "");
-        if (formData.image instanceof File)
-          data.append("image", formData.image);
-        res = isEditing
-          ? await authService.updateLocationCity(currentId, data)
-          : await authService.createLocationCity(data);
-      } else if (activeTab === "location") {
-        const data = new FormData();
-        data.append("content", formData.content || "");
-        if (formData.bannerImage instanceof File) {
-          data.append("bannerImage", formData.bannerImage);
-        }
-        res = isEditing
-          ? await authService.updateLocation(currentId, data)
-          : await authService.createLocation(data);
+    // --- 2. CITY TAB ---
+    else if (activeTab === "city") {
+      if (!formData.countryId) {
+        toast.error("Please select a country first");
+        setLoading(false);
+        return;
       }
 
-      if (res.success || res) {
-        toast.success(`${activeTab.toUpperCase()} Saved Successfully!`);
-        toggle();
-        fetchData();
+      const data = new FormData();
+      // Ensure specific data types
+      data.append("adminId", String(currentAdminId));
+      data.append("countryId", String(formData.countryId));
+      data.append("cityName", formData.cityName.trim());
+      data.append("address", formData.address || "");
+      data.append("phoneNo", formData.phoneNo || "");
+      data.append("faxNo", formData.faxNo || "");
+      data.append("content", formData.content || "");
+
+      if (formData.image instanceof File) {
+        data.append("image", formData.image);
       }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Operation failed");
-    } finally {
-      setLoading(false);
+
+      console.log("Checking City FormData before send:");
+      data.forEach((value, key) => console.log(`${key}:`, value));
+
+      res = isEditing
+        ? await authService.updateLocationCity(currentId, data)
+        : await authService.createLocationCity(data);
     }
-  };
 
+    // --- 3. LOCATION TAB ---
+    else if (activeTab === "location") {
+      const data = new FormData();
+      data.append("adminId", String(currentAdminId));
+      data.append("content", formData.content || "");
+
+      if (formData.bannerImage instanceof File) {
+        data.append("bannerImage", formData.bannerImage);
+      }
+
+      res = isEditing
+        ? await authService.updateLocation(currentId, data)
+        : await authService.createLocation(data);
+    }
+
+    if (res) {
+      toast.success(`${activeTab.toUpperCase()} Saved Successfully!`);
+      toggle();
+      fetchData();
+    }
+  } catch (err) {
+    console.error("Submission Error Details:", err);
+
+    // Fixed: Check if err exists and has response property
+    let errorMsg = "Operation failed";
+
+    if (err && err.response && err.response.data) {
+      console.error("Server Error Data:", err.response.data);
+      errorMsg = err.response.data.message || errorMsg;
+    } else if (err && err.message) {
+      errorMsg = err.message;
+    }
+
+    toast.error(errorMsg);
+  } finally {
+    setLoading(false);
+  }
+};
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure?")) return;
     try {
@@ -469,7 +504,6 @@ const LocationManagement = () => {
                     <Input
                       type="select"
                       required
-                      disabled={isEditing}
                       value={formData.countryId}
                       onChange={(e) =>
                         setFormData({ ...formData, countryId: e.target.value })

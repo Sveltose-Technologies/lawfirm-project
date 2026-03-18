@@ -1258,15 +1258,17 @@ export const getAllLocationCities = async () => {
 
 export const createLocationCity = async (formData) => {
   try {
-    console.log("🚀 Creating Location City...", formData);
+    // Automatically append adminId if not already present in formData
+    if (!formData.has("adminId")) {
+      formData.append("adminId", getAdminId());
+    }
+
     const res = await API.post("/location-city/create", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    console.log("✅ City Create Success:", res.data);
     return res.data;
   } catch (error) {
-    console.error("❌ Create City Error:", error);
-    throw error;
+    throw error.response?.data || error.message;
   }
 };
 
@@ -1845,6 +1847,7 @@ export const getAllRanking = () => API.get("/home-ranking/getall");
 export const deleteRankData = (id) => API.delete(`/home-ranking/delete/${id}`);
 export const updateRanking = (id, formData) =>
   API.put(`/home-ranking/update/${id}`, formData);
+
 export const getAllAdmissions = async () => {
   try {
     const response = await API.get("/attorney/getall-admission");

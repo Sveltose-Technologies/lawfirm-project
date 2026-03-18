@@ -1,12 +1,17 @@
+/* src/styles/globals.css */
 :root {
-  --primary-gold: #eebb5d; /* Your Exact Gold */
+  --primary-gold: #de9f57;
+  --primary-blue: #003366;
+  --dark-navy: #0a1c38;
   --text-dark: #212529;
   --text-light: #ffffff;
   --bg-dark: #000000;
   --bg-light: #f4f7f6;
+  --overlay-black: rgba(0, 0, 0, 0.6);
   --font-base: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-serif: "Times New Roman", Times, serif;
 }
-
+ 
 * {
   box-sizing: border-box;
   margin: 0;

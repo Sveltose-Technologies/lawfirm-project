@@ -5,10 +5,16 @@ import { useRouter } from "next/router";
 export default function ClientHeader({ onToggleSidebar }) {
   const router = useRouter();
 
+  // ERROR FIX: State define karna zaroori hai
+  const [profileImg, setProfileImg] = useState()
+  ; // Default image path yaha dalein
 
   useEffect(() => {
+    // LocalStorage se image check karein
     const savedImg = localStorage.getItem("profileImage");
-    if (savedImg) setProfileImg(savedImg);
+    if (savedImg && savedImg !== "undefined") {
+      setProfileImg(savedImg);
+    }
   }, []);
 
   const handleLogout = () => {
