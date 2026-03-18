@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { getAllHomeBanners } from "../../services/authService";
 
 export default function ClientHeader({ onToggleSidebar }) {
   const router = useRouter();
-
-  // ERROR FIX: State define karna zaroori hai
-  const [profileImg, setProfileImg] = useState()
-  ; // Default image path yaha dalein
-
+  const [profileImg, setProfileImg] = useState("");
+  const [logoUrl, setLogoUrl] = useState(null);
   useEffect(() => {
-    // LocalStorage se image check karein
     const savedImg = localStorage.getItem("profileImage");
-    if (savedImg && savedImg !== "undefined") {
-      setProfileImg(savedImg);
-    }
+    if (savedImg) setProfileImg(savedImg);
   }, []);
 
   const handleLogout = () => {
@@ -23,6 +18,32 @@ export default function ClientHeader({ onToggleSidebar }) {
       router.push("/");
     }
   };
+  useEffect(() => {
+    const fetchDynamicLogo = async () => {
+      try {
+        const [typesRes, bannersRes] = await Promise.all([getAllHomeBanners()]);
+
+        const types = typesRes.data?.data || [];
+        const allBanners = bannersRes.data?.data || [];
+
+        const logoTypeObj = types.find((t) => t.type.toLowerCase() === "logo");
+
+        if (logoTypeObj) {
+          const logoData = allBanners
+            .filter((b) => Number(b.typeId) === Number(logoTypeObj.id))
+            .sort((a, b) => b.id - a.id)[0];
+
+          if (logoData) {
+            setLogoUrl(logoData.image);
+          }
+        }
+      } catch (err) {
+        console.error("Dynamic Logo Fetch Error:", err);
+      }
+    };
+
+    fetchDynamicLogo();
+  }, []);
 
   return (
     <header
@@ -36,11 +57,23 @@ export default function ClientHeader({ onToggleSidebar }) {
               onClick={onToggleSidebar}>
               <i className="bi bi-list fs-3"></i>
             </button>
-            <h5
-              className="mb-0 fw-bold d-none d-sm-block"
-              style={{ color: "#002147" }}>
-              CLIENT PORTAL
-            </h5>
+            <Link href="/">
+              <a className="navbar-brand p-0 m-0 d-flex align-items-center">
+                <img
+                  src={
+                    logoUrl
+                      ? getImgUrl(logoUrl)
+                      : "/assets/images/brand-logo.png"
+                  }
+                  alt="Logo"
+                  style={{
+                    width: "160px", // Standard logo width
+                    height: "50px",
+                    objectFit: "contain",
+                  }}
+                />
+              </a>
+            </Link>
           </div>
 
           <div className="d-flex align-items-center gap-4">
@@ -53,7 +86,7 @@ export default function ClientHeader({ onToggleSidebar }) {
             <div className="profile-dropdown-container">
               <div className="profile-trigger" style={{ cursor: "pointer" }}>
                 <img
-                  src={profileImg}
+                  src={profileImg || "/assets/images/profilepic.png"}
                   className="rounded-circle border shadow-sm"
                   style={{ width: "42px", height: "42px", objectFit: "cover" }}
                   alt="user"
@@ -64,9 +97,9 @@ export default function ClientHeader({ onToggleSidebar }) {
                 <div className="p-3 border-bottom bg-light rounded-top">
                   <span className="small fw-bold text-muted">User Menu</span>
                 </div>
-                <Link href="/client-panel/edit-profile">
+                <Link href="/client-panel/">
                   <a className="dropdown-item py-2 px-3">
-                    <i className="bi bi-gear me-2"></i> Settings
+                    <i className="bi bi-speedometer2 me-2"></i> Dashboard
                   </a>
                 </Link>
                 <div className="dropdown-divider m-0"></div>

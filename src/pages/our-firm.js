@@ -61,10 +61,7 @@ function OurFirm() {
             style={{ fontFamily: "serif" }}>
             Our Firm
           </h1>
-          <div
-            className="mx-auto bg-warning mb-3"
-            style={{ width: "60px", height: "2px" }}></div>
-          <p className="lead fs-4">Culture. Commitment. Engagement.</p>
+         
         </div>
       </section>
 

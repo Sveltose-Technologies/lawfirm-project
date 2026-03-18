@@ -160,7 +160,7 @@ function Banner1() {
         style={{
           backgroundImage: heroData?.image
             ? `url("${heroData.image}")`
-            : 'url("/assets/images/bg/banner1-bg.png")',
+            : "",
           backgroundSize: "cover",
           backgroundPosition: "center",
           // --- Added Features Below ---
