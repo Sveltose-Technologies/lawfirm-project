@@ -169,7 +169,7 @@ function NewsIndex() {
           // Fix: Both paths must be wrapped in `url("")` strings
           backgroundImage: bannerImg
             ? `url(${bannerImg})`
-            : `url("/assets/images/bg/banner1-bg.png")`,
+            :"",
           backgroundColor: bannerImg ? "transparent" : "#ffffff",
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -337,16 +337,7 @@ function NewsIndex() {
                       </a>
                     </Link>
 
-                    <div className="d-flex align-items-center text-nowrap text-muted">
-                      <span
-                        className="d-none d-md-inline-block me-2"
-                        style={{
-                          width: "30px",
-                          height: "1px",
-                          backgroundColor: "#444",
-                        }}></span>
-                      <span style={{ fontSize: "0.85rem" }}>2 min read</span>
-                    </div>
+                  
                   </div>
                 </div>
               ))}
