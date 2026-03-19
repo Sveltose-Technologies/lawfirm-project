@@ -14,7 +14,7 @@ import {
   Col,
   FormGroup,
   Label,
-  Badge, // Added Badge for Status UI
+  Badge, 
 } from "reactstrap";
 import { toast } from "react-toastify";
 import * as authService from "../../services/authService";
@@ -76,7 +76,7 @@ const Attorney = () => {
     fetchData();
   }, [fetchData]);
 
-  // 1. FIXED toggleStatus: Sends ONLY status fields to prevent server crash
+
   const toggleStatus = async (attorney) => {
     try {
       const newStatus = attorney.status === "active" ? "inactive" : "active";
@@ -96,12 +96,11 @@ const Attorney = () => {
     }
   };
 
-  // 2. FIXED handleUpdateSubmit: Cleans the data before sending
+ 
   const handleUpdateSubmit = async () => {
     try {
       const formData = new FormData();
 
-      // List of fields that are allowed to be updated (Excludes system fields like resetOtp)
       const updatableFields = [
         "firstName",
         "lastName",
@@ -136,7 +135,7 @@ const Attorney = () => {
 
       updatableFields.forEach((key) => {
         if (editData[key] !== null && editData[key] !== undefined) {
-          // Prevent sending empty strings for IDs
+      
           if ((key === "categoryId" || key === "city") && editData[key] === "")
             return;
 
@@ -144,7 +143,7 @@ const Attorney = () => {
         }
       });
 
-      // Files: Append only if a new file was actually selected
+     
       Object.keys(uploadFiles).forEach((key) => {
         if (uploadFiles[key] instanceof File) {
           formData.append(key, uploadFiles[key]);

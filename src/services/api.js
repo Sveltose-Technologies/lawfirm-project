@@ -5,7 +5,7 @@ import { errorHandler } from "./errorHandler";
 import { responseHandler } from "./responseHandler";
 
 const API = axios.create({
-  baseURL: "https://nodejs.nrislawfirm.com",
+  baseURL: "https://nodejs.bluestor.net",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -15,10 +15,8 @@ const API = axios.create({
 API.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      // 1. Check direct token key
       let token = localStorage.getItem("token");
 
-      // 2. If not found, check inside user object
       if (!token) {
         const userData = localStorage.getItem("user");
         if (userData) {
@@ -31,7 +29,6 @@ API.interceptors.request.use(
         }
       }
 
-      // 3. Attach to header
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
