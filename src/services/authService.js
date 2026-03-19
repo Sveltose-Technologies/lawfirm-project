@@ -84,7 +84,20 @@ export const signupUser = async (payload) => {
     throw error.response?.data || error;
   }
 };
-
+export const verifyUserOtp = async (payload) => {
+  try {
+    console.log("🚀 Calling Client verify OTP:", payload);
+    const response = await API.post("/client/verify-otp", payload);
+    console.log("✅ Client Verify Success:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "❌ Client Verify Error:",
+      error.response?.data || error.message,
+    );
+    throw error.response?.data || error;
+  }
+};
 export const loginUser = async (payload) => {
   try {
     console.log("🚀 Calling Client Login API:", payload);
@@ -161,7 +174,20 @@ export const signupAttorney = async (payload) => {
     throw error.response?.data || error;
   }
 };
-
+export const verifyAttorneyOtp = async (payload) => {
+  try {
+    console.log("🚀 Calling Attorney Verify-otp:", payload);
+    const response = await API.post("/attorney/verify-otp", payload);
+    console.log("✅ Attorney verify Success:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "❌ Attorney verify Error:",
+      error.response?.data || error.message,
+    );
+    throw error.response?.data || error;
+  }
+};
 export const loginAttorney = async (payload) => {
   try {
     console.log("🚀 Calling Attorney Login API:", payload);

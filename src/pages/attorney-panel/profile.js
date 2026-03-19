@@ -8,6 +8,7 @@ import {
   updateAttorney,
   getAllCapabilityCategories,
   getAllLocationCities,
+  getAllLocationCountries,
 } from "../../services/authService";
 import { toast } from "react-toastify";
 
@@ -15,7 +16,9 @@ export default function EditProfile() {
   const [languages, setLanguages] = useState([]);
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
+  const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [attorneyId, setAttorneyId] = useState(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -48,7 +51,6 @@ export default function EditProfile() {
     facebook: "",
     gmail: "",
     status: "active",
-    // File fields
     profileImage: null,
     resume: null,
     kycIdentity: null,
@@ -56,77 +58,82 @@ export default function EditProfile() {
     barCouncilIndiaId: null,
     barCouncilStateId: null,
   });
-useEffect(() => {
-  const loadInitialData = async () => {
-    const userData = localStorage.getItem("user");
-    if (!userData) return;
-    const currentUserId = JSON.parse(userData).id;
 
-    try {
-      const [langRes, catRes, cityRes, profileRes] = await Promise.all([
-        getAttorneylanguages(),
-        getAllCapabilityCategories(),
-        getAllLocationCities(),
-        getUserProfile(currentUserId),
-      ]);
+  useEffect(() => {
+    const loadInitialData = async () => {
+      const userData = localStorage.getItem("user");
+      if (!userData) return;
+      const currentUserId = JSON.parse(userData).id;
 
-      setLanguages(langRes?.data || []);
-      setCategories(catRes?.data || []);
-      setCities(cityRes?.data || []);
+      try {
+        const [langRes, catRes, cityRes, countryRes, profileRes] =
+          await Promise.all([
+            getAttorneylanguages(),
+            getAllCapabilityCategories(),
+            getAllLocationCities(),
+            getAllLocationCountries(),
+            getUserProfile(currentUserId),
+          ]);
 
-      const attorney =
-        profileRes?.attorney ||
-        profileRes?.attorneys?.[0] ||
-        profileRes?.data?.attorney;
+        setLanguages(langRes?.data || []);
+        setCategories(catRes?.data || []);
+        setCities(cityRes?.data || []);
+        setCountries(countryRes?.data || []);
 
-      if (attorney) {
-        setFormData({
-          firstName: attorney.firstName || "",
-          lastName: attorney.lastName || "",
-          email: attorney.email || "",
-          password: "",
-          street: attorney.street || "",
-          aptBlock: attorney.aptBlock || "",
-          city: attorney.city?.toString() || "",
-          state: attorney.state || "",
-          country: attorney.country || "",
-          zipCode: attorney.zipCode || "",
-          phoneCell: attorney.phoneCell || "",
-          phoneHome: attorney.phoneHome || "",
-          phoneOffice: attorney.phoneOffice || "",
-          dob: attorney.dob ? attorney.dob.split("T")[0] : "",
-          admission: attorney.admission || "",
-          language: attorney.language || "",
-          servicesOffered: attorney.servicesOffered || "",
-          education: attorney.education || "",
-          experience: attorney.experience || "",
-          barCouncilIndiaNo: attorney.barCouncilIndiaNo || "",
-          barCouncilStateNo: attorney.barCouncilStateNo || "",
-          familyLawPractice: attorney.familyLawPractice?.toString() || "false",
-          familyDetails: attorney.familyDetails || "",
-          aboutus: attorney.aboutus || "",
-          categoryId: attorney.categoryId?.toString() || "",
-          linkedin: attorney.linkedin || "",
-          twitter: attorney.twitter || "",
-          facebook: attorney.facebook || "",
-          gmail: attorney.gmail || "",
-          status: attorney.status || "active",
-          // Keep files null
-          profileImage: null,
-          resume: null,
-          kycIdentity: null,
-          kycAddress: null,
-          barCouncilIndiaId: null,
-          barCouncilStateId: null,
-        });
+        const attorney =
+          profileRes?.attorney ||
+          profileRes?.attorneys?.[0] ||
+          profileRes?.data?.attorney;
+
+        if (attorney) {
+          setAttorneyId(attorney.id); // Dynamic ID from backend
+          setFormData({
+            firstName: attorney.firstName || "",
+            lastName: attorney.lastName || "",
+            email: attorney.email || "",
+            password: "",
+            street: attorney.street || "",
+            aptBlock: attorney.aptBlock || "",
+            city: attorney.city?.toString() || "",
+            state: attorney.state || "",
+            country: attorney.country || "",
+            zipCode: attorney.zipCode || "",
+            phoneCell: attorney.phoneCell || "",
+            phoneHome: attorney.phoneHome || "",
+            phoneOffice: attorney.phoneOffice || "",
+            dob: attorney.dob ? attorney.dob.split("T")[0] : "",
+            admission: attorney.admission || "",
+            language: attorney.language || "",
+            servicesOffered: attorney.servicesOffered || "",
+            education: attorney.education || "",
+            experience: attorney.experience || "",
+            barCouncilIndiaNo: attorney.barCouncilIndiaNo || "",
+            barCouncilStateNo: attorney.barCouncilStateNo || "",
+            familyLawPractice:
+              attorney.familyLawPractice?.toString() || "false",
+            familyDetails: attorney.familyDetails || "",
+            aboutus: attorney.aboutus || "",
+            categoryId: attorney.categoryId?.toString() || "",
+            linkedin: attorney.linkedin || "",
+            twitter: attorney.twitter || "",
+            facebook: attorney.facebook || "",
+            gmail: attorney.gmail || "",
+            status: attorney.status || "active",
+            profileImage: null,
+            resume: null,
+            kycIdentity: null,
+            kycAddress: null,
+            barCouncilIndiaId: null,
+            barCouncilStateId: null,
+          });
+        }
+      } catch (error) {
+        console.error("Load Error:", error);
+        toast.error("Error loading data");
       }
-    } catch (error) {
-      console.error("Load Error:", error);
-      toast.error("Error loading data");
-    }
-  };
-  loadInitialData();
-}, []);
+    };
+    loadInitialData();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -140,69 +147,69 @@ useEffect(() => {
     }
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-  const userData = localStorage.getItem("user");
-  const userId = userData ? JSON.parse(userData).id : null;
+    const finalUpdateId =
+      attorneyId || JSON.parse(localStorage.getItem("user")).id;
 
-  if (!userId) {
-    toast.error("User ID not found");
-    setLoading(false);
-    return;
-  }
-
-  const payload = new FormData();
-
-  const fileFields = [
-    "profileImage",
-    "resume",
-    "kycIdentity",
-    "kycAddress",
-    "barCouncilIndiaId",
-    "barCouncilStateId",
-  ];
-
-  // List of fields allowed to be sent to the server
-  const allowedFields = Object.keys(formData);
-
-  allowedFields.forEach((key) => {
-    // 1. Handle Password: Only send if not empty
-    if (key === "password" && !formData[key]) return;
-
-    // 2. Handle Files: Only append if a new File object is selected
-    if (fileFields.includes(key)) {
-      if (formData[key] instanceof File) {
-        payload.append(key, formData[key]);
-      }
+    if (!finalUpdateId) {
+      toast.error("ID not found");
+      setLoading(false);
+      return;
     }
-    // 3. Handle Regular Fields
-    else {
-      let value = formData[key];
 
-      // Convert specific fields to proper types if necessary
-      if ((key === "categoryId" || key === "city") && value === "") {
-        return; // Don't send empty strings for ID fields
+    const payload = new FormData();
+    const fileFields = [
+      "profileImage",
+      "resume",
+      "kycIdentity",
+      "kycAddress",
+      "barCouncilIndiaId",
+      "barCouncilStateId",
+    ];
+
+    Object.keys(formData).forEach((key) => {
+      // 1. Skip password if empty
+      if (key === "password" && !formData[key]) return;
+
+      // 2. Handle Files
+      if (fileFields.includes(key)) {
+        if (formData[key] instanceof File) {
+          payload.append(key, formData[key]);
+        }
       }
+      // 3. Handle Regular Fields
+      else {
+        let value = formData[key];
 
-      payload.append(key, value === null ? "" : value);
+        // Fix for 500 error: If ID fields are empty strings, don't send them or send null
+        if (
+          (key === "categoryId" || key === "city" || key === "country") &&
+          (value === "" || value === null)
+        ) {
+          return;
+        }
+
+        payload.append(key, value === null ? "" : value);
+      }
+    });
+
+    try {
+      console.log("Submitting update for dynamic ID:", finalUpdateId);
+      const res = await updateAttorney(finalUpdateId, payload);
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      console.error("Update Error:", error.response?.data || error.message);
+      toast.error(
+        error.response?.data?.message || "Server Error (500) during update",
+      );
+    } finally {
+      setLoading(false);
     }
-  });
+  };
 
-  try {
-    // Note: ensure updateAttorney handles the FormData and the URL correctly
-    const res = await updateAttorney(userId, payload);
-    toast.success("Profile updated successfully!");
-  } catch (error) {
-    console.error("Update Error:", error.response?.data || error.message);
-    toast.error(
-      error.response?.data?.message || "Update failed (Server Error 500)",
-    );
-  } finally {
-    setLoading(false);
-  }
-};
   return (
     <AttorneyLayout>
       <div className="container-fluid py-2">
@@ -396,13 +403,18 @@ const handleSubmit = async (e) => {
               </div>
               <div className="col-md-4">
                 <label className="form-label small fw-bold">Country</label>
-                <input
-                  type="text"
+                <select
                   name="country"
-                  className="form-control"
-                  value={formData.country || ""}
-                  onChange={handleInputChange}
-                />
+                  className="form-select"
+                  value={formData.country}
+                  onChange={handleInputChange}>
+                  <option value="">Select Country</option>
+                  {countries.map((cn) => (
+                    <option key={cn.id} value={cn.countryName}>
+                      {cn.countryName}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="col-md-4">
                 <label className="form-label small fw-bold">Zip Code</label>

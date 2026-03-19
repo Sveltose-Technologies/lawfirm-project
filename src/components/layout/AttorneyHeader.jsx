@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import {
   Navbar,
   Nav,
-  NavbarBrand,
   UncontrolledDropdown,
   DropdownToggle,
   DropdownMenu,
@@ -20,220 +19,164 @@ import { toast } from "react-toastify";
 export default function AttorneyHeader({ onToggleSidebar }) {
   const router = useRouter();
   const [userData, setUserData] = useState(null);
-  const [logoUrl, setLogoUrl] = useState(null);
   const [role, setRole] = useState(null);
+  const [logoUrl, setLogoUrl] = useState(null);
 
   const fallbackImg =
-    "https://ui-avatars.com/api/?name=Attorney&background=eebb5d&color=fff";
+    "https://ui-avatars.com/api/?name=User&background=cfab4a&color=fff";
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const userId = localStorage.getItem("userId");
-      const storedRole = localStorage.getItem("role");
-      setRole(storedRole);
-
-      if (!userId) return;
-
       try {
+        // 1. Get User ID from the "user" object in localStorage
+        const storedUser = localStorage.getItem("user");
+        const storedRole = localStorage.getItem("role");
+        setRole(storedRole);
+
+        if (!storedUser) return;
+        const parsedUser = JSON.parse(storedUser);
+        const userId = parsedUser?.id;
+
+        if (!userId) return;
+
+        // 2. Fetch Profile
         const response = await authService.getUserProfile(userId);
-        // Mapping data based on your JSON structure
-        const attorneyData =
-          response?.attorney ||
-          response?.data?.attorney ||
-          (response?.attorneys && response.attorneys[0]);
+
+        // 3. FIX: Accessing response.attorney based on your console log
+        const attorneyData = response?.attorney || response?.data?.attorney;
 
         if (attorneyData) {
           setUserData(attorneyData);
         }
       } catch (error) {
-        console.error("Error loading header profile:", error);
+        console.error("Header Profile Load Error:", error);
       }
     };
     fetchUserData();
   }, []);
 
   useEffect(() => {
-    const fetchDynamicLogo = async () => {
+    const fetchLogo = async () => {
       try {
-        const [typesRes, bannersRes] = await Promise.all([getAllHomeBanners()]);
-
-        const types = typesRes.data?.data || [];
-        const allBanners = bannersRes.data?.data || [];
-
-        const logoTypeObj = types.find((t) => t.type.toLowerCase() === "logo");
-
-        if (logoTypeObj) {
-          const logoData = allBanners
-            .filter((b) => Number(b.typeId) === Number(logoTypeObj.id))
-            .sort((a, b) => b.id - a.id)[0];
-
-          if (logoData) {
-            setLogoUrl(logoData.image);
-          }
+        const [typesRes, bannersRes] = await Promise.all([
+          authService.getAllLogoTypes(),
+          authService.getAllHomeBanners(),
+        ]);
+        const logoType = (typesRes?.data?.data || []).find(
+          (t) => t.type?.toLowerCase() === "logo",
+        );
+        if (logoType) {
+          const logo = (bannersRes?.data?.data || []).find(
+            (b) => String(b.typeId) === String(logoType.id),
+          );
+          if (logo) setLogoUrl(logo.image);
         }
       } catch (err) {
-        console.error("Dynamic Logo Fetch Error:", err);
+        console.error(err);
       }
     };
-
-    fetchDynamicLogo();
+    fetchLogo();
   }, []);
 
   const handleLogout = () => {
     localStorage.clear();
-    toast.success("Logout Successful!", {
-      position: "top-right",
-      autoClose: 3000,
-      theme: "colored",
-    });
+    toast.success("Logout Successful!");
     router.push("/login-signup");
   };
 
-  // Dynamic Profile Link Logic
-  const getProfilePath = () => {
-    if (role === "attorney") return "/attorney-panel/";
-    return "/client-panel/profile";
-  };
-
-  const profileImg = userData?.profileImage
-    ? authService.getImgUrl(userData.profileImage)
-    : `https://ui-avatars.com/api/?name=${userData?.firstName || "Attorney"}&background=eebb5d&color=fff`;
-
   return (
-    <>
-      <style jsx global>{`
-        .panel-header .dropdown-menu {
-          border-radius: 12px;
-          border: none;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
-          padding: 10px;
-          min-width: 180px;
-        }
-        .panel-header .dropdown-item {
-          border-radius: 8px;
-          padding: 10px 15px;
-          display: flex;
-          align-items: center;
-          justify-content: center; /* Centers text in dropdown */
-          gap: 10px;
-          font-weight: 500;
-          transition: all 0.2s ease;
-        }
-        .panel-header .dropdown-item:hover {
-          background-color: #fff9ef !important;
-          color: #eebb5d !important;
-        }
-      `}</style>
+    <Navbar
+      color="white"
+      light
+      expand="md"
+      className="shadow-sm bg-white m-lg-3 m-2 rounded-3 px-3 sticky-top border-0">
+      <div className="container-fluid d-flex align-items-center justify-content-between">
+        <div className="d-flex align-items-center">
+          <Button
+            color="light"
+            className="d-lg-none border-0 me-2 p-1 bg-transparent"
+            onClick={onToggleSidebar}>
+            <i className="bi bi-list fs-2 text-dark"></i>
+          </Button>
 
-      <Navbar
-        color="white"
-        light
-        expand="md"
-        className="shadow-sm bg-white m-3 rounded-4 px-4 sticky-top panel-header"
-        style={{ height: "70px" }}>
-        <div className="d-flex align-items-center justify-content-between w-100">
-          {/* Left: Sidebar Toggle & Title */}
-          <div className="d-flex align-items-center">
-            <Button
-              color="light"
-              className="d-lg-none border-0 p-1 me-2"
-              onClick={onToggleSidebar}>
-              <i className="bi bi-list fs-3"></i>
-            </Button>
-            <Link href="/">
-              <a className="navbar-brand p-0 m-0 d-flex align-items-center">
+          <Link href="/">
+            <a className="navbar-brand p-0">
+              <img
+                src={
+                  logoUrl
+                    ? authService.getImgUrl(logoUrl)
+                    : "/assets/images/brand-logo.png"
+                }
+                alt="Logo"
+                style={{ maxHeight: "45px", width: "auto" }}
+              />
+            </a>
+          </Link>
+        </div>
+
+        <Nav
+          className="ms-auto align-items-center flex-row gap-2 gap-md-3"
+          navbar>
+          <UncontrolledDropdown nav inNavbar>
+            <DropdownToggle
+              nav
+              className="d-flex align-items-center p-0 border-0 bg-transparent shadow-none">
+              {/* DISPLAY NAME: Davil Acosta */}
+              <div className="text-end me-2 d-none d-md-block">
+                <p className="mb-0 fw-bold text-dark small text-capitalize">
+                  {userData
+                    ? `${userData.firstName} ${userData.lastName}`
+                    : "Loading..."}
+                </p>
+                <small
+                  className="text-muted text-uppercase fw-bold"
+                  style={{ fontSize: "10px", letterSpacing: "0.5px" }}>
+                  {role || "Attorney"}
+                </small>
+              </div>
+
+              {/* DISPLAY IMAGE: Perfectly centered and rounded */}
+              <div className="position-relative">
                 <img
                   src={
-                    logoUrl
-                      ? getImgUrl(logoUrl)
-                      : "/assets/images/brand-logo.png"
+                    userData?.profileImage
+                      ? authService.getImgUrl(userData.profileImage)
+                      : fallbackImg
                   }
-                  alt="Logo"
-                  style={{
-                    width: "160px",
-                    height: "50px",
-                    objectFit: "contain",
-                  }}
-                />
-              </a>
-            </Link>
-          </div>
-
-          {/* Right Section */}
-          <Nav className="ms-auto align-items-center flex-row gap-3" navbar>
-            {/* Live Site Link */}
-            {/* <NavItem className="d-none d-md-flex align-items-center mx-2">
-              <Link href="/" passHref legacyBehavior>
-                <NavLink className="text-dark d-flex align-items-center gap-2 p-0 fw-medium small">
-                  <i className="bi bi-globe fs-6 text-primary"></i>
-                  <span>Live Site</span>
-                </NavLink>
-              </Link>
-            </NavItem> */}
-
-            {/* Message Icon */}
-            <NavItem className="d-flex align-items-center">
-              <Link href="/attorney-panel/messages" passHref legacyBehavior>
-                <NavLink className="text-dark p-0">
-                  <i className="bi bi-chat-left-dots-fill fs-5"></i>
-                </NavLink>
-              </Link>
-            </NavItem>
-
-            {/* Profile Dropdown */}
-            <UncontrolledDropdown nav inNavbar>
-              <DropdownToggle
-                nav
-                className="d-flex align-items-center gap-2 p-0 ms-2">
-                <div className="d-none d-md-block text-end">
-                  <div
-                    className="fw-bold text-dark small"
-                    style={{ lineHeight: "1.2" }}>
-                    {userData
-                      ? `${userData.firstName} ${userData.lastName || ""}`
-                      : "Attorney"}
-                  </div>
-                  <small
-                    className="text-muted text-capitalize"
-                    style={{ fontSize: "11px" }}>
-                    {role || "Attorney"}
-                  </small>
-                </div>
-
-                <img
-                  src={profileImg}
                   className="rounded-circle border border-2 border-warning shadow-sm"
                   width="42"
                   height="42"
-                  style={{ objectFit: "cover" }}
                   alt="profile"
+                  style={{
+                    objectFit: "cover",
+                    aspectRatio: "1/1",
+                    display: "block",
+                  }}
                   onError={(e) => {
+                    e.target.onerror = null;
                     e.target.src = fallbackImg;
                   }}
                 />
-              </DropdownToggle>
+              </div>
+            </DropdownToggle>
 
-              <DropdownMenu end className="mt-2">
-                <Link href={getProfilePath()} passHref legacyBehavior>
-                  <DropdownItem tag="a" className="text-white">
-                    <i className="bi bi-person-circle fs-5"></i>
-                    <span>Dashboard</span>
-                  </DropdownItem>
-                </Link>
-
-                <DropdownItem divider />
-
-                <button
-                  onClick={handleLogout}
-                  className="dropdown-item text-danger border-0 bg-transparent w-100">
-                  <i className="bi bi-box-arrow-left fs-5"></i>
-                  <span>Logout</span>
-                </button>
-              </DropdownMenu>
-            </UncontrolledDropdown>
-          </Nav>
-        </div>
-      </Navbar>
-    </>
+            <DropdownMenu end className="shadow border-0 mt-2 rounded-3">
+              <Link href="/attorney-panel/" passHref legacyBehavior>
+                <DropdownItem tag="a" className="py-2">
+                  <i className="bi bi-grid-fill me-2 text-warning"></i>{" "}
+                  Dashboard
+                </DropdownItem>
+              </Link>
+              <DropdownItem divider />
+              <DropdownItem
+                onClick={handleLogout}
+                className="text-danger py-2 w-100 border-0 bg-transparent">
+                <i className="bi bi-box-arrow-left me-2"></i> Logout
+              </DropdownItem>
+            </DropdownMenu>
+          </UncontrolledDropdown>
+        </Nav>
+      </div>
+    </Navbar>
   );
 }

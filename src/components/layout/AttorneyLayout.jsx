@@ -10,21 +10,10 @@ export default function AttorneyLayout({ children }) {
   const router = useRouter();
   const [showSidebar, setShowSidebar] = useState(false);
 
-  const [userName, setUserName] = useState("Attorney");
+  // States for dynamic user information
+  const [userName, setUserName] = useState("Loading...");
   const [userEmail, setUserEmail] = useState("");
-  // प्रोफेशनल प्लेसहोल्डर इमेज
-  const [profileImg, setProfileImg] = useState(
-    "https://ui-avatars.com/api/?name=Attorney&background=eebb5d&color=000",
-  );
-
-  const handleLogout = (e) => {
-    e.preventDefault();
-    if (confirm("Are you sure you want to logout?")) {
-      localStorage.clear();
-      sessionStorage.clear();
-      router.push("/");
-    }
-  };
+  const [profileImg, setProfileImg] = useState("");
 
   const menuItems = [
     { name: "Dashboard", icon: "bi-grid-fill", path: "/attorney-panel" },
@@ -62,22 +51,35 @@ export default function AttorneyLayout({ children }) {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const userId = localStorage.getItem("userId");
-      if (!userId) return;
-
       try {
+        // 1. Get Dynamic ID from "user" object (matches Header logic)
+        const storedUser = localStorage.getItem("user");
+        if (!storedUser) return;
+
+        const parsedUser = JSON.parse(storedUser);
+        const userId = parsedUser?.id;
+
+        if (!userId) return;
+
+        // 2. Fetch Dynamic Profile Data
         const response = await getUserProfile(userId);
-        // यहाँ चेक करें कि response.attorney मौजूद है या नहीं
+
+        // 3. Mapping response.attorney (Singular based on your API logs)
         const attorneyData = response?.attorney || response?.data?.attorney;
 
         if (attorneyData) {
-          setUserName(
-            `${attorneyData.firstName} ${attorneyData.lastName || ""}`,
-          );
+          const fullName =
+            `${attorneyData.firstName || ""} ${attorneyData.lastName || ""}`.trim();
+          setUserName(fullName || "Attorney");
           setUserEmail(attorneyData.email || "");
-          if (attorneyData.profileImage) {
-            setProfileImg(getImgUrl(attorneyData.profileImage));
-          }
+
+          // 4. Set Dynamic Profile Image
+          const avatar = `https://ui-avatars.com/api/?name=${fullName || "User"}&background=eebb5d&color=000`;
+          setProfileImg(
+            attorneyData.profileImage
+              ? getImgUrl(attorneyData.profileImage)
+              : avatar,
+          );
         }
       } catch (error) {
         console.error("Layout fetch error:", error);
@@ -87,112 +89,106 @@ export default function AttorneyLayout({ children }) {
     fetchProfile();
   }, []);
 
+  const handleLogout = (e) => {
+    e.preventDefault();
+    if (confirm("Are you sure you want to logout?")) {
+      localStorage.clear();
+      router.push("/");
+    }
+  };
+
   return (
-    <div style={{ backgroundColor: "#f4f7fa", minHeight: "100vh" }}>
+    <div className="bg-light min-vh-100">
       <AttorneyHeader onToggleSidebar={() => setShowSidebar(!showSidebar)} />
 
       <div className="container-fluid py-4 px-lg-5">
         <div className="row g-4">
+          {/* Responsive Sidebar */}
           <aside
-            className={`col-lg-3 ${showSidebar ? "sidebar-open" : "d-none d-lg-block"}`}>
+            className={`col-lg-3 ${showSidebar ? "d-block position-fixed start-0 top-0 vh-100 z-3 bg-white shadow" : "d-none d-lg-block"}`}
+            style={showSidebar ? { width: "280px" } : {}}>
             <div
-              className="card border-0 shadow-sm rounded-0 overflow-hidden sticky-top"
+              className="card border-0 shadow-sm rounded-3 overflow-hidden sticky-top"
               style={{ top: "90px" }}>
+              {/* Profile Section - ALL DYNAMIC */}
               <div className="p-4 text-center border-bottom bg-white">
                 <div
                   className="mx-auto mb-3"
                   style={{ width: "100px", height: "100px" }}>
                   <img
-                    src={profileImg}
-                    className="shadow-sm w-100 h-100"
-                    style={{ objectFit: "cover", border: "2px solid #eebb5d" }}
-                    alt="avatar"
+                    src={
+                      profileImg ||
+                      `https://ui-avatars.com/api/?name=User&background=eebb5d&color=000`
+                    }
+                    className="rounded-circle border border-2 border-warning shadow-sm w-100 h-100"
+                    style={{ objectFit: "cover", aspectRatio: "1/1" }}
+                    alt="Profile"
                     onError={(e) => {
-                      e.target.src =
-                        "https://ui-avatars.com/api/?name=User&background=eebb5d&color=000";
+                      e.target.src = `https://ui-avatars.com/api/?name=${userName}&background=eebb5d&color=000`;
                     }}
                   />
                 </div>
-                <h6 className="fw-bold mb-1" style={{ color: "#000" }}>
+                <h6 className="fw-bold mb-1 text-dark text-capitalize text-truncate px-2">
                   {userName}
                 </h6>
-                <p className="text-muted mb-0 small">{userEmail}</p>
+                <p className="text-muted mb-0 small text-truncate px-3">
+                  {userEmail}
+                </p>
               </div>
 
+              {/* Navigation Menu */}
               <div className="p-3 bg-white">
-                <nav className="nav flex-column sidebar-nav">
+                <nav className="nav flex-column gap-1">
                   {menuItems.map((item, idx) => (
-                    <Link key={idx} href={item.path}>
+                    <Link key={idx} href={item.path} legacyBehavior>
                       <a
-                        className={`nav-link ${router.pathname === item.path ? "active" : ""}`}
+                        className={`nav-link border-0 rounded-2 py-2 px-3 d-flex align-items-center transition-all ${
+                          router.pathname === item.path
+                            ? "bg-light text-warning fw-bold"
+                            : "text-dark"
+                        }`}
                         onClick={() => setShowSidebar(false)}>
-                        <i className={`bi ${item.icon} me-3`}></i> {item.name}
+                        <i
+                          className={`bi ${item.icon} me-3 ${router.pathname === item.path ? "text-warning" : "text-muted"}`}></i>
+                        <span style={{ fontSize: "14px" }}>{item.name}</span>
                       </a>
                     </Link>
                   ))}
-                  <div className="mt-4 pt-4 border-top">
-                    <a
-                      href="#"
-                      className="nav-link text-danger fw-bold"
+
+                  <div className="mt-3 pt-3 border-top">
+                    <button
+                      className="btn btn-link nav-link text-danger fw-bold border-0 bg-transparent w-100 text-start px-3 d-flex align-items-center"
                       onClick={handleLogout}>
-                      <i className="bi bi-box-arrow-right me-3"></i> Logout
-                    </a>
+                      <i className="bi bi-box-arrow-right me-3"></i>
+                      <span style={{ fontSize: "14px" }}>Logout</span>
+                    </button>
                   </div>
                 </nav>
               </div>
             </div>
           </aside>
 
-          <main className="col-lg-9">{children}</main>
+          {/* Main Content Area */}
+          <main className="col-lg-9">
+            <div className="animate__animated animate__fadeIn">{children}</div>
+          </main>
         </div>
       </div>
 
+      {/* Close sidebar overlay for mobile */}
       {showSidebar && (
         <div
-          className="sidebar-overlay d-lg-none"
+          className="position-fixed top-0 start-0 w-100 vh-100 bg-dark opacity-50 z-2 d-lg-none"
           onClick={() => setShowSidebar(false)}></div>
       )}
 
       <style jsx>{`
-        .sidebar-nav .nav-link {
-          color: #444 !important;
-          font-size: 14px;
-          padding: 12px 20px;
-          transition: 0.3s;
-          margin-bottom: 5px;
-          font-weight: 500;
-          text-decoration: none;
-          display: block;
+        .nav-link:hover {
+          background-color: #f8f9fa !important;
+          color: #cfab4a !important;
         }
-        .sidebar-nav .nav-link:hover {
-          background: #f8f9fa;
-          color: #eebb5d !important;
-        }
-        .sidebar-nav .nav-link.active {
-          background: #fdf8ef;
-          color: #eebb5d !important;
-          font-weight: bold;
-          border-left: 4px solid #eebb5d;
-        }
-        @media (max-width: 991px) {
-          .sidebar-open {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 280px;
-            height: 100vh;
-            z-index: 1060;
-            background: white;
-          }
-          .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 1050;
-          }
+        .transition-all {
+          transition: all 0.2s ease-in-out;
         }
       `}</style>
     </div>

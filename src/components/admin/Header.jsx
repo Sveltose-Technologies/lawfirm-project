@@ -1,188 +1,3 @@
-// "use client";
-// import React, { useState, useEffect } from "react";
-// import Link from "next/link";
-// import { useRouter } from "next/router";
-// import {
-//   Navbar,
-//   Nav,
-//   NavbarBrand,
-//   UncontrolledDropdown,
-//   DropdownToggle,
-//   DropdownMenu,
-//   DropdownItem,
-//   Button,
-//   NavItem,
-//   NavLink,
-// } from "reactstrap";
-// import * as authService from "../../services/authService";
-// import { toast } from "react-toastify";
-
-// const Header = ({ showMobmenu }) => {
-//   const router = useRouter();
-//   const [adminData, setAdminData] = useState(null);
-
-//   useEffect(() => {
-//     const fetchAdmin = async () => {
-//       try {
-//         const data = await authService.getAdminProfile();
-//         if (data) {
-//           setAdminData(data);
-//         }
-//       } catch (error) {
-//         console.error("Header Profile Fetch Error:", error);
-//       }
-//     };
-//     fetchAdmin();
-//   }, []);
-
-//   const handleLogout = () => {
-//     localStorage.clear();
-//     toast.success("Logout Successful!", {
-//       position: "top-right",
-//       autoClose: 3000,
-//       hideProgressBar: false,
-//       closeOnClick: true,
-//       pauseOnHover: true,
-//       draggable: true,
-//       theme: "colored",
-//     });
-//     router.push("/login-signup");
-//   };
-
-//   const profileImg = adminData?.profileImage
-//     ? authService.getImgUrl(adminData.profileImage)
-//     : `https://ui-avatars.com/api/?name=${adminData?.firstName || "Admin"}&background=eebb5d&color=fff`;
-
-//   return (
-//     <Navbar
-//       color="white"
-//       light
-//       expand="md"
-//       className="shadow-sm bg-white m-3 rounded-4 px-4 sticky-top"
-//     >
-//       <div className="d-flex align-items-center justify-content-between w-100">
-//         {/* Left Section */}
-//         <div className="d-flex align-items-center">
-//           <Button
-//             color="light"
-//             className="d-lg-none border-0 p-1 me-2"
-//             onClick={showMobmenu}
-//           >
-//             <i className="bi bi-list fs-3"></i>
-//           </Button>
-
-//           <NavbarBrand href="/" className="fw-bold fs-4 text-warning">
-//             Lawfirm
-//           </NavbarBrand>
-//         </div>
-
-//         {/* Right Section */}
-//         <Nav className="ms-auto align-items-center flex-row gap-3" navbar>
-//           {/* Message Icon */}
-//           <NavItem className="d-flex align-items-center">
-//             <Link href="/admin-panel/messages" passHref legacyBehavior>
-//               <NavLink className="text-dark p-0">
-//                 <i className="bi bi-chat-left-dots-fill fs-5"></i>
-//               </NavLink>
-//             </Link>
-//           </NavItem>
-
-//           {/* Live Site Link */}
-//           {/* <NavLink className="text-dark d-flex align-items-center gap-2 p-0 fw-medium small">
-//             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-//               <path d="M10 17l5-5-5-5v3H3v4h7v3z" />
-//               <path d="M14 3h7v18h-7v-2h5V5h-5V3z" />
-//             </svg>
-//             <span>Live Site</span>
-//           </NavLink> */}
-//           {/* <NavItem className="d-none d-md-flex align-items-center mx-2">
-//             <Link href="/" passHref legacyBehavior>
-//               <NavLink className="text-dark d-flex align-items-center gap-2 p-0 fw-medium small">
-//                 <i className="bi bi-box-arrow-right fs-6"></i>
-//                 <span>Live Site</span>
-//               </NavLink>
-//             </Link>
-//           </NavItem> */}
-//           <NavItem className="d-none d-md-flex align-items-center mx-2">
-//             <Link href="/" passHref legacyBehavior>
-//               <NavLink
-
-//                 className="text-dark d-flex align-items-center gap-2 p-0 fw-medium small"
-//               >
-//                 <i className="bi bi-box-arrow-right fs-6"></i>
-//                 <span>Live Site</span>
-//               </NavLink>
-//             </Link>
-//           </NavItem>
-//           {/* Language Dropdown */}
-//           <UncontrolledDropdown nav inNavbar>
-//             <DropdownToggle
-//               nav
-//               caret
-//               className="text-dark small border rounded px-2 py-1"
-//             >
-//               English
-//             </DropdownToggle>
-//             <DropdownMenu end className="shadow border-0">
-//               <DropdownItem>English</DropdownItem>
-//               <DropdownItem>Spanish</DropdownItem>
-//               <DropdownItem>French</DropdownItem>
-//             </DropdownMenu>
-//           </UncontrolledDropdown>
-
-//           {/* Profile Dropdown */}
-//           <UncontrolledDropdown nav inNavbar>
-//             <DropdownToggle nav className="d-flex align-items-center gap-2 p-0">
-//               <div className="d-none d-sm-block text-end">
-//                 <div
-//                   className="fw-bold text-dark small"
-//                   style={{ lineHeight: "1" }}
-//                 >
-//                   {adminData
-//                     ? `${adminData.firstName} ${adminData.lastName}`
-//                     : "Admin"}
-//                 </div>
-//                 <small className="text-muted" style={{ fontSize: "10px" }}>
-//                   Super Admin
-//                 </small>
-//               </div>
-
-//               <img
-//                 src={profileImg}
-//                 className="rounded-circle border"
-//                 width="38"
-//                 height="38"
-//                 style={{ objectFit: "cover" }}
-//                 alt="profile"
-//               />
-//             </DropdownToggle>
-
-//             <DropdownMenu
-//               end
-//               className="shadow border-0 mt-2 rounded-3 bg-white"
-//               style={{ minWidth: "150px" }}
-//             >
-//               <DropdownItem
-//                 tag={Link}
-//                 href="/admin-panel/profile"
-//                 className="text-dark text-center"
-//               >
-//                 Profile
-//               </DropdownItem>
-//               <DropdownItem divider />
-//               <DropdownItem onClick={handleLogout} className="text-danger">
-//                 Logout
-//               </DropdownItem>
-//             </DropdownMenu>
-//           </UncontrolledDropdown>
-//         </Nav>
-//       </div>
-//     </Navbar>
-//   );
-// };
-
-// export default Header;
-
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -206,14 +21,18 @@ const Header = ({ showMobmenu }) => {
   const router = useRouter();
   const [adminData, setAdminData] = useState(null);
   const [role, setRole] = useState(null);
+  const [logoUrl, setLogoUrl] = useState(null); // State for dynamic logo
 
+  // 1. Fetch Profile Data
   useEffect(() => {
     const fetchAdmin = async () => {
       const storedRole = localStorage.getItem("role");
       setRole(storedRole);
 
       try {
-        const data = await authService.getAdminProfile();
+        const response = await authService.getAdminProfile();
+        // Mapping based on API structure
+        const data = response?.admin || response?.data?.admin || response;
         if (data) {
           setAdminData(data);
         }
@@ -222,6 +41,30 @@ const Header = ({ showMobmenu }) => {
       }
     };
     fetchAdmin();
+  }, []);
+
+  // 2. Fetch Dynamic Logo (Same logic as Attorney Header)
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const [typesRes, bannersRes] = await Promise.all([
+          authService.getAllLogoTypes(),
+          authService.getAllHomeBanners(),
+        ]);
+        const types = typesRes?.data?.data || [];
+        const banners = bannersRes?.data?.data || [];
+        const logoType = types.find((t) => t.type?.toLowerCase() === "logo");
+        if (logoType) {
+          const logo = banners.find(
+            (b) => String(b.typeId) === String(logoType.id),
+          );
+          if (logo) setLogoUrl(logo.image);
+        }
+      } catch (err) {
+        console.error("Logo fetch error:", err);
+      }
+    };
+    fetchLogo();
   }, []);
 
   const handleLogout = () => {
@@ -234,7 +77,6 @@ const Header = ({ showMobmenu }) => {
     router.push("/login-signup");
   };
 
-  // Logic to determine profile path based on role
   const getProfilePath = () => {
     if (role === "admin") return "/admin-panel/profile";
     if (role === "attorney") return "/attorney-panel/profile";
@@ -252,11 +94,12 @@ const Header = ({ showMobmenu }) => {
           border-radius: 12px;
           padding: 8px;
           min-width: 160px;
+          border: none;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
         .admin-navbar .dropdown-item {
           display: flex;
           align-items: center;
-          justify-content: center; /* Centers text and icons */
           gap: 10px;
           padding: 10px;
           border-radius: 8px;
@@ -267,33 +110,47 @@ const Header = ({ showMobmenu }) => {
           background-color: #f8f9fa;
           color: #eebb5d !important;
         }
-        .admin-navbar .dropdown-item.text-danger:hover {
-          background-color: #fff5f5;
-        }
       `}</style>
 
       <Navbar
         color="white"
         light
         expand="md"
-        className="shadow-sm bg-white m-3 rounded-4 px-4 sticky-top admin-navbar">
+        className="shadow-sm bg-white m-3 rounded-4 px-4 sticky-top admin-navbar border-0">
         <div className="d-flex align-items-center justify-content-between w-100">
           <div className="d-flex align-items-center">
             <Button
               color="light"
-              className="d-lg-none border-0 p-1 me-2"
+              className="d-lg-none border-0 p-1 me-2 bg-transparent"
               onClick={showMobmenu}>
               <i className="bi bi-list fs-3"></i>
             </Button>
 
-            <NavbarBrand href="/" className="fw-bold fs-4 text-warning">
-              Lawfirm
-            </NavbarBrand>
+            {/* LOGO REPLACED "Lawfirm" TEXT */}
+            <Link href="/">
+              <a className="navbar-brand p-0 d-flex align-items-center">
+                <img
+                  src={
+                    logoUrl
+                      ? authService.getImgUrl(logoUrl)
+                      : "/assets/images/brand-logo.png"
+                  }
+                  alt="Logo"
+                  className="img-fluid"
+                  style={{ maxHeight: "45px", width: "auto" }}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/assets/images/brand-logo.png";
+                  }}
+                />
+              </a>
+            </Link>
           </div>
 
           <Nav
             className="ms-auto align-items-center flex-row gap-2 gap-md-4"
             navbar>
+            {/* Messages */}
             <NavItem className="d-flex align-items-center">
               <Link href="/admin-panel/messages" passHref legacyBehavior>
                 <NavLink className="text-dark p-0">
@@ -302,6 +159,7 @@ const Header = ({ showMobmenu }) => {
               </Link>
             </NavItem>
 
+            {/* Live Site */}
             <NavItem className="d-none d-md-flex align-items-center">
               <Link href="/" passHref legacyBehavior>
                 <NavLink className="text-dark d-flex align-items-center gap-2 p-0 fw-medium small">
@@ -315,36 +173,40 @@ const Header = ({ showMobmenu }) => {
             <UncontrolledDropdown nav inNavbar>
               <DropdownToggle
                 nav
-                className="d-flex align-items-center gap-2 p-0">
+                className="d-flex align-items-center gap-2 p-0 border-0 bg-transparent shadow-none">
                 <div className="d-none d-sm-block text-end">
                   <div
-                    className="fw-bold text-dark small"
+                    className="fw-bold text-dark small text-capitalize"
                     style={{ lineHeight: "1" }}>
                     {adminData
                       ? `${adminData.firstName} ${adminData.lastName}`
                       : "Admin"}
                   </div>
                   <small
-                    className="text-muted text-capitalize"
-                    style={{ fontSize: "10px" }}>
+                    className="text-muted text-uppercase fw-bold"
+                    style={{ fontSize: "10px", letterSpacing: "0.5px" }}>
                     {role || "Super Admin"}
                   </small>
                 </div>
 
                 <img
                   src={profileImg}
-                  className="rounded-circle border border-2 border-light shadow-sm"
+                  className="rounded-circle border border-2 border-warning shadow-sm"
                   width="40"
                   height="40"
-                  style={{ objectFit: "cover" }}
+                  style={{ objectFit: "cover", aspectRatio: "1/1" }}
                   alt="profile"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = `https://ui-avatars.com/api/?name=Admin&background=eebb5d&color=fff`;
+                  }}
                 />
               </DropdownToggle>
 
               <DropdownMenu end className="shadow border-0 mt-2">
                 <Link href={getProfilePath()} passHref legacyBehavior>
-                  <DropdownItem tag="a" className="text-white">
-                    <i className="bi bi-person fs-5"></i>
+                  <DropdownItem tag="a">
+                    <i className="bi bi-person fs-5 text-warning"></i>
                     <span>Profile</span>
                   </DropdownItem>
                 </Link>

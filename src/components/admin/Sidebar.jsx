@@ -289,17 +289,8 @@ export default function Sidebar({ showMobilemenu }) {
 
   return (
     <div className="bg-white h-100 d-flex flex-column border-end shadow-sm overflow-auto">
-      <div className="d-flex align-items-center justify-content-between p-4 bg-white sticky-top border-bottom">
-        <Link href="/">
-          <a className="text-decoration-none fs-4 fw-bolder text-dark">
-            Lawfirm
-          </a>
-        </Link>
-        <Button
-          close
-          size="sm"
-          className="d-lg-none"
-          onClick={showMobilemenu}></Button>
+      <div className="d-flex align-items-center justify-content-between p-4 bg-white sticky-top ">
+    
       </div>
 
       <div className="flex-grow-1 px-3 pt-3">

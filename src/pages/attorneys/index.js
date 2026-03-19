@@ -90,51 +90,58 @@ export default function AttorneysPage() {
     fetchData();
   }, []);
 
-  const filteredAttorneys = useMemo(() => {
-    return attorneys.filter((attr) => {
-      const matchesLetter =
-        !selectedLetter ||
-        attr?.firstName?.toUpperCase().startsWith(selectedLetter);
-      const fullName =
-        `${attr.firstName || ""} ${attr.lastName || ""}`.toLowerCase();
-      const matchesSearch =
-        searchQuery === "" ||
-        (searchType === "name"
-          ? fullName.includes(searchQuery.toLowerCase())
-          : fullName.includes(searchQuery.toLowerCase()) ||
-            (
-              cities.find((c) => String(c.id) === String(attr.city))
-                ?.cityName || ""
-            )
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()) ||
-            (
-              categories.find((c) => String(c.id) === String(attr.categoryId))
-                ?.categoryName || ""
-            )
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()));
-      const matchesDropdown =
-        !filterValue ||
-        (activeFilter === "Capability" &&
-          String(attr.categoryId) === String(filterValue)) ||
-        (activeFilter === "Location" &&
-          String(attr.city) === String(filterValue)) ||
-        (activeFilter === "Language" && attr.language === filterValue) ||
-        (activeFilter === "Admission" && attr.admission === filterValue) ||
-        (activeFilter === "Education" && attr.education === filterValue);
-      return matchesLetter && matchesSearch && matchesDropdown;
-    });
-  }, [
-    attorneys,
-    selectedLetter,
-    searchQuery,
-    searchType,
-    activeFilter,
-    filterValue,
-    cities,
-    categories,
-  ]);
+ const filteredAttorneys = useMemo(() => {
+   return attorneys.filter((attr) => {
+     // 1. Fix: Added .trim() to handle leading spaces in names like " Daniel "
+     const firstName = attr?.firstName?.trim() || "";
+     const lastName = attr?.lastName?.trim() || "";
+
+     const matchesLetter =
+       !selectedLetter ||
+       firstName.toUpperCase().startsWith(selectedLetter.toUpperCase());
+
+     const fullName = `${firstName} ${lastName}`.toLowerCase();
+
+     const matchesSearch =
+       searchQuery === "" ||
+       (searchType === "name"
+         ? fullName.includes(searchQuery.toLowerCase())
+         : fullName.includes(searchQuery.toLowerCase()) ||
+           (
+             cities.find((c) => String(c.id) === String(attr.city))?.cityName ||
+             ""
+           )
+             .toLowerCase()
+             .includes(searchQuery.toLowerCase()) ||
+           (
+             categories.find((c) => String(c.id) === String(attr.categoryId))
+               ?.categoryName || ""
+           )
+             .toLowerCase()
+             .includes(searchQuery.toLowerCase()));
+
+     const matchesDropdown =
+       !filterValue ||
+       (activeFilter === "Capability" &&
+         String(attr.categoryId) === String(filterValue)) ||
+       (activeFilter === "Location" &&
+         String(attr.city) === String(filterValue)) ||
+       (activeFilter === "Language" && attr.language === filterValue) ||
+       (activeFilter === "Admission" && attr.admission === filterValue) ||
+       (activeFilter === "Education" && attr.education === filterValue);
+
+     return matchesLetter && matchesSearch && matchesDropdown;
+   });
+ }, [
+   attorneys,
+   selectedLetter,
+   searchQuery,
+   searchType,
+   activeFilter,
+   filterValue,
+   cities,
+   categories,
+ ]);
 
   return (
     <main className="bg-white min-vh-100">

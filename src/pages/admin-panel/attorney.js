@@ -3,163 +3,699 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Container,
-  Card,
-  CardBody,
   Table,
   Input,
   Button,
-  Badge,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Row,
+  Col,
+  FormGroup,
+  Label,
+  Badge, // Added Badge for Status UI
 } from "reactstrap";
-import { toast } from "react-toastify"; // Added for manual notifications
+import { toast } from "react-toastify";
 import * as authService from "../../services/authService";
 import PaginationComponent from "../../context/Pagination";
 
 const Attorney = () => {
   const [attorneys, setAttorneys] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  // Fetch all attorneys
-  const fetchAttorneys = useCallback(async () => {
+  const [modal, setModal] = useState(false);
+  const [editData, setEditData] = useState({});
+  const [uploadFiles, setUploadFiles] = useState({
+    profileImage: null,
+    kycIdentity: null,
+    kycAddress: null,
+    resume: null,
+    barCouncilIndiaId: null,
+    barCouncilStateId: null,
+  });
+
+  const toggleModal = () => {
+    setModal(!modal);
+    setUploadFiles({
+      profileImage: null,
+      kycIdentity: null,
+      kycAddress: null,
+      resume: null,
+      barCouncilIndiaId: null,
+      barCouncilStateId: null,
+    });
+  };
+
+  const fetchData = useCallback(async () => {
     try {
-      const res = await authService.getAllAttorneys();
-      // res.attorneys comes from your service logic
-      setAttorneys(res?.attorneys || []);
+      const [attorneyRes, cityRes, countryRes, catRes] = await Promise.all([
+        authService.getAllAttorneys(),
+        authService.getAllLocationCities(),
+        authService.getAllCountries(),
+        authService.getAllCapabilityCategories(),
+      ]);
+
+      setAttorneys(
+        attorneyRes?.attorneys || attorneyRes?.data || attorneyRes || [],
+      );
+      setCities(cityRes?.data || cityRes || []);
+      setCountries(countryRes?.data || countryRes || []);
+      setCategories(catRes?.data || catRes || []);
     } catch (err) {
-      // err is the string message returned by your errorHandler
-      toast.error(err || "Failed to load attorneys");
+      toast.error("Failed to load data");
     }
   }, []);
 
   useEffect(() => {
-    fetchAttorneys();
-  }, [fetchAttorneys]);
+    fetchData();
+  }, [fetchData]);
 
-  // Handle Delete with manual toast
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this attorney?")) {
-      try {
-        const res = await authService.deleteAttorney(id);
+  // 1. FIXED toggleStatus: Sends ONLY status fields to prevent server crash
+  const toggleStatus = async (attorney) => {
+    try {
+      const newStatus = attorney.status === "active" ? "inactive" : "active";
+      const newActive = newStatus === "active";
 
-        // Success Toast
-        toast.success(res.message || "Attorney deleted successfully");
+      const formData = new FormData();
+      formData.append("status", newStatus);
+      formData.append("isActive", newActive);
 
-        // Refresh List
-        fetchAttorneys();
-      } catch (err) {
-        // Error Toast
-        toast.error(err || "Failed to delete attorney");
-      }
+      // Sending only status and isActive ensures the backend doesn't crash on system fields
+      await authService.updateAttorney(attorney.id, formData);
+      toast.success(`Attorney is now ${newStatus}`);
+      fetchData();
+    } catch (err) {
+      console.error("Status Toggle Error:", err.response?.data || err.message);
+      toast.error("Failed to update status");
     }
   };
 
-  // Filter Logic
+  // 2. FIXED handleUpdateSubmit: Cleans the data before sending
+  const handleUpdateSubmit = async () => {
+    try {
+      const formData = new FormData();
+
+      // List of fields that are allowed to be updated (Excludes system fields like resetOtp)
+      const updatableFields = [
+        "firstName",
+        "lastName",
+        "email",
+        "status",
+        "dob",
+        "language",
+        "categoryId",
+        "experience",
+        "phoneCell",
+        "phoneHome",
+        "phoneOffice",
+        "country",
+        "state",
+        "city",
+        "zipCode",
+        "street",
+        "aptBlock",
+        "education",
+        "admission",
+        "servicesOffered",
+        "barCouncilIndiaNo",
+        "barCouncilStateNo",
+        "familyLawPractice",
+        "familyDetails",
+        "linkedin",
+        "twitter",
+        "facebook",
+        "gmail",
+        "aboutus",
+      ];
+
+      updatableFields.forEach((key) => {
+        if (editData[key] !== null && editData[key] !== undefined) {
+          // Prevent sending empty strings for IDs
+          if ((key === "categoryId" || key === "city") && editData[key] === "")
+            return;
+
+          formData.append(key, editData[key]);
+        }
+      });
+
+      // Files: Append only if a new file was actually selected
+      Object.keys(uploadFiles).forEach((key) => {
+        if (uploadFiles[key] instanceof File) {
+          formData.append(key, uploadFiles[key]);
+        }
+      });
+
+      await authService.updateAttorney(editData.id, formData);
+      toast.success("Attorney updated successfully");
+      toggleModal();
+      fetchData();
+    } catch (err) {
+      console.error("Update Submit Error:", err.response?.data || err.message);
+      toast.error("Update failed");
+    }
+  };
+
+  const openUpdateModal = (attorney) => {
+    const langValue = Array.isArray(attorney.language)
+      ? attorney.language[0]?.name
+      : attorney.language;
+
+    setEditData({ ...attorney, language: langValue });
+    toggleModal();
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    setUploadFiles((prev) => ({ ...prev, [name]: files[0] }));
+  };
+
+  const downloadFile = async (path) => {
+    if (!path || path === "null") return toast.error("File not available");
+
+    try {
+      const fileUrl = authService.getImgUrl(path);
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+
+      const fileName = path.split("/").pop();
+      link.setAttribute("download", fileName);
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      window.open(authService.getImgUrl(path), "_blank");
+    }
+  };
+
   const filteredData = attorneys.filter((u) =>
     `${u.firstName} ${u.lastName} ${u.email}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase()),
   );
 
-  // Pagination Logic
   const currentItems = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
 
   return (
-    <Container
-      fluid
-      className="p-3 p-md-4 min-vh-100"
-      style={{ backgroundColor: "#f9f9f9" }}>
+    <Container fluid className="p-4 bg-white min-vh-100">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="fw-bold">Attorney Management</h4>
-        <Badge color="warning" className="px-3 py-2 text-dark">
-          Total: {filteredData.length}
-        </Badge>
-      </div>
-
-      <Card className="border-0 shadow-sm rounded-4">
-        <CardBody className="p-0">
-          <div className="p-3 border-bottom">
-            <Input
-              placeholder="Search by name or email..."
-              className="rounded-pill bg-light border-0 px-4"
-              style={{ maxWidth: "350px" }}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1); // Reset to first page on search
-              }}
-            />
-          </div>
-
-          <div className="table-responsive">
-            <Table
-              hover
-              className="align-middle mb-0"
-              style={{ fontSize: "13px" }}>
-              <thead style={{ backgroundColor: "#fdf8ef" }}>
-                <tr>
-                  <th className="px-4 py-3">SR.</th>
-                  <th className="py-3">NAME</th>
-                  <th className="py-3">EMAIL</th>
-                  <th className="py-3 text-center">STATUS</th>
-                  <th className="py-3 text-end px-4">ACTION</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentItems.length > 0 ? (
-                  currentItems.map((u, index) => (
-                    <tr key={u.id || index}>
-                      <td className="px-4">
-                        {(currentPage - 1) * itemsPerPage + index + 1}
-                      </td>
-                      <td className="fw-bold text-dark">
-                        {u.firstName} {u.lastName}
-                      </td>
-                      <td className="text-muted">{u.email}</td>
-                      <td className="text-center">
-                        <Badge
-                          pill
-                          color={u.isActive ? "success" : "secondary"}
-                          className="px-2">
-                          {u.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </td>
-                      <td className="text-end px-4">
-                        <Button
-                          size="sm"
-                          outline
-                          color="danger"
-                          className="rounded-pill px-3"
-                          onClick={() => handleDelete(u.id)}>
-                          <i className="bi bi-trash me-1"></i> Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="text-center py-5 text-muted">
-                      No attorneys found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>
-          </div>
-        </CardBody>
-      </Card>
-
-      <div className="mt-4 d-flex justify-content-center">
-        <PaginationComponent
-          totalItems={filteredData.length}
-          itemsPerPage={itemsPerPage}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
+        <h5 className="fw-bold text-secondary">ATTORNEY LIST</h5>
+        <Input
+          placeholder="Search..."
+          className="bg-light border-0"
+          style={{ maxWidth: "300px" }}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
+
+      <Table hover responsive className="align-middle border-top">
+        <thead>
+          <tr className="text-secondary small">
+            <th>#</th>
+            <th>IMAGE</th>
+            <th>NAME</th>
+            <th>EMAIL</th>
+            <th>PHONE_NO</th>
+            <th>SERVICES</th>
+            <th>EXPERIENCE</th>
+            <th className="text-center">STATUS</th> {/* Added Header */}
+            <th className="text-end">ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentItems.map((u, i) => (
+            <tr key={u.id}>
+              <td>{(currentPage - 1) * itemsPerPage + i + 1}</td>
+              <td>
+                <img
+                  src={
+                    u.profileImage
+                      ? authService.getImgUrl(u.profileImage)
+                      : "/assets/images/placeholder.png"
+                  }
+                  className="rounded"
+                  width="45"
+                  height="40"
+                  style={{ objectFit: "cover" }}
+                  alt="img"
+                />
+              </td>
+              <td className="text-secondary">
+                {u.firstName} {u.lastName}
+              </td>
+              <td className="text-primary small">{u.email}</td>
+              <td className="text-muted small">{u.phoneCell || "test"}</td>
+              <td className="text-secondary small">
+                {u.servicesOffered || "General Law"}
+              </td>
+              <td className="text-secondary">{u.experience}</td>
+              {/* Added Status Column with Click Event */}
+              <td className="text-center">
+                <Badge
+                  color={u.status === "active" ? "success" : "danger"}
+                  pill
+                  style={{ cursor: "pointer" }}
+                  onClick={() => toggleStatus(u)}>
+                  {u.status === "active" ? "Active" : "Inactive"}
+                </Badge>
+              </td>
+              <td className="text-end">
+                <Button
+                  outline
+                  color="warning"
+                  className="rounded-circle me-2 p-1"
+                  style={{ width: "32px", height: "32px" }}
+                  onClick={() => openUpdateModal(u)}>
+                  <i className="bi bi-pencil-fill small"></i>
+                </Button>
+                <Button
+                  outline
+                  color="danger"
+                  className="rounded-circle p-1"
+                  style={{ width: "32px", height: "32px" }}
+                  onClick={() =>
+                    authService.deleteAttorney(u.id).then(() => fetchData())
+                  }>
+                  <i className="bi bi-x-lg small"></i>
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+
+      <PaginationComponent
+        totalItems={filteredData.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />
+
+      <Modal isOpen={modal} toggle={toggleModal} size="xl">
+        <ModalHeader toggle={toggleModal} className="fw-bold">
+          Update Attorney Profile
+        </ModalHeader>
+        <ModalBody className="p-4">
+          <Row className="g-3">
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">First Name</Label>
+                <Input
+                  name="firstName"
+                  value={editData.firstName || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Last Name</Label>
+                <Input
+                  name="lastName"
+                  value={editData.lastName || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Email</Label>
+                <Input
+                  name="email"
+                  value={editData.email || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Status</Label>
+                <Input
+                  type="select"
+                  name="status"
+                  value={editData.status || ""}
+                  onChange={handleInputChange}>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </Input>
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">DOB</Label>
+                <Input
+                  type="date"
+                  name="dob"
+                  value={editData.dob ? editData.dob.split("T")[0] : ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Language</Label>
+                <Input
+                  name="language"
+                  value={editData.language || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Category</Label>
+                <Input
+                  type="select"
+                  name="categoryId"
+                  value={editData.categoryId || ""}
+                  onChange={handleInputChange}>
+                  <option value="">Select Category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.categoryName}
+                    </option>
+                  ))}
+                </Input>
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Experience (Yrs)</Label>
+                <Input
+                  name="experience"
+                  value={editData.experience || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <FormGroup>
+                <Label className="small fw-bold">Phone (Cell)</Label>
+                <Input
+                  name="phoneCell"
+                  value={editData.phoneCell || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <FormGroup>
+                <Label className="small fw-bold">Phone (Home)</Label>
+                <Input
+                  name="phoneHome"
+                  value={editData.phoneHome || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <FormGroup>
+                <Label className="small fw-bold">Phone (Office)</Label>
+                <Input
+                  name="phoneOffice"
+                  value={editData.phoneOffice || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Country</Label>
+                <Input
+                  type="select"
+                  name="country"
+                  value={editData.country || ""}
+                  onChange={handleInputChange}>
+                  <option value="">Select Country</option>
+                  {countries.map((c) => (
+                    <option key={c.id} value={c.countryName}>
+                      {c.countryName}
+                    </option>
+                  ))}
+                </Input>
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">State</Label>
+                <Input
+                  name="state"
+                  value={editData.state || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">City</Label>
+                <Input
+                  type="select"
+                  name="city"
+                  value={editData.city || ""}
+                  onChange={handleInputChange}>
+                  <option value="">Select City</option>
+                  {cities.map((ct) => (
+                    <option key={ct.id} value={ct.id}>
+                      {ct.cityName}
+                    </option>
+                  ))}
+                </Input>
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Zip Code</Label>
+                <Input
+                  name="zipCode"
+                  value={editData.zipCode || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={6}>
+              <FormGroup>
+                <Label className="small fw-bold">Street</Label>
+                <Input
+                  name="street"
+                  value={editData.street || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Apt/Block</Label>
+                <Input
+                  name="aptBlock"
+                  value={editData.aptBlock || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}></Col>
+            <Col md={4}>
+              <FormGroup>
+                <Label className="small fw-bold">Education</Label>
+                <Input
+                  name="education"
+                  value={editData.education || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <FormGroup>
+                <Label className="small fw-bold">Admission</Label>
+                <Input
+                  name="admission"
+                  value={editData.admission || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <FormGroup>
+                <Label className="small fw-bold">Services Offered</Label>
+                <Input
+                  name="servicesOffered"
+                  value={editData.servicesOffered || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={6}>
+              <FormGroup>
+                <Label className="small fw-bold">Bar Council India No</Label>
+                <Input
+                  name="barCouncilIndiaNo"
+                  value={editData.barCouncilIndiaNo || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={6}>
+              <FormGroup>
+                <Label className="small fw-bold">Bar Council State No</Label>
+                <Input
+                  name="barCouncilStateNo"
+                  value={editData.barCouncilStateNo || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <FormGroup>
+                <Label className="small fw-bold">Family Law Practice?</Label>
+                <Input
+                  type="select"
+                  name="familyLawPractice"
+                  value={editData.familyLawPractice?.toString() || "false"}
+                  onChange={handleInputChange}>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </Input>
+              </FormGroup>
+            </Col>
+            <Col md={8}>
+              <FormGroup>
+                <Label className="small fw-bold">Family Details</Label>
+                <Input
+                  name="familyDetails"
+                  value={editData.familyDetails || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">LinkedIn</Label>
+                <Input
+                  name="linkedin"
+                  value={editData.linkedin || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Twitter</Label>
+                <Input
+                  name="twitter"
+                  value={editData.twitter || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Facebook</Label>
+                <Input
+                  name="facebook"
+                  value={editData.facebook || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Gmail (Social)</Label>
+                <Input
+                  name="gmail"
+                  value={editData.gmail || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={12}>
+              <FormGroup>
+                <Label className="small fw-bold">About Us (Bio)</Label>
+                <Input
+                  type="textarea"
+                  name="aboutus"
+                  rows="3"
+                  value={editData.aboutus || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={12} className="mt-4 pt-3 border-top">
+              <h6 className="fw-bold">Media & Documents</h6>
+            </Col>
+            <Col md={4}>
+              <FormGroup className="p-2 border rounded">
+                <Label className="small fw-bold">Profile Image</Label>
+                <Input
+                  type="file"
+                  name="profileImage"
+                  className="form-control-sm"
+                  onChange={handleFileChange}
+                />
+              </FormGroup>
+            </Col>
+            {[
+              "kycIdentity",
+              "kycAddress",
+              "resume",
+              "barCouncilIndiaId",
+              "barCouncilStateId",
+            ].map((doc) => (
+              <Col md={4} key={doc}>
+                <div className="p-3 border rounded bg-light">
+                  <Label className="small fw-bold text-uppercase">
+                    {doc.replace(/([A-Z])/g, " $1")}
+                  </Label>
+                  <Button
+                    size="sm"
+                    color="dark"
+                    className="d-block w-100 mb-2"
+                    onClick={() => downloadFile(editData[doc])}>
+                    Download
+                  </Button>
+                  <Input
+                    type="file"
+                    name={doc}
+                    className="form-control-sm"
+                    onChange={handleFileChange}
+                  />
+                </div>
+              </Col>
+            ))}
+          </Row>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" outline onClick={toggleModal}>
+            Cancel
+          </Button>
+          <Button
+            color="warning"
+            className="px-5 fw-bold"
+            onClick={handleUpdateSubmit}>
+            Save Changes
+          </Button>
+        </ModalFooter>
+      </Modal>
     </Container>
   );
-};
+};;;
+
 export default Attorney;

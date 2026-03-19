@@ -93,7 +93,7 @@ export default function AttorneyDashboard() {
             <div className="border rounded-4 p-4 h-100">
               <h6 className="fw-bold text-navy mb-4">Clients</h6>
               <div className="d-flex align-items-center mb-3">
-                <img src="/assets/images/attorney2.png" width="40" className="rounded-circle me-3" alt="client" />
+                <img src="" width="40" className="rounded-circle me-3" alt="client" />
                 <div className="progress w-100" style={{ height: '8px' }}>
                   <div className="progress-bar" style={{ width: '70%', backgroundColor: theme.navy }}></div>
                 </div>
