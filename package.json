@@ -31,6 +31,7 @@
     "react-toastify": "^11.0.5",
     "reactstrap": "^9.2.3",
     "slick-carousel": "^1.8.1",
+    "socket.io-client": "^4.8.3",
     "swiper": "^8.2.4",
     "wowjs": "^1.1.3"
   },

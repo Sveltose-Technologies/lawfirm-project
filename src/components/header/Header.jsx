@@ -322,7 +322,6 @@ function Header() {
           </div>
         </nav>
       </header>
-      <div className="header-spacer" style={{ height: "75px" }}></div>
     </>
   );
 }

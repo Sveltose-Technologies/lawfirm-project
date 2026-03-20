@@ -18,7 +18,7 @@ import {
 } from "reactstrap";
 import { toast } from "react-toastify";
 import * as authService from "../../services/authService";
-import PaginationComponent from "../../context/Pagination";
+import PaginationComponent from '../../context/Pagination'
 
 const Attorney = () => {
   const [attorneys, setAttorneys] = useState([]);
@@ -76,25 +76,23 @@ const Attorney = () => {
     fetchData();
   }, [fetchData]);
 
+const toggleStatus = async (attorney) => {
+  try {
+    const newStatus = attorney.status === "active" ? "dactive" : "active";
 
-  const toggleStatus = async (attorney) => {
-    try {
-      const newStatus = attorney.status === "active" ? "inactive" : "active";
-      const newActive = newStatus === "active";
+    const formData = new FormData();
+    formData.append("status", newStatus);
 
-      const formData = new FormData();
-      formData.append("status", newStatus);
-      formData.append("isActive", newActive);
+  formData.append("isActive", newStatus === "active" ? "1" : "0");
 
-      // Sending only status and isActive ensures the backend doesn't crash on system fields
-      await authService.updateAttorney(attorney.id, formData);
-      toast.success(`Attorney is now ${newStatus}`);
-      fetchData();
-    } catch (err) {
-      console.error("Status Toggle Error:", err.response?.data || err.message);
-      toast.error("Failed to update status");
-    }
-  };
+    await authService.updateAttorney(attorney.id, formData);
+    toast.success(`Attorney is now ${newStatus}`);
+    fetchData();
+  } catch (err) {
+    console.error("Status Toggle Error:", err);
+    toast.error("Failed to update status");
+  }
+};
 
  
   const handleUpdateSubmit = async () => {
@@ -133,16 +131,28 @@ const Attorney = () => {
         "aboutus",
       ];
 
-      updatableFields.forEach((key) => {
-        if (editData[key] !== null && editData[key] !== undefined) {
-      
-          if ((key === "categoryId" || key === "city") && editData[key] === "")
-            return;
+    updatableFields.forEach((key) => {
+      const value = editData[key];
 
-          formData.append(key, editData[key]);
-        }
-      });
+      // 1. Skip null or undefined
+      if (value === null || value === undefined) return;
 
+      // 2. Fix Boolean conversion for FormData
+      if (typeof value === "boolean") {
+        formData.append(key, value ? "1" : "0"); // Send as 1/0
+        return;
+      }
+
+      // 3. Don't send empty strings for IDs (it crashes backends)
+      if (
+        (key === "categoryId" || key === "city" || key === "locationId") &&
+        value === ""
+      ) {
+        return;
+      }
+
+      formData.append(key, value);
+    });
      
       Object.keys(uploadFiles).forEach((key) => {
         if (uploadFiles[key] instanceof File) {
@@ -275,7 +285,7 @@ const Attorney = () => {
                   pill
                   style={{ cursor: "pointer" }}
                   onClick={() => toggleStatus(u)}>
-                  {u.status === "active" ? "Active" : "Inactive"}
+                  {u.status === "active" ? "Active" : "dactive"}
                 </Badge>
               </td>
               <td className="text-end">
@@ -355,7 +365,7 @@ const Attorney = () => {
                   value={editData.status || ""}
                   onChange={handleInputChange}>
                   <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="dactive">Dactive</option>
                 </Input>
               </FormGroup>
             </Col>

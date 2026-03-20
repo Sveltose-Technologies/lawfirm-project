@@ -26,7 +26,11 @@ const navigation = [
   { header: "CASE MANAGEMENT" },
 
   { title: "Our Cases", href: "/our-cases", icon: "bi bi-briefcase" },
-  { title: "Case Category", href: "/case-category", icon: "bi bi-grid" },
+  {
+    title: "Case Category",
+    href: "/admin-panel/case-category",
+    icon: "bi bi-grid",
+  },
   { title: "Case Type", href: "/case-type", icon: "bi bi-tags" },
 
   {
@@ -79,7 +83,11 @@ const navigation = [
   { title: "Newsletter", href: "/newsletter", icon: "bi bi-envelope-paper" },
   { title: "Testimonial", href: "/testimonial", icon: "bi bi-chat-quote" },
   { title: "Contact Leads", href: "/contact", icon: "bi bi-person-lines-fill" },
-  { title: "Messages", href: "/message", icon: "bi bi-chat-left-dots" },
+  {
+    title: "Messages",
+    href: "/admin-panel/messages",
+    icon: "bi bi-chat-left-dots",
+  },
   { header: "SETTINGS" },
   {
     title: "General Settings",
@@ -94,7 +102,11 @@ const navigation = [
     icon: "bi bi-file-earmark-code",
 
     children: [
-      { title: "Home", href: "/admin-panel/home", icon: "bi bi-question-circle" },
+      {
+        title: "Home",
+        href: "/admin-panel/home",
+        icon: "bi bi-question-circle",
+      },
 
       {
         title: "About Us",

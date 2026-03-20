@@ -1,7 +1,493 @@
+// import API from "./api";
+
+// export const IMG_URL = "https://nodejs.nrislawfirm.com";
+// // ================= HELPER FUNCTIONS =================
+
+// export const getAdminId = () => {
+//   if (typeof window !== "undefined") {
+//     const userData = localStorage.getItem("user");
+//     if (userData) {
+//       try {
+//         const user = JSON.parse(userData);
+//         return user.id || null;
+//       } catch (error) {
+//         console.error("Error parsing user data from localStorage", error);
+//         return null;
+//       }
+//     }
+//   }
+//   return null;
+// };
+
+// export const getImgUrl = (path) => {
+//   if (!path || path === "null" || path === "undefined") {
+//     return "";
+//   }
+
+//   let cleanPath = path.toString().trim().replace(/\\/g, "/");
+
+//   if (/^(http|https|data:image)/.test(cleanPath)) {
+//     return cleanPath;
+//   }
+
+//   while (cleanPath.startsWith("/")) {
+//     cleanPath = cleanPath.substring(1);
+//   }
+
+//   const folders = ["uploads/", "public/", "assets/", "images/", "static/"];
+//   const hasFolder = folders.some((folder) => cleanPath.startsWith(folder));
+
+//   if (hasFolder) {
+//     return `${IMG_URL}/${cleanPath}`;
+//   }
+
+//   return `${IMG_URL}/uploads/${cleanPath}`;
+// };
+// /**
+//  * Get Current User from storage
+//  */
+// export const getCurrentUser = () => {
+//   if (typeof window !== "undefined") {
+//     const user = localStorage.getItem("user");
+//     return user ? JSON.parse(user) : null;
+//   }
+//   return null;
+// };
+
+// /**
+//  * Logout and clear storage
+//  */
+// export const logout = () => {
+//   console.log("🚀 Logging out and clearing storage...");
+//   if (typeof window !== "undefined") {
+//     localStorage.clear();
+//     window.location.href = "/login-signup";
+//   }
+// };
+
+// // ================= CLIENT AUTHENTICATION =================
+
+// export const signupUser = async (payload) => {
+//   try {
+//     console.log("🚀 Calling Client Signup API:", payload);
+//     const response = await API.post("/client/signup", payload);
+//     console.log("✅ Client Signup Success:", response.data);
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "❌ Client Signup Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error.response?.data || error;
+//   }
+// };
+// export const verifyUserOtp = async (payload) => {
+//   try {
+//     console.log("🚀 Calling Client verify OTP:", payload);
+//     const response = await API.post("/client/verify-otp", payload);
+//     console.log("✅ Client Verify Success:", response.data);
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "❌ Client Verify Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error.response?.data || error;
+//   }
+// };
+// export const loginUser = async (payload) => {
+//   try {
+//     console.log("🚀 Calling Client Login API:", payload);
+//     const response = await API.post("/client/login", payload);
+//     console.log("✅ Client Login Success:", response.data);
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "❌ Client Login Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error.response?.data || error;
+//   }
+// };
+
+// export const forgotPassword = async (payload) => {
+//   try {
+//     console.log("🚀 Calling Client Forgot Password API:", payload);
+//     const response = await API.post("/client/forgot-password", payload);
+//     console.log("✅ Client Forgot Password Response:", response.data);
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "❌ Client Forgot Password Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error.response?.data || error;
+//   }
+// };
+
+// export const verifyOtp = async (payload) => {
+//   try {
+//     console.log("🚀 Calling Client Verify OTP API:", payload);
+//     const response = await API.post("/client/verify-otp", payload);
+//     console.log("✅ Client Verify OTP Response:", response.data);
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "❌ Client Verify OTP Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error.response?.data || error;
+//   }
+// };
+
+// export const resetPassword = async (payload) => {
+//   try {
+//     console.log("🚀 Calling Client Reset Password API:", payload);
+//     const response = await API.put("/client/reset-password", payload);
+//     console.log("✅ Client Reset Password Response:", response.data);
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "❌ Client Reset Password Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error.response?.data || error;
+//   }
+// };
+// // ================= CLIENT PROFILE API =================
+
+// /**
+//  * Get single client profile data
+//  */
+// export const getClientProfile = async (userId) => {
+//   try {
+//     console.log("🚀 Fetching Client Profile for ID:", userId);
+//     const response = await API.get(`/client/get-one/${userId}`);
+//     return response.data;
+//   } catch (error) {
+//     console.error("❌ Get Profile Error:", error.response?.data || error.message);
+//     throw error;
+//   }
+// };
+
+// /**
+//  * Update client profile
+//  */
+// export const updateClientProfile = async (userId, payload) => {
+//   try {
+//     console.log("🚀 Updating Client Profile for ID:", userId, payload);
+    
+ 
+//     const response = await API.put(`/client/update/${userId}`, payload);
+    
+
+    
+//     return response.data;
+//   } catch (error) {
+//     console.error("❌ Update Profile Error:", error.response?.data || error.message);
+//     throw error;
+//   }
+// };
+// // ================= ATTORNEY AUTHENTICATION =================
+
+// export const signupAttorney = async (payload) => {
+//   try {
+//     console.log("🚀 Calling Attorney Signup API:", payload);
+//     const response = await API.post("/attorney/signup", payload);
+//     console.log("✅ Attorney Signup Success:", response.data);
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "❌ Attorney Signup Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error.response?.data || error;
+//   }
+// };
+// export const verifyAttorneyOtp = async (payload) => {
+//   try {
+//     console.log("🚀 Calling Attorney Verify-otp:", payload);
+//     const response = await API.post("/attorney/verify-otp", payload);
+//     console.log("✅ Attorney verify Success:", response.data);
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "❌ Attorney verify Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error.response?.data || error;
+//   }
+// };
+// export const loginAttorney = async (payload) => {
+//   try {
+//     console.log("🚀 Calling Attorney Login API:", payload);
+//     const response = await API.post("/attorney/login", payload);
+//     console.log("✅ Attorney Login Success:", response.data);
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "❌ Attorney Login Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error.response?.data || error;
+//   }
+// };
+
+// export const getUserProfile = async (userId) => {
+//   try {
+//     console.log("🚀 Calling Attorney Login API:", userId);
+//     const response = await API.get(`/attorney/get-by-id/${userId}`);
+//     console.log("✅ Attorney userInfo:", response.data);
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "❌ Attorney user Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error.response?.data || error;
+//   }
+// };
+// // ================= ATTORNEY AUTH (Add these) =================
+
+// export const forgotPasswordAttorney = async (payload) => {
+//   const response = await API.post("/attorney/forgot-password", payload);
+//   return response.data;
+// };
+
+// export const verifyOtpAttorney = async (payload) => {
+//   const response = await API.post("/attorney/verify-otp", payload);
+//   return response.data;
+// };
+
+// export const resetPasswordAttorney = async (payload) => {
+//   const response = await API.put("/attorney/reset-password", payload);
+//   return response.data;
+// };
+
+// // ================= ADMIN AUTH & OTP =================
+// // authService.js
+
+// export const adminLogin = async (email, password) => {
+//   try {
+//     // IMPORTANT: Clear old Attorney data before logging in as Admin
+//     localStorage.clear();
+
+//     const response = await API.post("/admin/login", { email, password });
+
+//     // Check where your backend sends the token
+//     const token =
+//       response.data?.token ||
+//       response.data?.admin?.token ||
+//       response.data?.data?.token;
+//     const adminData =
+//       response.data?.admin || response.data?.user || response.data?.data;
+
+//     if (token) {
+//       localStorage.setItem("token", token); // Save standalone token
+//       localStorage.setItem("user", JSON.stringify(adminData));
+//       localStorage.setItem("isLoggedIn", "true");
+//       localStorage.setItem("role", "admin");
+
+//       return { success: true, data: response.data };
+//     }
+//     return { success: false, message: "Token not received from server" };
+//   } catch (error) {
+//     console.error("Login Error:", error.response?.data);
+//     return {
+//       success: false,
+//       message: error.response?.data?.message || "Login failed",
+//     };
+//   }
+// };
+// // export const adminLogin = async (email, password) => {
+// //   try {
+// //     const response = await API.post("/admin/login", { email, password });
+
+// //     // Check karein ki data kahan hai (response.data ya response.data.admin)
+// //     const adminData = response.data?.admin || response.data;
+// //     const token = response.data?.token || adminData?.token;
+
+// //     if (token) {
+// //       localStorage.setItem("token", token);
+
+// //       // Pura adminData save karein jisme ID ho
+// //       localStorage.setItem("user", JSON.stringify(adminData));
+
+// //       localStorage.setItem("isLoggedIn", "true");
+// //       return { success: true, data: response.data };
+// //     }
+// //     return { success: false, message: "Login failed" };
+// //   } catch (error) {
+// //     return { success: false, message: "Error during login" };
+// //   }
+// // };
+
+// export const adminForgotPassword = async (email) => {
+//   try {
+//     console.log("🚀 Calling Admin Forgot Password API:", email);
+//     const response = await API.post("/admin/forgot-password", { email });
+//     console.log("✅ Admin OTP Sent:", response.data);
+//     return {
+//       success: true,
+//       message: response.data?.message || "OTP sent to email",
+//     };
+//   } catch (error) {
+//     console.error("❌ Admin Forgot Password Error:", error);
+//     return {
+//       success: false,
+//       message: error.response?.data?.message || "Failed to send OTP",
+//     };
+//   }
+// };
+
+// export const adminVerifyOtp = async (email, otp) => {
+//   try {
+//     console.log("🚀 Calling Admin Verify OTP API:", { email, otp });
+//     const response = await API.post("/admin/verify-otp", { email, otp });
+//     console.log("✅ Admin OTP Verified:", response.data);
+//     return { success: true, message: response.data?.message || "OTP verified" };
+//   } catch (error) {
+//     console.error("❌ Admin Verify OTP Error:", error);
+//     return {
+//       success: false,
+//       message: error.response?.data?.message || "Invalid OTP",
+//     };
+//   }
+// };
+
+// export const adminResetPassword = async (
+//   email,
+//   newPassword,
+//   confirmPassword,
+// ) => {
+//   try {
+//     console.log("🚀 Calling Admin Reset Password API:", email);
+//     const response = await API.post("/admin/reset-password", {
+//       email,
+//       newPassword,
+//       confirmPassword,
+//     });
+//     console.log("✅ Admin Password Reset Success:", response.data);
+//     return {
+//       success: true,
+//       message: response.data?.message || "Password reset successful",
+//     };
+//   } catch (error) {
+//     console.error("❌ Admin Reset Password Error:", error);
+//     return {
+//       success: false,
+//       message: error.response?.data?.message || "Failed to reset password",
+//     };
+//   }
+// };
+
+// // ================= ADMIN PROFILE =================
+
+// // ================= ADMIN PROFILE SERVICES =================
+
+// export const getAdminProfile = async () => {
+//   try {
+//     console.log("🚀 Fetching Admin Profile...");
+//     const response = await API.get("/admin/getall-adminprofile");
+
+//     // Normalize data structure
+//     const data = response.data?.data || response.data;
+//     const adminData = Array.isArray(data) ? data[0] : data;
+
+//     console.log("✅ Admin Profile Data Fetched:", adminData);
+//     return adminData;
+//   } catch (error) {
+//     console.error(
+//       "❌ Get Admin Profile Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error;
+//   }
+// };
+
+// export const updateAdminProfile = async (id, formData) => {
+//   try {
+//     if (!id) throw new Error("Admin ID is missing");
+
+//     console.log(`📤 Updating Admin Profile for ID: ${id}...`);
+
+//     const response = await API.put(`/admin/update/${id}`, formData, {
+//       headers: { "Content-Type": "multipart/form-data" },
+//     });
+
+//     if (response.data) {
+//       console.log("✅ Update Success:", response.data.message);
+
+//       // OPTIONAL: Update local storage 'user' object so UI stays in sync
+//       const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+//       const updatedUser = { ...currentUser, ...response.data.data };
+//       localStorage.setItem("user", JSON.stringify(updatedUser));
+//     }
+
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "❌ Update Admin Error:",
+//       error.response?.data || error.message,
+//     );
+//     throw error;
+//   }
+// };
+
+// // export const getAdminProfile = async () => {
+// //   try {
+// //     console.log("🚀 Fetching Admin Profile...");
+// //     const response = await API.get("/admin/getall-adminprofile");
+// //     const data = response.data?.data || response.data;
+// //     const adminData = Array.isArray(data) ? data[0] : data;
+// //     console.log("✅ Admin Profile Data:", adminData);
+// //     return adminData;
+// //   } catch (error) {
+// //     console.error("❌ Get Admin Profile Error:", error);
+// //     throw error;
+// //   }
+// // };
+
+// // export const updateAdminProfile = async (id, formData) => {
+// //   try {
+// //     // Ensure ID is present
+// //     if (!id) throw new Error("Admin ID is missing");
+
+// //     const response = await API.put(`/admin/update/${id}`, formData, {
+// //       headers: { "Content-Type": "multipart/form-data" },
+// //     });
+
+// //     // Agar API direct data bhejti hai to use return karein
+// //     return response.data;
+// //   } catch (error) {
+// //     console.error(
+// //       "❌ Update Admin Error:",
+// //       error.response?.data || error.message,
+// //     );
+// //     throw error;
+// //   }
+// // };
+
+
+
+
 import API from "./api";
 
-export const IMG_URL = "https://nodejs.bluestor.net";
+export const IMG_URL = "https://nodejs.nrislawfirm.com";
+
 // ================= HELPER FUNCTIONS =================
+
+const formatError = (error) => {
+  // If the interceptor already returned a string, use it.
+  // Otherwise, look for the backend's message.
+  if (typeof error === "string") return error;
+  return (
+    error.response?.data?.message ||
+    error.response?.data ||
+    error.message ||
+    "An unexpected error occurred"
+  );
+};
 
 export const getAdminId = () => {
   if (typeof window !== "undefined") {
@@ -9,9 +495,9 @@ export const getAdminId = () => {
     if (userData) {
       try {
         const user = JSON.parse(userData);
-        return user.id || null;
+        return user.id || user._id || null;
       } catch (error) {
-        console.error("Error parsing user data from localStorage", error);
+        console.error("Error parsing user data", error);
         return null;
       }
     }
@@ -19,36 +505,18 @@ export const getAdminId = () => {
   return null;
 };
 
-
 export const getImgUrl = (path) => {
-  if (!path || path === "null" || path === "undefined") {
-    return ""; 
-  }
-
+  if (!path || path === "null" || path === "undefined") return "";
   let cleanPath = path.toString().trim().replace(/\\/g, "/");
-
- 
-  if (/^(http|https|data:image)/.test(cleanPath)) {
-    return cleanPath;
-  }
-
-  while (cleanPath.startsWith("/")) {
-    cleanPath = cleanPath.substring(1);
-  }
-
-
+  if (/^(http|https|data:image)/.test(cleanPath)) return cleanPath;
+  while (cleanPath.startsWith("/")) cleanPath = cleanPath.substring(1);
   const folders = ["uploads/", "public/", "assets/", "images/", "static/"];
   const hasFolder = folders.some((folder) => cleanPath.startsWith(folder));
-
-  if (hasFolder) {
-    return `${IMG_URL}/${cleanPath}`;
-  }
-
-  return `${IMG_URL}/uploads/${cleanPath}`;
+  return hasFolder
+    ? `${IMG_URL}/${cleanPath}`
+    : `${IMG_URL}/uploads/${cleanPath}`;
 };
-/**
- * Get Current User from storage
- */
+
 export const getCurrentUser = () => {
   if (typeof window !== "undefined") {
     const user = localStorage.getItem("user");
@@ -57,11 +525,7 @@ export const getCurrentUser = () => {
   return null;
 };
 
-/**
- * Logout and clear storage
- */
 export const logout = () => {
-  console.log("🚀 Logging out and clearing storage...");
   if (typeof window !== "undefined") {
     localStorage.clear();
     window.location.href = "/login-signup";
@@ -72,89 +536,79 @@ export const logout = () => {
 
 export const signupUser = async (payload) => {
   try {
-    console.log("🚀 Calling Client Signup API:", payload);
     const response = await API.post("/client/signup", payload);
-    console.log("✅ Client Signup Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Client Signup Error:",
-      error.response?.data || error.message,
-    );
-    throw error.response?.data || error;
+    throw formatError(error);
   }
 };
+
 export const verifyUserOtp = async (payload) => {
   try {
-    console.log("🚀 Calling Client verify OTP:", payload);
     const response = await API.post("/client/verify-otp", payload);
-    console.log("✅ Client Verify Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Client Verify Error:",
-      error.response?.data || error.message,
-    );
-    throw error.response?.data || error;
+    throw formatError(error);
   }
 };
+
 export const loginUser = async (payload) => {
   try {
-    console.log("🚀 Calling Client Login API:", payload);
-    const response = await API.post("/client/login", payload);
-    console.log("✅ Client Login Success:", response.data);
+    const cleanPayload = {
+      email: payload.email?.trim(),
+      password: payload.password?.trim(),
+    };
+    const response = await API.post("/client/login", cleanPayload);
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Client Login Error:",
-      error.response?.data || error.message,
-    );
-    throw error.response?.data || error;
+    throw formatError(error);
   }
 };
 
 export const forgotPassword = async (payload) => {
   try {
-    console.log("🚀 Calling Client Forgot Password API:", payload);
     const response = await API.post("/client/forgot-password", payload);
-    console.log("✅ Client Forgot Password Response:", response.data);
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Client Forgot Password Error:",
-      error.response?.data || error.message,
-    );
-    throw error.response?.data || error;
+    throw formatError(error);
   }
 };
 
 export const verifyOtp = async (payload) => {
   try {
-    console.log("🚀 Calling Client Verify OTP API:", payload);
     const response = await API.post("/client/verify-otp", payload);
-    console.log("✅ Client Verify OTP Response:", response.data);
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Client Verify OTP Error:",
-      error.response?.data || error.message,
-    );
-    throw error.response?.data || error;
+    throw formatError(error);
   }
 };
 
 export const resetPassword = async (payload) => {
   try {
-    console.log("🚀 Calling Client Reset Password API:", payload);
     const response = await API.put("/client/reset-password", payload);
-    console.log("✅ Client Reset Password Response:", response.data);
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Client Reset Password Error:",
-      error.response?.data || error.message,
-    );
-    throw error.response?.data || error;
+    throw formatError(error);
+  }
+};
+
+// ================= CLIENT PROFILE API =================
+
+export const getClientProfile = async (userId) => {
+  try {
+    const response = await API.get(`/client/get-one/${userId}`);
+    return response.data;
+  } catch (error) {
+    throw formatError(error);
+  }
+};
+
+export const updateClientProfile = async (userId, payload) => {
+  try {
+    const response = await API.put(`/client/update/${userId}`, payload);
+    return response.data;
+  } catch (error) {
+    throw formatError(error);
   }
 };
 
@@ -162,62 +616,43 @@ export const resetPassword = async (payload) => {
 
 export const signupAttorney = async (payload) => {
   try {
-    console.log("🚀 Calling Attorney Signup API:", payload);
     const response = await API.post("/attorney/signup", payload);
-    console.log("✅ Attorney Signup Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Attorney Signup Error:",
-      error.response?.data || error.message,
-    );
-    throw error.response?.data || error;
+    throw formatError(error);
   }
 };
+
 export const verifyAttorneyOtp = async (payload) => {
   try {
-    console.log("🚀 Calling Attorney Verify-otp:", payload);
     const response = await API.post("/attorney/verify-otp", payload);
-    console.log("✅ Attorney verify Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Attorney verify Error:",
-      error.response?.data || error.message,
-    );
-    throw error.response?.data || error;
+    throw formatError(error);
   }
 };
+
 export const loginAttorney = async (payload) => {
   try {
-    console.log("🚀 Calling Attorney Login API:", payload);
-    const response = await API.post("/attorney/login", payload);
-    console.log("✅ Attorney Login Success:", response.data);
+    const cleanPayload = {
+      email: payload.email?.trim(),
+      password: payload.password?.trim(),
+    };
+    const response = await API.post("/attorney/login", cleanPayload);
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Attorney Login Error:",
-      error.response?.data || error.message,
-    );
-    throw error.response?.data || error;
+    throw formatError(error);
   }
 };
 
 export const getUserProfile = async (userId) => {
   try {
-    console.log("🚀 Calling Attorney Login API:", userId);
     const response = await API.get(`/attorney/get-by-id/${userId}`);
-    console.log("✅ Attorney userInfo:", response.data);
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Attorney user Error:",
-      error.response?.data || error.message,
-    );
-    throw error.response?.data || error;
+    throw formatError(error);
   }
 };
-// ================= ATTORNEY AUTH (Add these) =================
 
 export const forgotPasswordAttorney = async (payload) => {
   const response = await API.post("/attorney/forgot-password", payload);
@@ -235,16 +670,15 @@ export const resetPasswordAttorney = async (payload) => {
 };
 
 // ================= ADMIN AUTH & OTP =================
-// authService.js
 
 export const adminLogin = async (email, password) => {
   try {
-    // IMPORTANT: Clear old Attorney data before logging in as Admin
     localStorage.clear();
+    const response = await API.post("/admin/login", {
+      email: email.trim(),
+      password: password.trim(),
+    });
 
-    const response = await API.post("/admin/login", { email, password });
-
-    // Check where your backend sends the token
     const token =
       response.data?.token ||
       response.data?.admin?.token ||
@@ -253,75 +687,35 @@ export const adminLogin = async (email, password) => {
       response.data?.admin || response.data?.user || response.data?.data;
 
     if (token) {
-      localStorage.setItem("token", token); // Save standalone token
+      localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(adminData));
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("role", "admin");
-
       return { success: true, data: response.data };
     }
     return { success: false, message: "Token not received from server" };
   } catch (error) {
-    console.error("Login Error:", error.response?.data);
-    return {
-      success: false,
-      message: error.response?.data?.message || "Login failed",
-    };
+    return { success: false, message: formatError(error) };
   }
 };
-// export const adminLogin = async (email, password) => {
-//   try {
-//     const response = await API.post("/admin/login", { email, password });
-
-//     // Check karein ki data kahan hai (response.data ya response.data.admin)
-//     const adminData = response.data?.admin || response.data;
-//     const token = response.data?.token || adminData?.token;
-
-//     if (token) {
-//       localStorage.setItem("token", token);
-
-//       // Pura adminData save karein jisme ID ho
-//       localStorage.setItem("user", JSON.stringify(adminData));
-
-//       localStorage.setItem("isLoggedIn", "true");
-//       return { success: true, data: response.data };
-//     }
-//     return { success: false, message: "Login failed" };
-//   } catch (error) {
-//     return { success: false, message: "Error during login" };
-//   }
-// };
 
 export const adminForgotPassword = async (email) => {
   try {
-    console.log("🚀 Calling Admin Forgot Password API:", email);
-    const response = await API.post("/admin/forgot-password", { email });
-    console.log("✅ Admin OTP Sent:", response.data);
-    return {
-      success: true,
-      message: response.data?.message || "OTP sent to email",
-    };
+    const response = await API.post("/admin/forgot-password", {
+      email: email.trim(),
+    });
+    return { success: true, message: response.data?.message || "OTP sent" };
   } catch (error) {
-    console.error("❌ Admin Forgot Password Error:", error);
-    return {
-      success: false,
-      message: error.response?.data?.message || "Failed to send OTP",
-    };
+    return { success: false, message: formatError(error) };
   }
 };
 
 export const adminVerifyOtp = async (email, otp) => {
   try {
-    console.log("🚀 Calling Admin Verify OTP API:", { email, otp });
     const response = await API.post("/admin/verify-otp", { email, otp });
-    console.log("✅ Admin OTP Verified:", response.data);
     return { success: true, message: response.data?.message || "OTP verified" };
   } catch (error) {
-    console.error("❌ Admin Verify OTP Error:", error);
-    return {
-      success: false,
-      message: error.response?.data?.message || "Invalid OTP",
-    };
+    return { success: false, message: formatError(error) };
   }
 };
 
@@ -331,113 +725,44 @@ export const adminResetPassword = async (
   confirmPassword,
 ) => {
   try {
-    console.log("🚀 Calling Admin Reset Password API:", email);
     const response = await API.post("/admin/reset-password", {
       email,
       newPassword,
       confirmPassword,
     });
-    console.log("✅ Admin Password Reset Success:", response.data);
-    return {
-      success: true,
-      message: response.data?.message || "Password reset successful",
-    };
+    return { success: true, message: response.data?.message || "Success" };
   } catch (error) {
-    console.error("❌ Admin Reset Password Error:", error);
-    return {
-      success: false,
-      message: error.response?.data?.message || "Failed to reset password",
-    };
+    return { success: false, message: formatError(error) };
   }
 };
 
 // ================= ADMIN PROFILE =================
 
-// ================= ADMIN PROFILE SERVICES =================
-
 export const getAdminProfile = async () => {
   try {
-    console.log("🚀 Fetching Admin Profile...");
     const response = await API.get("/admin/getall-adminprofile");
-
-    // Normalize data structure
     const data = response.data?.data || response.data;
-    const adminData = Array.isArray(data) ? data[0] : data;
-
-    console.log("✅ Admin Profile Data Fetched:", adminData);
-    return adminData;
+    return Array.isArray(data) ? data[0] : data;
   } catch (error) {
-    console.error(
-      "❌ Get Admin Profile Error:",
-      error.response?.data || error.message,
-    );
-    throw error;
+    throw formatError(error);
   }
 };
 
 export const updateAdminProfile = async (id, formData) => {
   try {
-    if (!id) throw new Error("Admin ID is missing");
-
-    console.log(`📤 Updating Admin Profile for ID: ${id}...`);
-
     const response = await API.put(`/admin/update/${id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-
-    if (response.data) {
-      console.log("✅ Update Success:", response.data.message);
-
-      // OPTIONAL: Update local storage 'user' object so UI stays in sync
-      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const updatedUser = { ...currentUser, ...response.data.data };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-    }
-
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    localStorage.setItem(
+      "user",
+      JSON.stringify({ ...currentUser, ...response.data.data }),
+    );
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Update Admin Error:",
-      error.response?.data || error.message,
-    );
-    throw error;
+    throw formatError(error);
   }
 };
-
-// export const getAdminProfile = async () => {
-//   try {
-//     console.log("🚀 Fetching Admin Profile...");
-//     const response = await API.get("/admin/getall-adminprofile");
-//     const data = response.data?.data || response.data;
-//     const adminData = Array.isArray(data) ? data[0] : data;
-//     console.log("✅ Admin Profile Data:", adminData);
-//     return adminData;
-//   } catch (error) {
-//     console.error("❌ Get Admin Profile Error:", error);
-//     throw error;
-//   }
-// };
-
-// export const updateAdminProfile = async (id, formData) => {
-//   try {
-//     // Ensure ID is present
-//     if (!id) throw new Error("Admin ID is missing");
-
-//     const response = await API.put(`/admin/update/${id}`, formData, {
-//       headers: { "Content-Type": "multipart/form-data" },
-//     });
-
-//     // Agar API direct data bhejti hai to use return karein
-//     return response.data;
-//   } catch (error) {
-//     console.error(
-//       "❌ Update Admin Error:",
-//       error.response?.data || error.message,
-//     );
-//     throw error;
-//   }
-// };
-
 // ================= CAPABILITY CATEGORY APIs =================
 
 export const getAllCapabilityCategories = async () => {
@@ -1920,3 +2245,64 @@ export const getAttorneyLocation = async () => {
     throw error;
   }
 };
+
+// ================= CASE CATEGORIES API =================
+
+export const createCaseCategory = async (payload) => {
+  try {
+    const adminId = getAdminId(); // Using the helper from your file
+    const data = { ...payload, adminId };
+    console.log("🚀 Creating Case Category:", data);
+    const response = await API.post("/casecategories/create", data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "❌ Create Category Error:",
+      error.response?.data || error.message,
+    );
+    throw error;
+  }
+};
+
+export const getAllCaseCategories = async () => {
+  try {
+    console.log("🚀 Fetching All Case Categories");
+    const response = await API.get("/casecategories/get-all");
+    return response.data;
+  } catch (error) {
+    console.error(
+      "❌ Get Categories Error:",
+      error.response?.data || error.message,
+    );
+    throw error;
+  }
+};
+
+export const updateCaseCategory = async (id, payload) => {
+  try {
+    console.log(`🚀 Updating Case Category ID: ${id}`, payload);
+    const response = await API.put(`/casecategories/update/${id}`, payload);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "❌ Update Category Error:",
+      error.response?.data || error.message,
+    );
+    throw error;
+  }
+};
+
+export const deleteCaseCategory = async (id) => {
+  try {
+    console.log(`🚀 Deleting Case Category ID: ${id}`);
+    const response = await API.delete(`/casecategories/delete/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "❌ Delete Category Error:",
+      error.response?.data || error.message,
+    );
+    throw error;
+  }
+};
+

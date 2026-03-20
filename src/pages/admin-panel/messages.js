@@ -211,3 +211,258 @@ const Messages = () => {
 };
 
 export default Messages;
+
+
+
+
+
+// "use client";
+// import React, { useState, useEffect } from "react";
+// import { Row, Col, Input, ListGroup, ListGroupItem, Button } from "reactstrap";
+// import axios from "axios";
+// import { socket } from "../../socket/socket";
+// import { toast } from "react-toastify";
+
+// const Messages = () => {
+//   const [selectedChat, setSelectedChat] = useState(null);
+//   const [typedMessage, setTypedMessage] = useState("");
+//   const [userId, setuserId] = useState(""); // This will be dynamic
+//   const [conversationId, setConversationId] = useState(null);
+//   const [conversations, setConversations] = useState({});
+
+//   // 🔥 CHANGED: Use real IDs from your database to avoid 500 error
+//   // Your admin ID is 1. Attorney Davil's ID is 14.
+//   const chatList = [
+//     {
+//       id: 14, // Real Numeric ID from your DB
+//       name: "Attorney Davil",
+//       role: "Attorney",
+//       img: "https://i.pravatar.cc/150?u=14",
+//     },
+//     {
+//       id: 2, // Ensure this user exists in your DB
+//       name: "System Admin",
+//       role: "Admin",
+//       img: "https://i.pravatar.cc/150?u=1",
+//     },
+//   ];
+
+//   // 🔥 INIT CHAT & SOCKET
+//   useEffect(() => {
+//     const userData = localStorage.getItem("user");
+//     if (userData) {
+//       const user = JSON.parse(userData);
+//       const currentId = user.id; // Dynamic ID from localStorage
+//       setuserId(currentId);
+
+//       // Connect and register the user
+//       socket.connect();
+//       socket.emit("register", currentId);
+//       console.log("🚀 Socket Registered for User:", currentId);
+//     }
+
+//     socket.on("receiveMessage", (msg) => {
+//       console.log("📩 Message Received:", msg);
+//       setConversations((prev) => ({
+//         ...prev,
+//         [msg.conversationId]: [...(prev[msg.conversationId] || []), msg],
+//       }));
+//     });
+
+//     return () => {
+//       socket.off("receiveMessage");
+//       socket.disconnect(); // Cleanup connection
+//     };
+//   }, []);
+
+//   // 🔥 WHEN CHAT SELECTED (ENDPOINT ADDED)
+//   useEffect(() => {
+//     if (!selectedChat || !userId) return;
+
+//    const initChat = async () => {
+//      // 1. Validation: Don't call API if IDs are missing
+//      if (!userId || !selectedChat?.id) {
+//        console.error("❌ Missing IDs:", {
+//          userId,
+//          selectedChatId: selectedChat?.id,
+//        });
+//        return;
+//      }
+
+//      try {
+//        console.log(
+//          "🚀 Attempting to create conversation between:",
+//          userId,
+//          "and",
+//          selectedChat.id,
+//        );
+
+//        const res = await axios.post(
+//          "https://nodejs.nrislawfirm.com/conversation/create",
+//          {
+//            user1: userId, // Send as is (the backend usually handles string/number)
+//            user2: selectedChat.id,
+//          },
+//        );
+
+//        // 2. Safely get the ID (handle both MongoDB _id and SQL id)
+//        const convoId = res.data?._id || res.data?.id;
+
+//        if (!convoId) {
+//          throw new Error("Server did not return a Conversation ID");
+//        }
+
+//        setConversationId(convoId);
+//        socket.emit("joinConversation", convoId);
+
+//        // 3. Fetch messages
+//        const msgRes = await axios.get(
+//          `https://nodejs.nrislawfirm.com/messages/${convoId}`,
+//        );
+
+//        setConversations((prev) => ({
+//          ...prev,
+//          [convoId]: Array.isArray(msgRes.data) ? msgRes.data : [],
+//        }));
+//      } catch (err) {
+//        // 4. Detailed Error Logging
+//        console.error(
+//          "❌ API Crash Details:",
+//          err.response?.data || err.message,
+//        );
+
+//        if (err.response?.status === 500) {
+//          toast.error(
+//            "Server Error (500): Check if User IDs exist in the Database",
+//          );
+//        } else {
+//          toast.error("Failed to start chat.");
+//        }
+//      }
+//    };
+
+//     initChat();
+//   }, [selectedChat, userId]);
+
+//   // 🔥 SEND MESSAGE
+//   const handleSendMessage = (e) => {
+//     e.preventDefault();
+//     if (!typedMessage.trim() || !conversationId) return;
+
+//     const payload = {
+//       conversationId,
+//       senderId: userId,
+//       receiverId: selectedChat.id,
+//       message: typedMessage,
+//     };
+
+//     // Emit via socket
+//     socket.emit("sendMessage", payload);
+
+//     // Optimistically update local UI
+//     setConversations((prev) => ({
+//       ...prev,
+//       [conversationId]: [...(prev[conversationId] || []), payload],
+//     }));
+
+//     setTypedMessage("");
+//   };
+
+//   return (
+//     // ✅ UI UNCHANGED AS REQUESTED
+//     <div
+//       className="p-4 animate-fade-in"
+//       style={{ height: "calc(100vh - 120px)" }}>
+//       <Row className="h-100 bg-white shadow-sm rounded-4 overflow-hidden g-0 border">
+//         <Col
+//           md="4"
+//           lg="3"
+//           className="border-end d-flex flex-column bg-light-subtle">
+//           <div className="p-3 bg-white border-bottom">
+//             <h5 className="fw-bold mb-3">Inbox</h5>
+//             <Input
+//               type="text"
+//               placeholder="Search chats..."
+//               style={{
+//                 borderRadius: 20,
+//                 borderColor: "#0f0e0e",
+//                 borderWidth: 0.1,
+//               }}
+//               className="rounded-pill border-1 ps-3"
+//             />
+//           </div>
+
+//           <ListGroup flush className="overflow-auto flex-grow-1">
+//             {chatList.map((chat) => (
+//               <ListGroupItem
+//                 key={chat.id}
+//                 action
+//                 active={selectedChat?.id === chat.id}
+//                 onClick={() => setSelectedChat(chat)}
+//                 className="p-3 d-flex align-items-center gap-3"
+//                 style={{
+//                   backgroundColor:
+//                     selectedChat?.id === chat.id ? "#5c81a0" : "#ffffff",
+//                 }}>
+//                 <img
+//                   src={chat.img}
+//                   className="rounded-circle"
+//                   width="45"
+//                   height="45"
+//                   alt="user"
+//                 />
+//                 <div
+//                   className={selectedChat?.id === chat.id ? "text-white" : ""}>
+//                   {chat.name}
+//                 </div>
+//               </ListGroupItem>
+//             ))}
+//           </ListGroup>
+//         </Col>
+
+//         <Col md="8" lg="9" className="d-flex flex-column bg-white">
+//           {selectedChat ? (
+//             <>
+//               <div className="flex-grow-1 p-4 overflow-auto bg-light">
+//                 {(conversations[conversationId] || []).map((msg, i) => (
+//                   <div
+//                     key={i}
+//                     className={`mb-3 d-flex ${msg.senderId === userId ? "justify-content-end" : "justify-content-start"}`}>
+//                     <div
+//                       className={`p-2 px-3 rounded-3 shadow-sm ${msg.senderId === userId ? "bg-primary text-white" : "bg-white border"}`}>
+//                       <small
+//                         className="d-block opacity-75"
+//                         style={{ fontSize: "10px" }}>
+//                         {msg.senderId === userId ? "You" : selectedChat.name}
+//                       </small>
+//                       {msg.message}
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+
+//               <div className="p-3 border-top">
+//                 <form onSubmit={handleSendMessage} className="d-flex gap-2">
+//                   <Input
+//                     placeholder="Write a message..."
+//                     value={typedMessage}
+//                     onChange={(e) => setTypedMessage(e.target.value)}
+//                   />
+//                   <Button type="submit" color="primary">
+//                     Send
+//                   </Button>
+//                 </form>
+//               </div>
+//             </>
+//           ) : (
+//             <div className="h-100 d-flex align-items-center justify-content-center text-muted">
+//               Select a contact to start chatting
+//             </div>
+//           )}
+//         </Col>
+//       </Row>
+//     </div>
+//   );
+// };
+
+// export default Messages;

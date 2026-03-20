@@ -5,7 +5,7 @@ import { errorHandler } from "./errorHandler";
 import { responseHandler } from "./responseHandler";
 
 const API = axios.create({
-  baseURL: "https://nodejs.bluestor.net",
+  baseURL: "https://nodejs.nrislawfirm.com",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -41,8 +41,8 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => responseHandler(response),
   (error) => {
-    const errorMessage = errorHandler(error);
-    return Promise.reject(errorMessage);
+    const errorMessage = errorHandler(error); // This returns a string?
+    return Promise.reject(errorMessage); // You are rejecting a STRING
   },
 );
 

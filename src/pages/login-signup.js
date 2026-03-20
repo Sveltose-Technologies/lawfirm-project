@@ -128,6 +128,7 @@ export default function UnifiedAuthPage() {
     const token = res.token || userData?.token;
     let role = detectedRole || res.role || userData?.role || "client";
     const finalRole = role.toLowerCase();
+    console.log("token", token);
 
     if (token) localStorage.setItem("token", token);
     localStorage.setItem("role", finalRole);
