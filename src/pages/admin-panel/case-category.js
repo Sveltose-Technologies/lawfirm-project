@@ -20,7 +20,6 @@ import dynamic from "next/dynamic";
 import * as authService from "../../services/authService";
 import PaginationComponent from "../../context/Pagination";
 
-// Dynamically import ReactQuill to avoid SSR issues in Next.js
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
 

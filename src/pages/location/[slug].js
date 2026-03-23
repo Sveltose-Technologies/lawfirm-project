@@ -36,54 +36,28 @@ function LocationDetail() {
       ]);
 
       const allCities = cityRes?.data || cityRes || [];
-
-      const foundCity = allCities.find((c) => {
-        const currentCitySlug = createItemSlug(c.cityName);
-        return currentCitySlug === slug;
-      });
+      const foundCity = allCities.find((c) => createItemSlug(c.cityName) === slug);
 
       if (foundCity) {
         setCity(foundCity);
         const currentCityId = Number(foundCity.id);
 
-        console.log("Found City Data:", foundCity);
-
         const parseToNumbers = (data) => {
           if (!data) return [];
-          let arr = [];
           try {
-            if (Array.isArray(data)) {
-              arr = data;
-            } else if (typeof data === "string") {
-              const parsed = JSON.parse(data);
-              arr = Array.isArray(parsed) ? parsed : [parsed];
-            }
-          } catch (e) {
-            arr = [data];
-          }
-          return arr.map((id) => Number(id));
+            const arr = typeof data === "string" ? JSON.parse(data) : data;
+            return Array.isArray(arr) ? arr.map(Number) : [Number(arr)];
+          } catch (e) { return [Number(data)]; }
         };
 
         const rawCms = cmsRes?.data || cmsRes;
-        const cmsArray = Array.isArray(rawCms) ? rawCms : [];
-        const foundCMS = cmsArray.find(
-          (c) => Number(c.cityId) === currentCityId,
+        const foundCMS = (Array.isArray(rawCms) ? rawCms : []).find(
+          (c) => Number(c.cityId) === currentCityId
         );
         setCms(foundCMS);
 
-        const allNews = newsRes?.data || newsRes || [];
-        const locationNews = allNews.filter((n) => {
-          const ids = parseToNumbers(n.cityId);
-          return ids.includes(currentCityId);
-        });
-        setFilteredNews(locationNews);
-
-        const allEvents = eventRes?.data || eventRes || [];
-        const locationEvents = allEvents.filter((e) => {
-          const ids = parseToNumbers(e.cityIds || e.cityId);
-          return ids.includes(currentCityId);
-        });
-        setFilteredEvents(locationEvents);
+        setFilteredNews((newsRes?.data || newsRes || []).filter(n => parseToNumbers(n.cityId).includes(currentCityId)));
+        setFilteredEvents((eventRes?.data || eventRes || []).filter(e => parseToNumbers(e.cityIds || e.cityId).includes(currentCityId)));
       }
     } catch (error) {
       console.error("Error fetching details:", error);
@@ -92,58 +66,70 @@ function LocationDetail() {
     }
   }, [slug]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  if (loading || !city)
-    return <div className="text-center py-5">Loading Office Details...</div>;
+  if (loading || !city) return <div className="text-center py-5">Loading Office Details...</div>;
 
   const displayData = activeTab === "News" ? filteredNews : filteredEvents;
 
   return (
     <>
       <Head>
-        <title>{city.cityName} Office | Core Law</title>
+        <title>{city.cityName} Office | Global Reach</title>
       </Head>
 
-      {/* --- HERO SECTION --- */}
+      {/* --- IMPROVED HERO SECTION --- */}
       <div
         className="hero-section"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${authService.getImgUrl(city.image)})`,
+          backgroundImage: `url(${authService.getImgUrl(city.image)})`,
         }}>
-        <div className="container text-center text-white">
-          <h1 className="hero-title">{city.cityName}</h1>
-          <div className="hero-address-block">
-            <p className="mb-1 fw-bold">Core Law, P.A.</p>
-            <p className="mb-1" style={{ whiteSpace: "pre-line" }}>
-              {city.address}
-            </p>
-            <p className="mb-1">Phone: {city.phoneNo}</p>
-            {city.faxNo && <p className="mb-0">Fax: {city.faxNo}</p>}
-          </div>
-          <div className="mt-4">
-            <Link href="/attorneys">
-              <a className="btn-gt-outline text-decoration-none">
-                MEET THE TEAM &gt;
-              </a>
-            </Link>
+        <div className="hero-overlay"></div>
+        <div className="container hero-content">
+          <div className="row justify-content-center">
+            <div className="col-lg-8 text-center">
+              <h1 className="hero-title text-white">{city.cityName}</h1>
+              <div className="hero-info text-white">
+                <p className="lead fw-bold mb-2">Our Office Location</p>
+                <p
+                  className="address-text mb-3"
+                  style={{ whiteSpace: "pre-line" }}>
+                  {city.address}
+                </p>
+                <div className="d-flex justify-content-center gap-4 mb-4 contact-links">
+                  <span>
+                    <strong>Phone:</strong> {city.phoneNo}
+                  </span>
+                  {city.faxNo && (
+                    <span>
+                      <strong>Fax:</strong> {city.faxNo}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <Link
+                href="/attorneys"
+                className="btn btn-light btn-lg rounded-0 px-5 fw-bold">
+                <a className="btn btn-light btn-lg rounded-0 px-5 fw-bold">
+                  Meet The Team
+                </a>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
       {/* --- CONTENT SECTION --- */}
-      <div className="container py-5">
+      <div className="container py-5 mt-4">
         <div className="row justify-content-center">
-          <div className="col-lg-9">
+          <div className="col-lg-12">
             <div
-              className="cms-rich-text"
+              className="cms-rich-text p-4 p-md-5 "
               dangerouslySetInnerHTML={{
                 __html:
                   city?.content ||
                   cms?.content ||
-                  `<p class="text-muted">Explore our professional legal services in ${city.cityName}.</p>`,
+                  `<p>Professional legal services in ${city.cityName}.</p>`,
               }}
             />
           </div>
@@ -151,10 +137,9 @@ function LocationDetail() {
       </div>
 
       {/* --- NEWS & EVENTS SECTION --- */}
-      <div className="dark-news-section">
+      <div className="dark-news-section mt-5">
         <div className="container">
-          <h2 className="section-title-white mb-5">News & Events</h2>
-
+          <h2 className="section-title-white mb-5">Location News & Events</h2>
           <div className="news-tabs mb-4 d-flex gap-4 border-bottom border-secondary">
             {["News", "Events"].map((tab) => (
               <span
@@ -169,7 +154,9 @@ function LocationDetail() {
           <div className="news-list">
             {displayData.length > 0 ? (
               displayData.map((item, idx) => (
-                <div key={idx} className="news-row py-4 ">
+                <div
+                  key={idx}
+                  className="news-row py-4 border-bottom border-secondary-subtle">
                   <div className="row align-items-center">
                     <div className="col-md-9">
                       <p className="news-date-type mb-1">
@@ -180,26 +167,21 @@ function LocationDetail() {
                           day: "numeric",
                           year: "numeric",
                         })}
-                        <span className="ms-3 text-info">
+                        <span className="ms-3 text-gold">
                           | {activeTab.toUpperCase()}
                         </span>
                       </p>
                       <Link
-                        href={`/${activeTab.toLowerCase()}/${createItemSlug(item.title)}`}>
-                        <a className="text-decoration-none">
-                          <h4 className="news-heading">{item.title}</h4>
-                        </a>
+                        href={`/${activeTab.toLowerCase()}/${createItemSlug(item.title)}`}
+                        className="text-decoration-none">
+                        <h4 className="news-heading">{item.title}</h4>
                       </Link>
-                    </div>
-                    <div className="col-md-3 text-md-end text-secondary small">
-                      <hr className="d-inline-block w-25 me-2 border-secondary" />
-                      {activeTab === "News" ? "1 min read" : "View Details"}
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-muted py-5 text-center">
+              <p className="text-muted py-5">
                 No {activeTab.toLowerCase()} available for this location.
               </p>
             )}
@@ -209,87 +191,95 @@ function LocationDetail() {
 
       <style jsx>{`
         .hero-section {
-          height: 450px;
+          min-height: 500px; /* Better than fixed height */
           background-size: cover;
           background-position: center;
+          position: relative;
           display: flex;
           align-items: center;
-          justify-content: center;
+          padding: 80px 0;
+        }
+        .hero-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.7),
+            rgba(0, 0, 0, 0.5)
+          );
+          z-index: 1;
+        }
+        .hero-content {
           position: relative;
+          z-index: 2;
         }
         .hero-title {
-          font-size: 4rem;
+          font-size: clamp(2.5rem, 5vw, 4.5rem);
           font-family: "Georgia", serif;
           margin-bottom: 20px;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
-        .hero-address-block {
-          font-size: 1.1rem;
+        .address-text {
+          font-size: 1.2rem;
+          opacity: 0.95;
           line-height: 1.6;
         }
-        .btn-gt-outline {
-          background: transparent;
-          border: 1px solid white;
-          color: white;
-          padding: 10px 25px;
-          font-weight: bold;
-          font-size: 0.8rem;
-          cursor: pointer;
-          transition: 0.3s;
+        .contact-links span {
+          font-size: 1rem;
         }
-        .btn-gt-outline:hover {
-          background: white;
-          color: black;
+        .btn-gold-outline {
+          display: inline-block;
+          border: 2px solid #de9f57;
+          color: #fff;
+          padding: 12px 30px;
+          font-weight: bold;
+          font-size: 0.9rem;
+          transition: 0.3s;
+          margin-top: 20px;
+        }
+        .btn-gold-outline:hover {
+          background: #de9f57;
+          color: #000;
         }
         .cms-rich-text {
           font-size: 1.15rem;
           line-height: 1.9;
           color: #333;
+          border-radius: 8px;
         }
         .dark-news-section {
-          background: #1a1a1a;
+          background: #111;
           padding: 80px 0;
           color: white;
         }
-        .section-title-white {
-          font-family: "Georgia", serif;
-          font-size: 2.5rem;
+        .text-gold {
+          color: #de9f57 !important;
         }
         .tab-item {
           cursor: pointer;
           color: #888;
           font-weight: bold;
-          font-size: 0.9rem;
           padding-bottom: 10px;
-          position: relative;
+          transition: 0.3s;
         }
         .tab-item.active {
-          color: #00bcd4;
-        }
-        .tab-item.active::after {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 100%;
-          height: 3px;
-          background: #00bcd4;
-        }
-        .news-date-type {
-          font-size: 0.75rem;
-          font-weight: bold;
-          letter-spacing: 1px;
-          opacity: 0.8;
+          color: #de9f57;
+          border-bottom: 3px solid #de9f57;
         }
         .news-heading {
-          color: #de9f57;
+          color: #fff;
           font-family: "Georgia", serif;
-          font-size: 1.6rem;
           margin: 10px 0;
           transition: 0.2s;
         }
         .news-heading:hover {
-          color: #fff;
-          text-decoration: underline;
+          color: #de9f57;
+        }
+        @media (max-width: 768px) {
+          .contact-links {
+            flex-direction: column;
+            gap: 5px !important;
+          }
         }
       `}</style>
     </>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-// getImgUrl ko import karein
+
 import { getAllPromoters, getImgUrl } from "../../services/authService";
 
 export default function PromoterDetail() {

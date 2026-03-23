@@ -227,7 +227,6 @@ const handleAction = async (e) => {
       fd.append("typeId", bannerForm.typeId);
       fd.append("textEditor", bannerForm.textEditor || "");
 
-      // Image tabhi bhejein agar select ki gayi ho (Update ke case mein optional ho sakti hai)
       if (bannerForm.image) {
         fd.append("image", bannerForm.image);
       }

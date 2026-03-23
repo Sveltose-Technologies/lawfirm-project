@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-// Import helper function
+
 import { getAllAwards, getImgUrl } from "../../services/authService";
 
 export default function AwardDetail() {

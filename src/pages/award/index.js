@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
-// getImgUrl ko import karein
+
 import { getAllAwards, getImgUrl } from "../../services/authService";
 
 function AwardsAccolades() {

@@ -28,7 +28,7 @@ function Capabilities() {
 
   useEffect(() => {
     const fetchAllData = async () => {
-      // 1. Categories Fetch Karein (Ye API sahi chal rahi hai)
+    
       try {
         const catResponse = await getAllCapabilityCategories();
         console.log("Categories Response:", catResponse);
@@ -39,11 +39,10 @@ function Capabilities() {
         console.error("Error fetching Categories:", error);
       }
 
-      // 2. SubCategories Fetch Karein (Ye API bhi sahi chal rahi hai)
       try {
         const subCatResponse = await getAllCapabilitySubCategories();
         if (subCatResponse?.success) {
-          // Console log ke mutabik check karein ki data kahan hai
+       
           const subs = subCatResponse.data?.data || subCatResponse.data || [];
           setSubCategories(subs);
         }
@@ -51,7 +50,6 @@ function Capabilities() {
         console.error("Error fetching Subcategories:", error);
       }
 
-      // 3. Banner/Capability Header Fetch Karein (Isme 404 aa raha hai)
       try {
         const capHeaderResponse = await getAllCapabilities();
         if (capHeaderResponse?.status || capHeaderResponse?.success) {
@@ -59,7 +57,6 @@ function Capabilities() {
           setCapabilityHeader(Array.isArray(data) ? data[0] : data);
         }
       } catch (error) {
-        // Is error ko sirf warn karein taaki pura page na ruke
         console.warn("Banner/Header API failed (404), using default banner.");
       }
     };

@@ -156,11 +156,13 @@ function Locations() {
                               className="text-decoration-none">
                               <div className="card h-100 shadow-sm border-0 location-card bg-light-creme">
                                 <div className="img-container">
-                                  <img
-                                    src={`${city.image}`}
-                                    className="card-img-top"
-                                    alt={city.cityName}
-                                  />
+                                  <div className="img-container">
+                                    <img
+                                      src={authService.getImgUrl(city.image)}
+                                      className="card-img-top"
+                                      alt={city.cityName}
+                                    />
+                                  </div>
                                 </div>
                                 <div className="card-body p-4">
                                   <h4

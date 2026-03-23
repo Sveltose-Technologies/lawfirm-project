@@ -15,8 +15,8 @@ export default function SubCategoryDetail() {
   const { slug } = router.query;
 
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
-  const [sameCategorySubs, setSameCategorySubs] = useState([]); // Same category ki baaki areas
-  const [otherCategorySubs, setOtherCategorySubs] = useState([]); // Dusri categories ki areas
+  const [sameCategorySubs, setSameCategorySubs] = useState([]); 
+  const [otherCategorySubs, setOtherCategorySubs] = useState([]); 
   const [newsList, setNewsList] = useState([]);
   const [eventsList, setEventsList] = useState([]);
   const [subCmsData, setSubCmsData] = useState(null);
@@ -68,7 +68,6 @@ export default function SubCategoryDetail() {
               setSubCmsData(matchedCMS || null);
             }
 
-            // 1. Same Category ki dusri sub-categories (Middle section ke liye)
             const sameSubs = allSubs.filter(
               (item) =>
                 Number(item.categoryId) === parentCatId &&
@@ -76,7 +75,6 @@ export default function SubCategoryDetail() {
             );
             setSameCategorySubs(sameSubs);
 
-            // 2. Dusri categories ki sub-categories (Bottom "Related Capabilities" section ke liye)
             const otherSubs = allSubs
               .filter((item) => Number(item.categoryId) !== parentCatId)
               .slice(0, 10); // Limit to 10 items

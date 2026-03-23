@@ -123,7 +123,6 @@ export default function AdminDashboard() {
         </Col>
       </Row>
 
-      {/* Recent Activity or Quick Links can be added here */}
     </div>
   );
 }
