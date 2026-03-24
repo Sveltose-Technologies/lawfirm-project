@@ -5,7 +5,7 @@ import { errorHandler } from "./errorHandler";
 import { responseHandler } from "./responseHandler";
 
 const API = axios.create({
-  baseURL: "https://nodejs.nrislawfirm.com",
+  baseURL: "https://nrislaw.rxchartsquare.com",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",

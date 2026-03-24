@@ -1,26 +1,33 @@
-"use client";
 import React, { useState, useRef, useEffect } from "react";
+import Head from "next/head";
 import ClientLayout from "../../components/layout/ClientLayout";
-import * as authService from "../../services/authService"; // Import Service
-import { toast } from "react-toastify"; // Optional but recommended
+import {
+  getAllLocationCities,
+  getAllLocationCountries,
+} from "../../services/authService";
+import { toast } from "react-toastify";
 
 export default function EditProfile() {
   const navyColor = "#002147";
+  const goldColor = "#de9f57";
   const fileInputRef = useRef(null);
 
+  // 1. All parameters included in state
+  const [cities, setCities] = useState([]);
+  const [countries, setCountries] = useState([]);
   const [profile, setProfile] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    mobile: "",
-    street: "",
-    aptBlock: "",
+    firstName: "admin",
+    lastName: "admin",
+    email: "test@gmail.com",
+    mobile: "9876543210",
+    street: "MG Road",
+    aptBlock: "B-12",
     city: "",
-    state: "",
+    state: "Madhya Pradesh",
     country: "",
-    zipCode: "",
+    zipCode: "452001",
     countryCode: "+91",
-    dob: "",
+    dob: "2001-05-15",
     password: "",
     currentPassword: "",
     termsAccepted: true,
@@ -29,32 +36,13 @@ export default function EditProfile() {
 
   const [loading, setLoading] = useState(false);
 
-  // 🔥 1. Load Profile Data on Mount
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (user?.id) {
-          const data = await authService.getClientProfile(user.id);
-          // Map API data to state (handle potential nulls)
-          setProfile((prev) => ({
-            ...prev,
-            ...data,
-            dob: data.dob ? data.dob.split("T")[0] : "", // Format date for input
-          }));
-        }
-      } catch (err) {
-        console.error("Failed to load profile");
-      }
-    };
-    fetchUserData();
-  }, []);
-
+  // 2. Handle Text Input Changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
+  // 3. Handle Image Upload & Preview
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -70,7 +58,7 @@ export default function EditProfile() {
     }
   };
 
-  // 🔥 2. Use the Service Method here
+  // 4. API Integration
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -79,17 +67,50 @@ export default function EditProfile() {
       const user = JSON.parse(localStorage.getItem("user"));
       const userId = user?.id;
 
-      if (!userId) throw new Error("User session not found");
+      const response = await fetch(
+        `https://nodejs.nrislawfirm.com/client/update/${userId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(profile),
+        },
+      );
 
-      await authService.updateClientProfile(userId, profile);
-
-      alert("Profile updated successfully!");
+      if (response.ok) {
+        alert("Profile updated successfully!");
+      } else {
+        alert("Failed to update profile.");
+      }
     } catch (error) {
-      alert(error.message || "An error occurred during update.");
+      console.error("Error:", error);
+      alert("An error occurred.");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      const userData = localStorage.getItem("user");
+      if (!userData) return;
+      const currentUserId = JSON.parse(userData).id;
+
+      try {
+        const [cityRes, countryRes] = await Promise.all([
+          getAllLocationCities(),
+          getAllLocationCountries(),
+        ]);
+        console.log("cityRes, countryRes", cityRes, countryRes);
+
+        setCities(cityRes?.data || []);
+        setCountries(countryRes?.data || []);
+      } catch (error) {
+        console.error("Load Error:", error);
+        toast.error("Error loading data");
+      }
+    };
+    loadInitialData();
+  }, []);
 
   return (
     <ClientLayout>
@@ -100,11 +121,13 @@ export default function EditProfile() {
             style={{ color: navyColor, fontSize: "20px" }}>
             Edit Profile
           </h4>
-          <p className="text-muted small">Update your personal information</p>
+          <p className="text-muted small">
+            Update your personal information and manage membership
+          </p>
         </div>
 
         <div className="row g-4">
-          <div className="col-12">
+          <div className="col-12 col-lg-12">
             <form
               onSubmit={handleSubmit}
               className="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
@@ -112,12 +135,11 @@ export default function EditProfile() {
                 Personal Information
               </h6>
 
+              {/* Profile Pic Upload Section */}
               <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
                 <div className="position-relative">
                   <img
-                    src={
-                      profile.profileImage || "/assets/images/placeholder.png"
-                    }
+                    src={profile.profileImage}
                     className="rounded-circle border"
                     style={{
                       width: "80px",
@@ -145,7 +167,9 @@ export default function EditProfile() {
                 </div>
                 <div className="ms-4">
                   <p className="mb-1 fw-bold small">Profile Picture</p>
-               
+                  <p className="text-muted x-small mb-0">
+                    JPG, GIF or PNG. Max size 2MB
+                  </p>
                 </div>
               </div>
 
@@ -157,7 +181,8 @@ export default function EditProfile() {
                   <input
                     type="text"
                     name="firstName"
-                    className="form-control"
+                    className="form-control rounded-3 py-2 border-light-gray"
+                    style={{ fontSize: "14px" }}
                     value={profile.firstName}
                     onChange={handleChange}
                   />
@@ -169,7 +194,8 @@ export default function EditProfile() {
                   <input
                     type="text"
                     name="lastName"
-                    className="form-control"
+                    className="form-control rounded-3 py-2 border-light-gray"
+                    style={{ fontSize: "14px" }}
                     value={profile.lastName}
                     onChange={handleChange}
                   />
@@ -181,7 +207,8 @@ export default function EditProfile() {
                   <input
                     type="email"
                     name="email"
-                    className="form-control"
+                    className="form-control rounded-3 py-2 border-light-gray"
+                    style={{ fontSize: "14px" }}
                     value={profile.email}
                     onChange={handleChange}
                   />
@@ -197,12 +224,15 @@ export default function EditProfile() {
                     <input
                       type="text"
                       name="mobile"
-                      className="form-control"
+                      className="form-control rounded-3 py-2 border-light-gray"
+                      style={{ fontSize: "14px" }}
                       value={profile.mobile}
                       onChange={handleChange}
                     />
                   </div>
                 </div>
+
+                {/* Added Missing Address Parameters */}
                 <div className="col-md-8">
                   <label className="form-label small fw-bold text-muted">
                     STREET ADDRESS
@@ -210,7 +240,8 @@ export default function EditProfile() {
                   <input
                     type="text"
                     name="street"
-                    className="form-control"
+                    className="form-control rounded-3 py-2 border-light-gray"
+                    style={{ fontSize: "14px" }}
                     value={profile.street}
                     onChange={handleChange}
                   />
@@ -222,22 +253,39 @@ export default function EditProfile() {
                   <input
                     type="text"
                     name="aptBlock"
-                    className="form-control"
+                    className="form-control rounded-3 py-2 border-light-gray"
+                    style={{ fontSize: "14px" }}
                     value={profile.aptBlock}
                     onChange={handleChange}
                   />
                 </div>
-                <div className="col-md-4">
+                {/* <div className="col-md-4">
                   <label className="form-label small fw-bold text-muted">
                     CITY
                   </label>
                   <input
                     type="text"
                     name="city"
-                    className="form-control"
+                    className="form-control rounded-3 py-2 border-light-gray"
+                    style={{ fontSize: "14px" }}
                     value={profile.city}
                     onChange={handleChange}
                   />
+                </div> */}
+                <div className="col-md-4">
+                  <label className="form-label small fw-bold">City</label>
+                  <select
+                    name="city"
+                    className="form-select"
+                    value={profile.city}
+                    onChange={handleChange}>
+                    <option value="">Select City</option>
+                    {cities.map((ct) => (
+                      <option key={ct.id} value={ct.id}>
+                        {ct.cityName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="col-md-4">
                   <label className="form-label small fw-bold text-muted">
@@ -246,7 +294,8 @@ export default function EditProfile() {
                   <input
                     type="text"
                     name="state"
-                    className="form-control"
+                    className="form-control rounded-3 py-2 border-light-gray"
+                    style={{ fontSize: "14px" }}
                     value={profile.state}
                     onChange={handleChange}
                   />
@@ -258,22 +307,39 @@ export default function EditProfile() {
                   <input
                     type="text"
                     name="zipCode"
-                    className="form-control"
+                    className="form-control rounded-3 py-2 border-light-gray"
+                    style={{ fontSize: "14px" }}
                     value={profile.zipCode}
                     onChange={handleChange}
                   />
                 </div>
-                <div className="col-md-6">
+                {/* <div className="col-md-6">
                   <label className="form-label small fw-bold text-muted">
                     COUNTRY
                   </label>
                   <input
                     type="text"
                     name="country"
-                    className="form-control"
+                    className="form-control rounded-3 py-2 border-light-gray"
+                    style={{ fontSize: "14px" }}
                     value={profile.country}
                     onChange={handleChange}
                   />
+                </div> */}
+                <div className="col-md-4">
+                  <label className="form-label small fw-bold">Country</label>
+                  <select
+                    name="country"
+                    className="form-select"
+                    value={profile.country}
+                    onChange={handleChange}>
+                    <option value="">Select Country</option>
+                    {countries.map((cn) => (
+                      <option key={cn.id} value={cn.countryName}>
+                        {cn.countryName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="col-md-6">
                   <label className="form-label small fw-bold text-muted">
@@ -282,13 +348,15 @@ export default function EditProfile() {
                   <input
                     type="date"
                     name="dob"
-                    className="form-control"
+                    className="form-control rounded-3 py-2 border-light-gray"
+                    style={{ fontSize: "14px" }}
                     value={profile.dob}
                     onChange={handleChange}
                   />
                 </div>
 
                 <hr className="my-4 opacity-50" />
+
                 <h6
                   className="fw-bold mb-2"
                   style={{ color: navyColor, fontSize: "15px" }}>
@@ -302,7 +370,8 @@ export default function EditProfile() {
                     type="password"
                     name="currentPassword"
                     placeholder="••••••••"
-                    className="form-control"
+                    className="form-control rounded-3 py-2 border-light-gray"
+                    style={{ fontSize: "14px" }}
                     value={profile.currentPassword}
                     onChange={handleChange}
                   />
@@ -315,7 +384,8 @@ export default function EditProfile() {
                     type="password"
                     name="password"
                     placeholder="New Password"
-                    className="form-control"
+                    className="form-control rounded-3 py-2 border-light-gray"
+                    style={{ fontSize: "14px" }}
                     value={profile.password}
                     onChange={handleChange}
                   />
@@ -325,8 +395,8 @@ export default function EditProfile() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="btn text-white px-5 py-2 fw-bold"
-                    style={{ backgroundColor: navyColor }}>
+                    className="btn text-white px-4 py-2 rounded-3 fw-bold shadow-sm"
+                    style={{ backgroundColor: navyColor, fontSize: "14px" }}>
                     {loading ? "Saving..." : "Save Changes"}
                   </button>
                 </div>
@@ -334,9 +404,27 @@ export default function EditProfile() {
             </form>
           </div>
 
-          
+         
         </div>
       </div>
+
+      <style jsx>{`
+        .border-light-gray {
+          border-color: #f1f1f1 !important;
+        }
+        .x-small {
+          font-size: 11px;
+        }
+        .form-control:focus {
+          border-color: ${navyColor} !important;
+          box-shadow: none;
+        }
+        .btn:hover {
+          opacity: 0.9;
+          transform: translateY(-1px);
+          transition: 0.2s;
+        }
+      `}</style>
     </ClientLayout>
   );
 }

@@ -76,25 +76,24 @@ const Attorney = () => {
     fetchData();
   }, [fetchData]);
 
-const toggleStatus = async (attorney) => {
-  try {
-    const newStatus = attorney.status === "active" ? "dactive" : "active";
+  const toggleStatus = async (attorney) => {
+    try {
+      const newStatus = attorney.status === "active" ? "dactive" : "active";
 
-    const formData = new FormData();
-    formData.append("status", newStatus);
+      const formData = new FormData();
+      formData.append("status", newStatus);
 
-  formData.append("isActive", newStatus === "active" ? "1" : "0");
+      formData.append("isActive", newStatus === "active" ? "1" : "0");
 
-    await authService.updateAttorney(attorney.id, formData);
-    toast.success(`Attorney is now ${newStatus}`);
-    fetchData();
-  } catch (err) {
-    console.error("Status Toggle Error:", err);
-    toast.error("Failed to update status");
-  }
-};
+      await authService.updateAttorney(attorney.id, formData);
+      toast.success(`Attorney is now ${newStatus}`);
+      fetchData();
+    } catch (err) {
+      console.error("Status Toggle Error:", err);
+      toast.error("Failed to update status");
+    }
+  };
 
- 
   const handleUpdateSubmit = async () => {
     try {
       const formData = new FormData();
@@ -131,29 +130,29 @@ const toggleStatus = async (attorney) => {
         "aboutus",
       ];
 
-    updatableFields.forEach((key) => {
-      const value = editData[key];
+      updatableFields.forEach((key) => {
+        const value = editData[key];
 
-      // 1. Skip null or undefined
-      if (value === null || value === undefined) return;
+        // 1. Skip null or undefined
+        if (value === null || value === undefined) return;
 
-      // 2. Fix Boolean conversion for FormData
-      if (typeof value === "boolean") {
-        formData.append(key, value ? "1" : "0"); // Send as 1/0
-        return;
-      }
+        // 2. Fix Boolean conversion for FormData
+        if (typeof value === "boolean") {
+          formData.append(key, value ? "1" : "0"); // Send as 1/0
+          return;
+        }
 
-      // 3. Don't send empty strings for IDs (it crashes backends)
-      if (
-        (key === "categoryId" || key === "city" || key === "locationId") &&
-        value === ""
-      ) {
-        return;
-      }
+        // 3. Don't send empty strings for IDs (it crashes backends)
+        if (
+          (key === "categoryId" || key === "city" || key === "locationId") &&
+          value === ""
+        ) {
+          return;
+        }
 
-      formData.append(key, value);
-    });
-     
+        formData.append(key, value);
+      });
+
       Object.keys(uploadFiles).forEach((key) => {
         if (uploadFiles[key] instanceof File) {
           formData.append(key, uploadFiles[key]);
@@ -178,12 +177,30 @@ const toggleStatus = async (attorney) => {
     setEditData({ ...attorney, language: langValue });
     toggleModal();
   };
+  const selectedCountryObj = countries.find(
+    (c) => c.countryName === editData.country,
+  );
+
+  const filteredCities = selectedCountryObj
+    ? cities.filter(
+        (city) => Number(city.countryId) === Number(selectedCountryObj.id),
+      )
+    : [];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditData((prev) => ({ ...prev, [name]: value }));
-  };
 
+    if (name === "country") {
+      // When country changes, reset city to avoid invalid data
+      setEditData((prev) => ({
+        ...prev,
+        country: value,
+        city: "",
+      }));
+    } else {
+      setEditData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     setUploadFiles((prev) => ({ ...prev, [name]: files[0] }));
@@ -481,14 +498,21 @@ const toggleStatus = async (attorney) => {
                   type="select"
                   name="city"
                   value={editData.city || ""}
-                  onChange={handleInputChange}>
+                  onChange={handleInputChange}
+                  disabled={!editData.country} // Disable if no country is selected
+                >
                   <option value="">Select City</option>
-                  {cities.map((ct) => (
+                  {filteredCities.map((ct) => (
                     <option key={ct.id} value={ct.id}>
                       {ct.cityName}
                     </option>
                   ))}
                 </Input>
+                {!editData.country && (
+                  <small className="text-muted">
+                    Please select a country first
+                  </small>
+                )}
               </FormGroup>
             </Col>
             <Col md={3}>
@@ -705,6 +729,6 @@ const toggleStatus = async (attorney) => {
       </Modal>
     </Container>
   );
-};;;
+};;
 
 export default Attorney;

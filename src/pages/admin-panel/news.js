@@ -62,8 +62,7 @@ const News = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
-
-  // Helper function to truncate title to 3 words
+f444
   const truncateTitle = (title, limit = 3) => {
     if (!title) return "";
     const words = title.trim().split(/\s+/);
