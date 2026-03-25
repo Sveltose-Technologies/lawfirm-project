@@ -347,7 +347,8 @@ import {
 import * as authService from "../../services/authService";
 import { DropdownMenu, DropdownToggle, UncontrolledDropdown } from "reactstrap";
 import { toast } from "react-toastify";
-
+import { SUPPORTED_LANGUAGES } from "../../i18n";
+import { useTranslation } from "../../hooks/useTranslation";    
 function Header() {
   const [isSticky, setIsSticky] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -359,9 +360,11 @@ function Header() {
 
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
-
+  const { t, i18n } = useTranslation();
   const router = useRouter();
-
+ const changeLanguage = (lng) => {
+   i18n.changeLanguage(lng);
+ };
   // Auto-close menu on route change
   useEffect(() => {
     setIsOpen(false);
@@ -486,7 +489,9 @@ function Header() {
             <ul className="navbar-nav ms-auto align-items-center text-center text-xl-start">
               <li className="nav-item">
                 <Link href="/">
-                  <a className={`nav-link ${isActive("/")}`}>Home</a>
+                  <a className={`nav-link ${isActive("/")}`}>
+                    {t("nav.home")}
+                  </a>
                 </Link>
               </li>
 
@@ -505,28 +510,28 @@ function Header() {
                     e.preventDefault();
                     setMobileDropdownOpen(!mobileDropdownOpen);
                   }}>
-                  About
+                  {t("nav.about")}
                 </a>
                 <ul
                   className={`dropdown-menu dropdown-menu-dark border-0 shadow ${mobileDropdownOpen ? "show" : ""}`}>
                   <li>
                     <Link href="/our-firm">
                       <a className={`dropdown-item ${isActive("/our-firm")}`}>
-                        Our Firm
+                        {t("nav.ourFirm")}
                       </a>
                     </Link>
                   </li>
                   <li>
                     <Link href="/award">
                       <a className={`dropdown-item ${isActive("/award")}`}>
-                        Awards
+                        {t("nav.awards")}
                       </a>
                     </Link>
                   </li>
                   <li>
                     <Link href="/promoters">
                       <a className={`dropdown-item ${isActive("/promoters")}`}>
-                        Promoters
+                        {t("nav.professionals")}
                       </a>
                     </Link>
                   </li>
@@ -536,43 +541,50 @@ function Header() {
               <li className="nav-item">
                 <Link href="/attorneys">
                   <a className={`nav-link ${isActive("/attorneys")}`}>
-                    Professionals
+                    {t("nav.professionals")}
                   </a>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link href="/capability">
                   <a className={`nav-link ${isActive("/capability")}`}>
-                    Capabilities
+                    {t("nav.capabilities")}
                   </a>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link href="/news">
-                  <a className={`nav-link ${isActive("/news")}`}>News</a>
+                  <a className={`nav-link ${isActive("/news")}`}>
+                    {" "}
+                    {t("nav.news")}
+                  </a>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link href="/careers">
-                  <a className={`nav-link ${isActive("/careers")}`}>Careers</a>
+                  <a className={`nav-link ${isActive("/careers")}`}>
+                    {t("nav.careers")}
+                  </a>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link href="/events">
-                  <a className={`nav-link ${isActive("/events")}`}>Events</a>
+                  <a className={`nav-link ${isActive("/events")}`}>
+                    {t("nav.events")}
+                  </a>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link href="/location">
                   <a className={`nav-link ${isActive("/location")}`}>
-                    Locations
+                    {t("nav.locations")}
                   </a>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link href="/contact-us">
                   <a className={`nav-link ${isActive("/contact-us")}`}>
-                    Contact Us
+                    {t("nav.contactUs")}
                   </a>
                 </Link>
               </li>
@@ -595,77 +607,82 @@ function Header() {
                   <i className="fas fa-globe me-1"></i> EN
                 </a>
                 <ul
-                  className={`dropdown-menu dropdown-menu-dark dropdown-menu-end border-0 shadow ${languageDropdownOpen ? "show" : ""}`}>
-                  <li>
-                    <button className="dropdown-item border-0 bg-transparent w-100 text-center text-xl-start">
-                      English
-                    </button>
-                  </li>
-                  <li>
-                    <button className="dropdown-item border-0 bg-transparent w-100 text-center text-xl-start">
-                      Hindi (हिंदी)
-                    </button>
-                  </li>
+                  className={`dropdown-menu ${languageDropdownOpen ? "show" : ""}`}
+                  style={{ right: 0, left: "auto" }}>
+                  {SUPPORTED_LANGUAGES.map((lang) => (
+                    <li key={lang.code}>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => changeLanguage(lang.code)}
+                        type="button">
+                        {lang.label}
+                      </button>
+                    </li>
+                  ))}
                 </ul>
               </li>
 
               {/* AUTH SECTION - FIXED POSITION AND SIZE */}
+              {/* AUTH SECTION - CORRECTED NESTING */}
               {isLoggedIn ? (
-                <li className="nav-item ms-xl-3 py-2 py-xl-0">
-                  <UncontrolledDropdown nav inNavbar>
-                    <DropdownToggle nav className="p-0 border-0 bg-transparent">
-                      <div
+                <UncontrolledDropdown
+                  nav
+                  inNavbar
+                  className="nav-item ms-xl-3 py-2 py-xl-0">
+                  <DropdownToggle nav className="p-0 border-0 bg-transparent">
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        display: "inline-block",
+                      }}>
+                      <img
+                        src={
+                          userData?.profileImage
+                            ? authService.getImgUrl(userData.profileImage)
+                            : `https://ui-avatars.com/api/?name=${
+                                userData?.firstName || role || "User"
+                              }&background=eebb5d&color=fff`
+                        }
+                        className="rounded-circle border border-2 border-warning shadow-sm"
+                        alt="profile"
                         style={{
                           width: "40px",
                           height: "40px",
-                          display: "inline-block",
-                        }}>
-                        <img
-                          src={
-                            userData?.profileImage
-                              ? authService.getImgUrl(userData.profileImage)
-                              : `https://ui-avatars.com/api/?name=${userData?.firstName || role || "User"}&background=eebb5d&color=fff`
-                          }
-                          className="rounded-circle border border-2 border-warning shadow-sm"
-                          alt="profile"
-                          style={{
-                            width: "40px",
-                            height: "40px",
-                            objectFit: "cover",
-                            display: "block",
-                          }}
-                        />
-                      </div>
-                    </DropdownToggle>
-                    <DropdownMenu
-                      end
-                      className="dropdown-menu-dark border-0 shadow mt-2">
-                      <Link
-                        href={
-                          role === "admin"
-                            ? "/admin-panel/"
-                            : role === "attorney"
-                              ? "/attorney-panel/"
-                              : "/client-panel/"
-                        }>
-                        <a className="dropdown-item py-2 text-center text-xl-start">
-                          Dashboard
-                        </a>
-                      </Link>
-                      <div className="dropdown-divider border-secondary"></div>
-                      <button
-                        onClick={handleLogout}
-                        className="dropdown-item text-danger py-2 border-0 bg-transparent w-100 text-center text-xl-start">
-                        Logout
-                      </button>
-                    </DropdownMenu>
-                  </UncontrolledDropdown>
-                </li>
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    </div>
+                  </DropdownToggle>
+                  <DropdownMenu
+                    end
+                    className="dropdown-menu-dark border-0 shadow mt-2">
+                    <Link
+                      href={
+                        role === "admin"
+                          ? "/admin-panel/"
+                          : role === "attorney"
+                            ? "/attorney-panel/"
+                            : "/client-panel/"
+                      }>
+                      <a className="dropdown-item py-2 text-center text-xl-start">
+                        <span>{t("admin.dashboard")}</span>
+                      </a>
+                    </Link>
+                    <div className="dropdown-divider border-secondary"></div>
+                    <button
+                      onClick={handleLogout}
+                      className="dropdown-item text-danger py-2 border-0 bg-transparent w-100 text-center text-xl-start">
+                      <span>{t("auth.logout")}</span>
+                    </button>
+                  </DropdownMenu>
+                </UncontrolledDropdown>
               ) : (
                 <li className="nav-item ms-xl-3 mt-2 mt-xl-0 pb-3 pb-xl-0 w-100 w-xl-auto">
                   <Link href="/login-signup">
                     <a className="btn btn-warning px-4 py-2 w-100 fw-bold">
-                      Login/Signup
+                      {t("auth.loginSignup")}
                     </a>
                   </Link>
                 </li>

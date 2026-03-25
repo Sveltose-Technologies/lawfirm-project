@@ -465,7 +465,7 @@ export default function EditProfile() {
                   Experience (Years)
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="experience"
                   className="form-control"
                   value={formData.experience || ""}

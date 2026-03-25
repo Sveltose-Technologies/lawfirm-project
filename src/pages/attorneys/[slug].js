@@ -718,14 +718,14 @@ export default function AttorneyProfilePage() {
                     : "/assets/images/profile.png"
                 }
                 alt={attorney.firstName}
-                className="img-fluid profile-img" 
+                className="img-fluid profile-img"
                 style={{
                   width: "100%",
-                  maxWidth: "300px", 
+                  maxWidth: "300px",
                   height: "auto",
-                  objectFit: "contain", 
+                  objectFit: "contain",
                   display: "block",
-                  marginBottom: "-1px", 
+                  marginBottom: "-1px",
                 }}
                 onError={(e) => {
                   e.target.src = "/assets/images/profile.png";
@@ -855,34 +855,47 @@ export default function AttorneyProfilePage() {
         </div>
 
         {/* EXPERIENCE */}
+        {/* EXPERIENCE SECTION */}
         <div className="border-top-doc pt-3 mb-4 accordion-section pdf-avoid-break">
           <h3 className="serif-font mb-3">Experience</h3>
+
+          {/* Accordion Toggle for Web */}
           <div
             className="d-flex justify-content-between align-items-center border-bottom pb-1 cursor-pointer no-print"
             onClick={() => setExpOpen(!expOpen)}>
             <span className="fw-bold" style={{ color: gtGold }}>
-              Internships
+              Professional Experience
             </span>
             <span className="accordion-icon" style={{ color: gtGold }}>
               {expOpen ? "−" : "+"}
             </span>
           </div>
+
+          {/* Label for Print/PDF */}
           <p
             className="fw-bold d-none d-print-block"
             style={{ color: gtGold, margin: "5px 0" }}>
-            Internships
+            Professional Experience
           </p>
+
+          {/* Dynamic Content */}
           <div
-            className={`accordion-content py-2 text-secondary ${expOpen ? "d-block" : "d-none"}`}>
+            className={`accordion-content py-2 text-secondary ${
+              expOpen ? "d-block" : "d-none"
+            }`}>
             <ul className="ms-3">
-              <li>
-                Certified Legal Intern, Community Development Clinic, Notre Dame
-                Clinical Law Center, 2022
-              </li>
-              <li>
-                Corporate Counsel Extern, Saint Joseph Health System and Loyola
-                University Health System, 2021
-              </li>
+              {attorney.experience ? (
+                attorney.experience
+                  .split("°")
+                  .filter((item) => item.trim() !== "") // Remove empty strings
+                  .map((item, index) => (
+                    <li key={index} className="mb-2">
+                      {item.trim()}
+                    </li>
+                  ))
+              ) : (
+                <li>No experience data available.</li>
+              )}
             </ul>
           </div>
         </div>
@@ -897,7 +910,7 @@ export default function AttorneyProfilePage() {
               Professional & Community Involvement
             </span>
             <span className="accordion-icon" style={{ color: gtGold }}>
-              {recOpen ? "−" : "+"}      
+              {recOpen ? "−" : "+"}
             </span>
           </div>
           <p
