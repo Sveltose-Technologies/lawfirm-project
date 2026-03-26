@@ -134,7 +134,15 @@ export default function EditProfile() {
     };
     loadInitialData();
   }, []);
-
+  
+  const selectedCountryObj = countries.find(
+    (c) => c.countryName === formData.country,
+  );
+  const filteredCities = formData.country
+    ? cities.filter(
+        (ct) => Number(ct.countryId) === Number(selectedCountryObj?.id),
+      )
+    : [];
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -147,6 +155,69 @@ export default function EditProfile() {
     }
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+
+  //   const finalUpdateId =
+  //     attorneyId || JSON.parse(localStorage.getItem("user")).id;
+
+  //   if (!finalUpdateId) {
+  //     toast.error("ID not found");
+  //     setLoading(false);
+  //     return;
+  //   }
+
+  //   const payload = new FormData();
+  //   const fileFields = [
+  //     "profileImage",
+  //     "resume",
+  //     "kycIdentity",
+  //     "kycAddress",
+  //     "barCouncilIndiaId",
+  //     "barCouncilStateId",
+  //   ];
+
+  //   Object.keys(formData).forEach((key) => {
+  //     // 1. Skip password if empty
+  //     if (key === "password" && !formData[key]) return;
+
+  //     // 2. Handle Files
+  //     if (fileFields.includes(key)) {
+  //       if (formData[key] instanceof File) {
+  //         payload.append(key, formData[key]);
+  //       }
+  //     }
+  //     // 3. Handle Regular Fields
+  //     else {
+  //       let value = formData[key];
+
+  //       // Fix for 500 error: If ID fields are empty strings, don't send them or send null
+  //       if (
+  //         (key === "categoryId" || key === "city" || key === "country") &&
+  //         (value === "" || value === null)
+  //       ) {
+  //         return;
+  //       }
+
+  //       payload.append(key, value === null ? "" : value);
+  //     }
+  //   });
+
+  //   try {
+  //     console.log("Submitting update for dynamic ID:", finalUpdateId);
+  //     const res = await updateAttorney(finalUpdateId, payload);
+  //     toast.success("Profile updated successfully!");
+  //   } catch (error) {
+  //     console.error("Update Error:", error.response?.data || error.message);
+  //     toast.error(
+  //       error.response?.data?.message || "Server Error (500) during update",
+  //     );
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -154,13 +225,8 @@ export default function EditProfile() {
     const finalUpdateId =
       attorneyId || JSON.parse(localStorage.getItem("user")).id;
 
-    if (!finalUpdateId) {
-      toast.error("ID not found");
-      setLoading(false);
-      return;
-    }
-
     const payload = new FormData();
+
     const fileFields = [
       "profileImage",
       "resume",
@@ -184,12 +250,24 @@ export default function EditProfile() {
       else {
         let value = formData[key];
 
-        // Fix for 500 error: If ID fields are empty strings, don't send them or send null
-        if (
-          (key === "categoryId" || key === "city" || key === "country") &&
-          (value === "" || value === null)
-        ) {
+        // --- FIX FOR DOB ERROR ---
+        if (key === "dob") {
+          // If dob is empty string or "Invalid date", don't append it
+          // OR append an empty string (depending on your backend's preference)
+          if (!value || value === "" || value === "Invalid date") {
+            return; // Skip sending this field if it's not a valid date
+          }
+        }
+        // -------------------------
+
+        if (key === "familyLawPractice") {
+          payload.append(key, value === "true");
           return;
+        }
+
+        // Avoid sending empty strings for numeric/ID fields which cause 500 errors
+        if (["categoryId", "city"].includes(key)) {
+          if (!value || value === "") return;
         }
 
         payload.append(key, value === null ? "" : value);
@@ -197,14 +275,12 @@ export default function EditProfile() {
     });
 
     try {
-      console.log("Submitting update for dynamic ID:", finalUpdateId);
       const res = await updateAttorney(finalUpdateId, payload);
       toast.success("Profile updated successfully!");
     } catch (error) {
-      console.error("Update Error:", error.response?.data || error.message);
-      toast.error(
-        error.response?.data?.message || "Server Error (500) during update",
-      );
+      console.error("Update Error:", error.response?.data || error);
+      // This will now show the "Incorrect date value" message in the toast
+      toast.error(error.response?.data?.error || "Update Failed");
     } finally {
       setLoading(false);
     }
@@ -313,7 +389,7 @@ export default function EditProfile() {
                   value={formData.status}
                   onChange={handleInputChange}>
                   <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="dactive">Dactive</option>
                 </select>
               </div>
             </div>
@@ -382,9 +458,11 @@ export default function EditProfile() {
                   name="city"
                   className="form-select"
                   value={formData.city}
-                  onChange={handleInputChange}>
+                  onChange={handleInputChange}
+                  disabled={!formData.country} // Jab tak country select na ho, city disable rahegi
+                >
                   <option value="">Select City</option>
-                  {cities.map((ct) => (
+                  {filteredCities.map((ct) => (
                     <option key={ct.id} value={ct.id}>
                       {ct.cityName}
                     </option>
@@ -407,7 +485,11 @@ export default function EditProfile() {
                   name="country"
                   className="form-select"
                   value={formData.country}
-                  onChange={handleInputChange}>
+                  onChange={(e) => {
+                    handleInputChange(e);
+
+                    setFormData((prev) => ({ ...prev, city: "" }));
+                  }}>
                   <option value="">Select Country</option>
                   {countries.map((cn) => (
                     <option key={cn.id} value={cn.countryName}>

@@ -2,19 +2,52 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import ClientHeader from "./ClientHeader";
+import { getImgUrl } from "../../services/authService"; // Import helper
 
 export default function ClientLayout({ children }) {
   const router = useRouter();
   const [showSidebar, setShowSidebar] = useState(false);
+
+  // State for dynamic user data
   const [userData, setUserData] = useState({
     name: "User",
     email: "user@gmail.com",
+    profileImage: "/assets/images/profilepic.png",
   });
+const syncUserData = () => {
+  const storedUser = localStorage.getItem("user");
+  if (storedUser) {
+    try {
+      const user = JSON.parse(storedUser);
+      setUserData({
+        name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User",
+        email: user.email || "user@gmail.com",
+        // Yahan check karein ki image "null" (string) to nahi hai
+        profileImage:
+          user.profileImage && user.profileImage !== "null"
+            ? getImgUrl(user.profileImage)
+            : "/assets/images/profilepic.png",
+      });
+    } catch (error) {
+      console.error("Error parsing user data in layout", error);
+    }
+  }
+};
 
   useEffect(() => {
-    const name = localStorage.getItem("userName") || "User";
-    const email = localStorage.getItem("userEmail") || "user@gmail.com";
-    setUserData({ name, email });
+    // 1. Initial Load
+    syncUserData();
+
+
+    window.addEventListener("profileUpdated", syncUserData);
+
+    // 3. Listen for cross-tab storage changes
+    window.addEventListener("storage", syncUserData);
+
+    return () => {
+      window.removeEventListener("profileUpdated", syncUserData);
+      window.removeEventListener("storage", syncUserData);
+    };
   }, []);
 
   const handleLogout = (e) => {
@@ -67,20 +100,31 @@ export default function ClientLayout({ children }) {
             <div
               className="card border-0 shadow-sm rounded-4 overflow-hidden sticky-top"
               style={{ top: "90px" }}>
+              {/* DYNAMIC USER PROFILE SECTION */}
               <div className="p-4 text-center border-bottom bg-white">
                 <div
                   className="mx-auto mb-3"
                   style={{ width: "90px", height: "90px" }}>
                   <img
-                    src="/assets/images/attorney1.png"
+                    src={userData.profileImage}
                     className="rounded-circle shadow-sm w-100 h-100"
                     style={{ objectFit: "cover", border: "3px solid #f8f9fa" }}
                     alt="user"
+                    onError={(e) => {
+                      e.target.src = "/assets/images/profilepic.png";
+                    }}
                   />
                 </div>
-                <h6 className="fw-bold mb-1 text-navy">{userData.name}</h6>
-                <p className="text-muted mb-0 small">{userData.email}</p>
+                <h6 className="fw-bold mb-1 text-navy text-capitalize">
+                  {userData.name}
+                </h6>
+                <p
+                  className="text-muted mb-0 small"
+                  style={{ wordBreak: "break-all" }}>
+                  {userData.email}
+                </p>
               </div>
+
               <div className="p-3 bg-white">
                 <nav className="nav flex-column sidebar-nav">
                   {menuItems.map((item, idx) => (

@@ -3,11 +3,17 @@
 // import React, { useEffect, useState, useCallback } from "react";
 // import {
 //   Container,
-//   Card,
-//   CardBody,
 //   Table,
 //   Input,
 //   Button,
+//   Modal,
+//   ModalHeader,
+//   ModalBody,
+//   ModalFooter,
+//   Row,
+//   Col,
+//   FormGroup,
+//   Label,
 //   Badge,
 // } from "reactstrap";
 // import { toast } from "react-toastify";
@@ -16,38 +22,155 @@
 
 // const Clients = () => {
 //   const [users, setUsers] = useState([]);
+//   const [cities, setCities] = useState([]);
+//   const [countries, setCountries] = useState([]);
 //   const [searchTerm, setSearchTerm] = useState("");
 //   const [currentPage, setCurrentPage] = useState(1);
 //   const itemsPerPage = 8;
 
-// const fetchUsers = useCallback(async () => {
-//   try {
-//     const res = await authService.getAllClients();
-//     setUsers(res?.clients || []);
-//   } catch (err) {
-//     // 'err' will now contain the string "Admin access only"
-//     toast.error(err);
-//   }
-// }, []);
+//   const [modal, setModal] = useState(false);
+//   const [editData, setEditData] = useState({});
+
+//   // File state matched to backend field names
+//   const [uploadFiles, setUploadFiles] = useState({
+//     profileImage: null,
+//     kycIdentity: null,
+//     kycAddress: null,
+//   });
+
+//   const toggleModal = () => {
+//     setModal(!modal);
+//     setUploadFiles({ profileImage: null, kycIdentity: null, kycAddress: null });
+//   };
+
+//   const fetchData = useCallback(async () => {
+//     try {
+//       const [clientRes, cityRes, countryRes] = await Promise.all([
+//         authService.getAllClients(),
+//         authService.getAllLocationCities(),
+//         authService.getAllCountries(),
+//       ]);
+//       setUsers(clientRes?.clients || clientRes?.data || clientRes || []);
+//       setCities(cityRes?.data || cityRes || []);
+//       setCountries(countryRes?.data || countryRes || []);
+//     } catch (err) {
+//       toast.error("Failed to load clients data");
+//     }
+//   }, []);
 
 //   useEffect(() => {
-//     fetchUsers();
-//   }, [fetchUsers]);
+//     fetchData();
+//   }, [fetchData]);
 
-//   const handleDelete = async (id) => {
-//     if (window.confirm("Are you sure you want to delete this client?")) {
-//       try {
-//         const res = await authService.deleteClient(id);
-//         toast.success(res?.message || "Client deleted successfully");
-//         fetchUsers();
-//       } catch (err) {
-//         toast.error(err || "Failed to delete client");
-//       }
+//   const toggleStatus = async (user) => {
+//     try {
+//       const newActiveStatus = !user.isActive;
+//       const formData = new FormData();
+//       formData.append("isActive", newActiveStatus ? "1" : "0");
+//       await authService.updateClient(user.id, formData);
+//       toast.success(`Client is now ${newActiveStatus ? "Active" : "Inactive"}`);
+//       fetchData();
+//     } catch (err) {
+//       toast.error("Failed to update status");
 //     }
 //   };
 
+// const handleUpdateSubmit = async () => {
+//   try {
+//     const formData = new FormData();
+//     const textFields = [
+//       "firstName",
+//       "lastName",
+//       "email",
+//       "mobile",
+//       "street",
+//       "aptBlock",
+//       "city",
+//       "state",
+//       "country",
+//       "zipCode",
+//       "countryCode",
+//       "dob",
+//       "password",
+//       "status",
+//     ];
+
+//     textFields.forEach((key) => {
+//       let value = editData[key];
+//       // SIRF tabhi bhein jab value ho aur wo "null" string na ho
+//       if (
+//         value !== undefined &&
+//         value !== null &&
+//         value !== "" &&
+//         value !== "null"
+//       ) {
+//         if (key === "dob") {
+//           formData.append(key, value.toString().split("T")[0]);
+//         } else {
+//           formData.append(key, value.toString().trim());
+//         }
+//       }
+//     });
+
+//     formData.append("isVerified", editData.isVerified ? "1" : "0");
+//     formData.append("termsAccepted", editData.termsAccepted ? "1" : "0");
+
+//     // Files: Sirf tabhi append karein jab NEW file select ki ho
+//     if (uploadFiles.profileImage instanceof File) {
+//       formData.append("profileImage", uploadFiles.profileImage);
+//     }
+//     if (uploadFiles.kycIdentity instanceof File) {
+//       formData.append("kycIdentity", uploadFiles.kycIdentity);
+//     }
+//     if (uploadFiles.kycAddress instanceof File) {
+//       formData.append("kycAddress", uploadFiles.kycAddress);
+//     }
+
+//     const res = await authService.updateClientProfile(editData.id, formData);
+//     toast.success("Updated successfully!");
+//     toggleModal();
+//     fetchData(); // List refresh karne ke liye
+//   } catch (err) {
+//     toast.error("Update failed.");
+//   }
+// };
+//   const openUpdateModal = (user) => {
+//     setEditData({ ...user });
+//     toggleModal();
+//   };
+
+//   const handleInputChange = (e) => {
+//     const { name, value, type, checked } = e.target;
+//     setEditData((prev) => ({
+//       ...prev,
+//       [name]: type === "checkbox" ? checked : value,
+//     }));
+//   };
+
+//  const handleFileChange = (e) => {
+//    const { name, files } = e.target;
+//    if (files && files.length > 0) {
+//      const file = files[0];
+//      console.log(`Selected file for ${name}:`, file.name);
+//      setUploadFiles((prev) => ({ ...prev, [name]: file }));
+//    }
+//  };
+//   const downloadFile = (path) => {
+//     if (!path || path === "null") return toast.error("File not available");
+//     window.open(authService.getImgUrl(path), "_blank");
+//   };
+
+//   const selectedCountryObj = countries.find(
+//     (c) => c.countryName === editData.country,
+//   );
+//   const filteredCities = selectedCountryObj
+//     ? cities.filter(
+//         (city) => Number(city.countryId) === Number(selectedCountryObj.id),
+//       )
+//     : [];
+
 //   const filteredData = users.filter((u) =>
-//     `${u.firstName} ${u.lastName} ${u.email}`
+//     `${u.firstName} ${u.lastName} ${u.email} ${u.mobile}`
 //       .toLowerCase()
 //       .includes(searchTerm.toLowerCase()),
 //   );
@@ -58,97 +181,453 @@
 //   );
 
 //   return (
-//     <Container
-//       fluid
-//       className="p-3 p-md-4 min-vh-100"
-//       style={{ backgroundColor: "#f9f9f9" }}>
+//     <Container fluid className="p-4 bg-white min-vh-100">
 //       <div className="d-flex justify-content-between align-items-center mb-4">
-//         <h4 className="fw-bold">Client Management</h4>
-//         <Badge color="warning" className="px-3 py-2 text-dark">
-//           Total: {filteredData.length}
-//         </Badge>
-//       </div>
-
-//       <Card className="border-0 shadow-sm rounded-4">
-//         <CardBody className="p-0">
-//           <div className="p-3 border-bottom">
-//             <Input
-//               placeholder="Search by name or email..."
-//               className="rounded-pill bg-light border-0 px-4"
-//               style={{ maxWidth: "350px" }}
-//               onChange={(e) => {
-//                 setSearchTerm(e.target.value);
-//                 setCurrentPage(1);
-//               }}
-//             />
-//           </div>
-
-//           <div className="table-responsive">
-//             <Table
-//               hover
-//               className="align-middle mb-0"
-//               style={{ fontSize: "13px" }}>
-//               <thead style={{ backgroundColor: "#fdf8ef" }}>
-//                 <tr>
-//                   <th className="px-4 py-3">SR.</th>
-//                   <th className="py-3">NAME</th>
-//                   <th className="py-3">EMAIL</th>
-//                   <th className="py-3 text-center">STATUS</th>
-//                   <th className="py-3 text-end px-4">ACTION</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {currentItems.length > 0 ? (
-//                   currentItems.map((u, index) => (
-//                     <tr key={u.id || index}>
-//                       <td className="px-4">
-//                         {(currentPage - 1) * itemsPerPage + index + 1}
-//                       </td>
-//                       <td className="fw-bold text-dark">
-//                         {u.firstName} {u.lastName}
-//                       </td>
-//                       <td className="text-muted">{u.email}</td>
-//                       <td className="text-center">
-//                         <Badge
-//                           pill
-//                           color={u.isActive ? "success" : "secondary"}
-//                           className="px-2">
-//                           {u.isActive ? "Active" : "Inactive"}
-//                         </Badge>
-//                       </td>
-//                       <td className="text-end px-4">
-//                         <Button
-//                           size="sm"
-//                           outline
-//                           color="danger"
-//                           className="rounded-pill px-3"
-//                           onClick={() => handleDelete(u.id)}>
-//                           Delete
-//                         </Button>
-//                       </td>
-//                     </tr>
-//                   ))
-//                 ) : (
-//                   <tr>
-//                     <td colSpan="5" className="text-center py-5 text-muted">
-//                       No clients found.
-//                     </td>
-//                   </tr>
-//                 )}
-//               </tbody>
-//             </Table>
-//           </div>
-//         </CardBody>
-//       </Card>
-
-//       <div className="mt-4 d-flex justify-content-center">
-//         <PaginationComponent
-//           totalItems={filteredData.length}
-//           itemsPerPage={itemsPerPage}
-//           currentPage={currentPage}
-//           onPageChange={setCurrentPage}
+//         <h5 className="fw-bold text-secondary text-uppercase">
+//           Client Management Dashboard
+//         </h5>
+//         <Input
+//           placeholder="Search name, email..."
+//           style={{ maxWidth: "300px" }}
+//           onChange={(e) => setSearchTerm(e.target.value)}
 //         />
 //       </div>
+
+//       <Table hover responsive className="align-middle border-top">
+//         <thead>
+//           <tr className="text-secondary small bg-light">
+//             <th>#</th>
+//             <th>IMAGE</th>
+//             <th>NAME</th>
+//             <th>EMAIL</th>
+//             <th>PHONE</th>
+//             <th className="text-center">SUCCESS</th>
+//             <th className="text-center">PENDING</th>
+//             <th className="text-center">ACTIVE</th> {/* NEW COLUMN */}
+//             <th>ADDRESS</th>
+//             <th className="text-center">STATUS</th>
+//             <th className="text-end">ACTION</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {currentItems.map((u, i) => (
+//             <tr key={u.id} style={{ fontSize: "13px" }}>
+//               <td>{(currentPage - 1) * itemsPerPage + i + 1}</td>
+//               <td>
+//                 <img
+//                   src={
+//                     u.profileImage
+//                       ? authService.getImgUrl(u.profileImage)
+//                       : "/assets/images/profilepic.png"
+//                   }
+//                   width="45"
+//                   height="45"
+//                   className="rounded-circle border"
+//                   style={{ objectFit: "cover" }}
+//                   alt="p"
+//                 />
+//               </td>
+//               <td className="fw-bold">
+//                 {u.firstName} {u.lastName}
+//               </td>
+//               <td>{u.email}</td>
+//               <td>
+//                 {u.countryCode} {u.mobile}
+//               </td>
+//               <td className="text-center">
+//                 <Badge color="success" pill>
+//                   {u.successCases || 0}
+//                 </Badge>
+//               </td>
+//               <td className="text-center">
+//                 <Badge color="warning" pill>
+//                   {u.pendingCases || 0}
+//                 </Badge>
+//               </td>
+//               <td className="text-center">
+//                 <Badge color="primary" pill>
+//                   {u.activeCases || 0}
+//                 </Badge>
+//               </td>
+//               <td style={{ maxWidth: "150px" }} className="text-truncate">
+//                 {u.street}, {u.city}
+//               </td>
+//               <td className="text-center">
+//                 <Badge
+//                   color={u.isActive ? "success" : "danger"}
+//                   pill
+//                   onClick={() => toggleStatus(u)}
+//                   style={{ cursor: "pointer" }}>
+//                   {u.isActive ? "Active" : "Inactive"}
+//                 </Badge>
+//               </td>
+//               {/* ACTION BUTTONS */}
+//               <td className="text-end" style={{ minWidth: "100px" }}>
+//                 <Button
+//                   outline
+//                   color="warning"
+//                   size="sm"
+//                   className="rounded-circle me-2"
+//                   onClick={() => openUpdateModal(u)}>
+//                   <i className="bi bi-pencil-fill"></i>
+//                 </Button>
+//                 <Button
+//                   outline
+//                   color="danger"
+//                   size="sm"
+//                   className="rounded-circle"
+//                   onClick={() => {
+//                     if (window.confirm("Delete this client permanently?")) {
+//                       authService.deleteClient(u.id).then(() => {
+//                         toast.success("Client removed");
+//                         fetchData();
+//                       });
+//                     }
+//                   }}>
+//                   <i className="bi bi-trash-fill"></i>
+//                 </Button>
+//               </td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </Table>
+
+//       <PaginationComponent
+//         totalItems={filteredData.length}
+//         itemsPerPage={itemsPerPage}
+//         currentPage={currentPage}
+//         onPageChange={setCurrentPage}
+//       />
+
+//       <Modal isOpen={modal} toggle={toggleModal} size="xl">
+//         <ModalHeader toggle={toggleModal} className="bg-light fw-bold">
+//           Edit Client Professional Profile
+//         </ModalHeader>
+//         <ModalBody className="p-4">
+//           <Row className="g-3">
+//             {/* SECTION 1: PERSONAL */}
+//             <Col md={12}>
+//               <h6 className="text-primary fw-bold border-bottom pb-2">
+//                 1. Personal & Account Details
+//               </h6>
+//             </Col>
+//             <Col md={3}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">First Name</Label>
+//                 <Input
+//                   name="firstName"
+//                   value={editData.firstName || ""}
+//                   onChange={handleInputChange}
+//                 />
+//               </FormGroup>
+//             </Col>
+//             <Col md={3}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">Last Name</Label>
+//                 <Input
+//                   name="lastName"
+//                   value={editData.lastName || ""}
+//                   onChange={handleInputChange}
+//                 />
+//               </FormGroup>
+//             </Col>
+//             <Col md={3}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">Email</Label>
+//                 <Input
+//                   name="email"
+//                   value={editData.email || ""}
+//                   onChange={handleInputChange}
+//                 />
+//               </FormGroup>
+//             </Col>
+//             <Col md={3}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">Mobile</Label>
+//                 <Input
+//                   name="mobile"
+//                   value={editData.mobile || ""}
+//                   onChange={handleInputChange}
+//                 />
+//               </FormGroup>
+//             </Col>
+//             <Col md={2}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">Country Code</Label>
+//                 <Input
+//                   name="countryCode"
+//                   value={editData.countryCode || ""}
+//                   onChange={handleInputChange}
+//                 />
+//               </FormGroup>
+//             </Col>
+//             <Col md={3}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">DOB</Label>
+//                 <Input
+//                   type="date"
+//                   name="dob"
+//                   value={editData.dob ? editData.dob.split("T")[0] : ""}
+//                   onChange={handleInputChange}
+//                 />
+//               </FormGroup>
+//             </Col>
+//             <Col md={3}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">Status</Label>
+//                 <Input
+//                   type="select"
+//                   name="status"
+//                   value={editData.status || "active"}
+//                   onChange={handleInputChange}>
+//                   <option value="active">Active</option>
+//                   <option value="inactive">Inactive</option>
+//                 </Input>
+//               </FormGroup>
+//             </Col>
+//             <Col md={4}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">New Password</Label>
+//                 <Input
+//                   type="password"
+//                   name="password"
+//                   placeholder="Leave blank to keep same"
+//                   onChange={handleInputChange}
+//                 />
+//               </FormGroup>
+//             </Col>
+
+//             {/* SECTION 2: STATS */}
+//             <Col md={12} className="mt-4">
+//               <h6 className="text-primary fw-bold border-bottom pb-2">
+//                 2. Case Statistics (System Records)
+//               </h6>
+//             </Col>
+//             <Col md={4}>
+//               <FormGroup>
+//                 <Label className="small">Success Cases</Label>
+//                 <Input
+//                   disabled
+//                   value={editData.successCases || 0}
+//                   className="bg-light"
+//                 />
+//               </FormGroup>
+//             </Col>
+//             <Col md={4}>
+//               <FormGroup>
+//                 <Label className="small">Pending Cases</Label>
+//                 <Input
+//                   disabled
+//                   value={editData.pendingCases || 0}
+//                   className="bg-light"
+//                 />
+//               </FormGroup>
+//             </Col>
+//             <Col md={4}>
+//               <FormGroup>
+//                 <Label className="small">Active Cases</Label>
+//                 <Input
+//                   disabled
+//                   value={editData.activeCases || 0}
+//                   className="bg-light"
+//                 />
+//               </FormGroup>
+//             </Col>
+
+//             {/* SECTION 3: ADDRESS */}
+//             <Col md={12} className="mt-4">
+//               <h6 className="text-primary fw-bold border-bottom pb-2">
+//                 3. Address Information
+//               </h6>
+//             </Col>
+//             <Col md={6}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">Street</Label>
+//                 <Input
+//                   name="street"
+//                   value={editData.street || ""}
+//                   onChange={handleInputChange}
+//                 />
+//               </FormGroup>
+//             </Col>
+//             <Col md={3}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">Apt/Block</Label>
+//                 <Input
+//                   name="aptBlock"
+//                   value={editData.aptBlock || ""}
+//                   onChange={handleInputChange}
+//                 />
+//               </FormGroup>
+//             </Col>
+//             <Col md={3}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">Zip Code</Label>
+//                 <Input
+//                   name="zipCode"
+//                   value={editData.zipCode || ""}
+//                   onChange={handleInputChange}
+//                 />
+//               </FormGroup>
+//             </Col>
+//             <Col md={4}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">Country</Label>
+//                 <Input
+//                   type="select"
+//                   name="country"
+//                   value={editData.country || ""}
+//                   onChange={handleInputChange}>
+//                   <option value="">Select Country</option>
+//                   {countries.map((c) => (
+//                     <option key={c.id} value={c.countryName}>
+//                       {c.countryName}
+//                     </option>
+//                   ))}
+//                 </Input>
+//               </FormGroup>
+//             </Col>
+//             <Col md={4}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">City</Label>
+//                 <Input
+//                   type="select"
+//                   name="city"
+//                   value={editData.city || ""}
+//                   onChange={handleInputChange}
+//                   disabled={!editData.country}>
+//                   <option value="">Select City</option>
+//                   {filteredCities.map((ct) => (
+//                     <option key={ct.id} value={ct.id}>
+//                       {ct.cityName}
+//                     </option>
+//                   ))}
+//                 </Input>
+//               </FormGroup>
+//             </Col>
+//             <Col md={4}>
+//               <FormGroup>
+//                 <Label className="small fw-bold">State</Label>
+//                 <Input
+//                   name="state"
+//                   value={editData.state || ""}
+//                   onChange={handleInputChange}
+//                 />
+//               </FormGroup>
+//             </Col>
+
+//             {/* SECTION 4: VERIFICATION FLAGS */}
+//             <Col md={12} className="mt-4">
+//               <h6 className="text-primary fw-bold border-bottom pb-2">
+//                 4. Verification Status
+//               </h6>
+//             </Col>
+//             <Col md={3} className="d-flex align-items-center">
+//               <FormGroup check>
+//                 <Label check className="small fw-bold">
+//                   <Input
+//                     type="checkbox"
+//                     name="isVerified"
+//                     checked={editData.isVerified || false}
+//                     onChange={handleInputChange}
+//                   />{" "}
+//                   Email Verified
+//                 </Label>
+//               </FormGroup>
+//             </Col>
+//             <Col md={3} className="d-flex align-items-center">
+//               <FormGroup check>
+//                 <Label check className="small fw-bold">
+//                   <Input
+//                     type="checkbox"
+//                     name="termsAccepted"
+//                     checked={editData.termsAccepted || false}
+//                     onChange={handleInputChange}
+//                   />{" "}
+//                   Terms Accepted
+//                 </Label>
+//               </FormGroup>
+//             </Col>
+
+//             {/* SECTION 5: DOCUMENTS */}
+//             <Col md={12} className="mt-4">
+//               <h6 className="text-primary fw-bold border-bottom pb-2">
+//                 5. Documents & Media
+//               </h6>
+//             </Col>
+//             <Col md={4}>
+//               <div className="p-3 border rounded text-center bg-light">
+//                 <Label className="fw-bold d-block mb-2">Profile Image</Label>
+//                 <img
+//                   src={
+//                     editData.profileImage
+//                       ? authService.getImgUrl(editData.profileImage)
+//                       : "/assets/images/profilepic.png"
+//                   }
+//                   className="rounded-circle border mb-2"
+//                   width="100"
+//                   height="100"
+//                   style={{ objectFit: "cover" }}
+//                   alt="p"
+//                 />
+//                 <Input
+//                   type="file"
+//                   name="profileImage"
+//                   onChange={handleFileChange}
+//                   className="form-control-sm"
+//                 />
+//               </div>
+//             </Col>
+//             <Col md={4}>
+//               <div className="p-3 border rounded text-center bg-light">
+//                 <Label className="fw-bold d-block mb-2">KYC Identity</Label>
+//                 <Button
+//                   size="sm"
+//                   color="link"
+//                   onClick={() => downloadFile(editData.kycIdentity)}
+//                   className="p-0 d-block w-100 text-truncate">
+//                   {editData.kycIdentity ? "View Current Doc" : "No File"}
+//                 </Button>
+//                 <Input
+//                   type="file"
+//                   name="kycIdentity"
+//                   onChange={handleFileChange}
+//                   className="form-control-sm"
+//                 />
+//               </div>
+//             </Col>
+//             <Col md={4}>
+//               <div className="p-3 border rounded text-center bg-light">
+//                 <Label className="fw-bold d-block mb-2">KYC Address</Label>
+//                 <Button
+//                   size="sm"
+//                   color="link"
+//                   onClick={() => downloadFile(editData.kycAddress)}
+//                   className="p-0 d-block w-100 text-truncate">
+//                   {editData.kycAddress ? "View Current Doc" : "No File"}
+//                 </Button>
+//                 <Input
+//                   type="file"
+//                   name="kycAddress"
+//                   onChange={handleFileChange}
+//                   className="form-control-sm"
+//                 />
+//               </div>
+//             </Col>
+//           </Row>
+//         </ModalBody>
+//         <ModalFooter className="bg-light">
+//           <Button color="secondary" outline onClick={toggleModal}>
+//             Cancel
+//           </Button>
+//           <Button
+//             color="warning"
+//             className="px-5 fw-bold"
+//             onClick={handleUpdateSubmit}>
+//             UPDATE PROFILE
+//           </Button>
+//         </ModalFooter>
+//       </Modal>
 //     </Container>
 //   );
 // };
@@ -186,17 +665,17 @@ const Clients = () => {
 
   const [modal, setModal] = useState(false);
   const [editData, setEditData] = useState({});
+
+  // File state matched to backend field names
   const [uploadFiles, setUploadFiles] = useState({
     profileImage: null,
-    kycDocument: null, // KYC download ke liye parameter
+    kycIdentity: null,
+    kycAddress: null,
   });
 
   const toggleModal = () => {
     setModal(!modal);
-    setUploadFiles({
-      profileImage: null,
-      kycDocument: null,
-    });
+    setUploadFiles({ profileImage: null, kycIdentity: null, kycAddress: null });
   };
 
   const fetchData = useCallback(async () => {
@@ -206,7 +685,6 @@ const Clients = () => {
         authService.getAllLocationCities(),
         authService.getAllCountries(),
       ]);
-
       setUsers(clientRes?.clients || clientRes?.data || clientRes || []);
       setCities(cityRes?.data || cityRes || []);
       setCountries(countryRes?.data || countryRes || []);
@@ -224,7 +702,6 @@ const Clients = () => {
       const newActiveStatus = !user.isActive;
       const formData = new FormData();
       formData.append("isActive", newActiveStatus ? "1" : "0");
-
       await authService.updateClient(user.id, formData);
       toast.success(`Client is now ${newActiveStatus ? "Active" : "Inactive"}`);
       fetchData();
@@ -232,87 +709,83 @@ const Clients = () => {
       toast.error("Failed to update status");
     }
   };
+const handleUpdateSubmit = async () => {
+  try {
+    const formData = new FormData();
+    const textFields = [
+      "firstName",
+      "lastName",
+      "email",
+      "mobile",
+      "street",
+      "aptBlock",
+      "city",
+      "state",
+      "country",
+      "zipCode",
+      "countryCode",
+      "dob",
+      "password",
+      "status",
+    ];
 
-  const handleUpdateSubmit = async () => {
-    try {
-      const formData = new FormData();
-
-      const updatableFields = [
-        "firstName",
-        "lastName",
-        "email",
-        "mobile",
-        "street",
-        "aptBlock",
-        "city",
-        "state",
-        "country",
-        "zipCode",
-        "countryCode",
-        "dob",
-        "password",
-      ];
-
-      updatableFields.forEach((key) => {
-        const value = editData[key];
-        if (value === null || value === undefined) return;
-
-        if (key === "dob" && value) {
-          formData.append(key, value.split("T")[0]);
-          return;
+    textFields.forEach((key) => {
+      let value = editData[key];
+      // Check for valid data to prevent overwriting with empty/null
+      if (
+        value !== undefined &&
+        value !== null &&
+        value !== "" &&
+        value !== "null"
+      ) {
+        if (key === "dob") {
+          formData.append(key, value.toString().split("T")[0]);
+        } else {
+          formData.append(key, value.toString().trim());
         }
+      }
+    });
 
-        formData.append(key, value);
-      });
+    // Files only if NEWLY selected
+    if (uploadFiles.profileImage instanceof File)
+      formData.append("profileImage", uploadFiles.profileImage);
+    if (uploadFiles.kycIdentity instanceof File)
+      formData.append("kycIdentity", uploadFiles.kycIdentity);
+    if (uploadFiles.kycAddress instanceof File)
+      formData.append("kycAddress", uploadFiles.kycAddress);
 
-      // Files addition
-      Object.keys(uploadFiles).forEach((key) => {
-        if (uploadFiles[key] instanceof File) {
-          formData.append(key, uploadFiles[key]);
-        }
-      });
-
-      await authService.updateClient(editData.id, formData);
-      toast.success("Client updated successfully");
-      toggleModal();
-      fetchData();
-    } catch (err) {
-      toast.error("Update failed");
-    }
-  };
-
+    await authService.updateClientProfile(editData.id, formData);
+    toast.success("Client Updated!");
+    toggleModal();
+    fetchData(); // Dashboard refresh
+  } catch (err) {
+    toast.error("Update failed.");
+  }
+};
   const openUpdateModal = (user) => {
     setEditData({ ...user });
     toggleModal();
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "country") {
-      setEditData((prev) => ({ ...prev, country: value, city: "" }));
-    } else {
-      setEditData((prev) => ({ ...prev, [name]: value }));
-    }
+    const { name, value, type, checked } = e.target;
+    setEditData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleFileChange = (e) => {
     const { name, files } = e.target;
-    setUploadFiles((prev) => ({ ...prev, [name]: files[0] }));
-  };
-
-  const downloadFile = async (path) => {
-    if (!path || path === "null") return toast.error("File not available");
-    try {
-      const fileUrl = authService.getImgUrl(path);
-      const link = document.createElement("a");
-      link.href = fileUrl;
-      link.setAttribute("download", path.split("/").pop());
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      window.open(authService.getImgUrl(path), "_blank");
+    if (files && files.length > 0) {
+      const file = files[0];
+      console.log(`Selected file for ${name}:`, file.name);
+      setUploadFiles((prev) => ({ ...prev, [name]: file }));
     }
+  };
+  const downloadFile = (path) => {
+    if (!path || path === "null") return toast.error("File not available");
+    window.open(authService.getImgUrl(path), "_blank");
   };
 
   const selectedCountryObj = countries.find(
@@ -338,28 +811,27 @@ const Clients = () => {
   return (
     <Container fluid className="p-4 bg-white min-vh-100">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h5 className="fw-bold text-secondary">CLIENT LIST</h5>
-        <div className="d-flex gap-2">
-          <Input
-            placeholder="Search clients..."
-            className="bg-light border-0"
-            style={{ maxWidth: "300px" }}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        <h5 className="fw-bold text-secondary text-uppercase">
+          Client Management Dashboard
+        </h5>
+        <Input
+          placeholder="Search name, email..."
+          style={{ maxWidth: "300px" }}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
 
       <Table hover responsive className="align-middle border-top">
         <thead>
-          <tr className="text-secondary small">
+          <tr className="text-secondary small bg-light">
             <th>#</th>
             <th>IMAGE</th>
             <th>NAME</th>
             <th>EMAIL</th>
-            <th>PHONE_NO</th>
-            <th>SUCCESS</th>
-            <th>PENDING</th>
-            <th>ACTIVE</th>
+            <th>PHONE</th>
+            <th className="text-center">SUCCESS</th>
+            <th className="text-center">PENDING</th>
+            <th className="text-center">ACTIVE</th> {/* NEW COLUMN */}
             <th>ADDRESS</th>
             <th className="text-center">STATUS</th>
             <th className="text-end">ACTION</th>
@@ -376,53 +848,71 @@ const Clients = () => {
                       ? authService.getImgUrl(u.profileImage)
                       : "/assets/images/profilepic.png"
                   }
-                  className="rounded"
-                  width="40"
-                  height="40"
+                  width="45"
+                  height="45"
+                  className="rounded-circle border"
                   style={{ objectFit: "cover" }}
-                  alt="client"
+                  alt="p"
                 />
               </td>
               <td className="fw-bold">
                 {u.firstName} {u.lastName}
               </td>
-              <td className="text-primary">{u.email}</td>
-              <td className="text-muted">
+              <td>{u.email}</td>
+              <td>
                 {u.countryCode} {u.mobile}
               </td>
-              <td className="text-center">{u.successCases || 0}</td>
-              <td className="text-center">{u.pendingCases || 0}</td>
-              <td className="text-center">{u.activeCases || 0}</td>
-              <td style={{ maxWidth: "180px" }} className="text-truncate">
+              <td className="text-center">
+                <Badge color="success" pill>
+                  {u.successCases || 0}
+                </Badge>
+              </td>
+              <td className="text-center">
+                <Badge color="warning" pill>
+                  {u.pendingCases || 0}
+                </Badge>
+              </td>
+              <td className="text-center">
+                <Badge color="primary" pill>
+                  {u.activeCases || 0}
+                </Badge>
+              </td>
+              <td style={{ maxWidth: "150px" }} className="text-truncate">
                 {u.street}, {u.city}
               </td>
               <td className="text-center">
                 <Badge
                   color={u.isActive ? "success" : "danger"}
                   pill
-                  style={{ cursor: "pointer" }}
-                  onClick={() => toggleStatus(u)}>
+                  onClick={() => toggleStatus(u)}
+                  style={{ cursor: "pointer" }}>
                   {u.isActive ? "Active" : "Inactive"}
                 </Badge>
               </td>
-              <td className="text-end">
+              {/* ACTION BUTTONS */}
+              <td className="text-end" style={{ minWidth: "100px" }}>
                 <Button
                   outline
                   color="warning"
-                  className="rounded-circle me-2 p-1"
-                  style={{ width: "32px", height: "32px" }}
+                  size="sm"
+                  className="rounded-circle me-2"
                   onClick={() => openUpdateModal(u)}>
-                  <i className="bi bi-pencil-fill small"></i>
+                  <i className="bi bi-pencil-fill"></i>
                 </Button>
                 <Button
                   outline
                   color="danger"
-                  className="rounded-circle p-1"
-                  style={{ width: "32px", height: "32px" }}
-                  onClick={() =>
-                    authService.deleteClient(u.id).then(() => fetchData())
-                  }>
-                  <i className="bi bi-x-lg small"></i>
+                  size="sm"
+                  className="rounded-circle"
+                  onClick={() => {
+                    if (window.confirm("Delete this client permanently?")) {
+                      authService.deleteClient(u.id).then(() => {
+                        toast.success("Client removed");
+                        fetchData();
+                      });
+                    }
+                  }}>
+                  <i className="bi bi-trash-fill"></i>
                 </Button>
               </td>
             </tr>
@@ -437,13 +927,18 @@ const Clients = () => {
         onPageChange={setCurrentPage}
       />
 
-      {/* Update Client Modal */}
       <Modal isOpen={modal} toggle={toggleModal} size="xl">
-        <ModalHeader toggle={toggleModal} className="fw-bold">
-          Update Client Profile
+        <ModalHeader toggle={toggleModal} className="bg-light fw-bold">
+          Edit Client Professional Profile
         </ModalHeader>
         <ModalBody className="p-4">
           <Row className="g-3">
+            {/* SECTION 1: PERSONAL */}
+            <Col md={12}>
+              <h6 className="text-primary fw-bold border-bottom pb-2">
+                1. Personal & Account Details
+              </h6>
+            </Col>
             <Col md={3}>
               <FormGroup>
                 <Label className="small fw-bold">First Name</Label>
@@ -484,15 +979,13 @@ const Clients = () => {
                 />
               </FormGroup>
             </Col>
-
-            <Col md={3}>
+            <Col md={2}>
               <FormGroup>
                 <Label className="small fw-bold">Country Code</Label>
                 <Input
                   name="countryCode"
                   value={editData.countryCode || ""}
                   onChange={handleInputChange}
-                  placeholder="+91"
                 />
               </FormGroup>
             </Col>
@@ -507,9 +1000,77 @@ const Clients = () => {
                 />
               </FormGroup>
             </Col>
+            <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Status</Label>
+                <Input
+                  type="select"
+                  name="status"
+                  value={editData.status || "active"}
+                  onChange={handleInputChange}>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </Input>
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <FormGroup>
+                <Label className="small fw-bold">New Password</Label>
+                <Input
+                  type="password"
+                  name="password"
+                  placeholder="Leave blank to keep same"
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+
+            {/* SECTION 2: STATS */}
+            <Col md={12} className="mt-4">
+              <h6 className="text-primary fw-bold border-bottom pb-2">
+                2. Case Statistics (System Records)
+              </h6>
+            </Col>
+            <Col md={4}>
+              <FormGroup>
+                <Label className="small">Success Cases</Label>
+                <Input
+                  disabled
+                  value={editData.successCases || 0}
+                  className="bg-light"
+                />
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <FormGroup>
+                <Label className="small">Pending Cases</Label>
+                <Input
+                  disabled
+                  value={editData.pendingCases || 0}
+                  className="bg-light"
+                />
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <FormGroup>
+                <Label className="small">Active Cases</Label>
+                <Input
+                  disabled
+                  value={editData.activeCases || 0}
+                  className="bg-light"
+                />
+              </FormGroup>
+            </Col>
+
+            {/* SECTION 3: ADDRESS */}
+            <Col md={12} className="mt-4">
+              <h6 className="text-primary fw-bold border-bottom pb-2">
+                3. Address Information
+              </h6>
+            </Col>
             <Col md={6}>
               <FormGroup>
-                <Label className="small fw-bold">Street Address</Label>
+                <Label className="small fw-bold">Street</Label>
                 <Input
                   name="street"
                   value={editData.street || ""}
@@ -517,7 +1078,6 @@ const Clients = () => {
                 />
               </FormGroup>
             </Col>
-
             <Col md={3}>
               <FormGroup>
                 <Label className="small fw-bold">Apt/Block</Label>
@@ -529,6 +1089,16 @@ const Clients = () => {
               </FormGroup>
             </Col>
             <Col md={3}>
+              <FormGroup>
+                <Label className="small fw-bold">Zip Code</Label>
+                <Input
+                  name="zipCode"
+                  value={editData.zipCode || ""}
+                  onChange={handleInputChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={4}>
               <FormGroup>
                 <Label className="small fw-bold">Country</Label>
                 <Input
@@ -545,7 +1115,7 @@ const Clients = () => {
                 </Input>
               </FormGroup>
             </Col>
-            <Col md={3}>
+            <Col md={4}>
               <FormGroup>
                 <Label className="small fw-bold">City</Label>
                 <Input
@@ -563,18 +1133,7 @@ const Clients = () => {
                 </Input>
               </FormGroup>
             </Col>
-            <Col md={3}>
-              <FormGroup>
-                <Label className="small fw-bold">Zip Code</Label>
-                <Input
-                  name="zipCode"
-                  value={editData.zipCode || ""}
-                  onChange={handleInputChange}
-                />
-              </FormGroup>
-            </Col>
-
-            <Col md={6}>
+            <Col md={4}>
               <FormGroup>
                 <Label className="small fw-bold">State</Label>
                 <Input
@@ -584,49 +1143,100 @@ const Clients = () => {
                 />
               </FormGroup>
             </Col>
-            <Col md={6}>
-              <FormGroup>
-                <Label className="small fw-bold">New Password</Label>
-                <Input
-                  type="password"
-                  name="password"
-                  placeholder="Enter new password"
-                  onChange={handleInputChange}
-                />
+
+            {/* SECTION 4: VERIFICATION FLAGS */}
+            <Col md={12} className="mt-4">
+              <h6 className="text-primary fw-bold border-bottom pb-2">
+                4. Verification Status
+              </h6>
+            </Col>
+            <Col md={3} className="d-flex align-items-center">
+              <FormGroup check>
+                <Label check className="small fw-bold">
+                  <Input
+                    type="checkbox"
+                    name="isVerified"
+                    checked={editData.isVerified || false}
+                    onChange={handleInputChange}
+                  />{" "}
+                  Email Verified
+                </Label>
+              </FormGroup>
+            </Col>
+            <Col md={3} className="d-flex align-items-center">
+              <FormGroup check>
+                <Label check className="small fw-bold">
+                  <Input
+                    type="checkbox"
+                    name="termsAccepted"
+                    checked={editData.termsAccepted || false}
+                    onChange={handleInputChange}
+                  />{" "}
+                  Terms Accepted
+                </Label>
               </FormGroup>
             </Col>
 
-            <Col md={12} className="mt-4 pt-3 border-top">
-              <h6 className="fw-bold">Documents</h6>
+            {/* SECTION 5: DOCUMENTS */}
+            <Col md={12} className="mt-4">
+              <h6 className="text-primary fw-bold border-bottom pb-2">
+                5. Documents & Media
+              </h6>
             </Col>
-
             <Col md={4}>
-              <FormGroup className="p-2 border rounded bg-light">
-                <Label className="small fw-bold">Profile Image</Label>
+              <div className="p-3 border rounded text-center bg-light">
+                <Label className="fw-bold d-block mb-2">Profile Image</Label>
+                <img
+                  src={
+                    editData.profileImage
+                      ? authService.getImgUrl(editData.profileImage)
+                      : "/assets/images/profilepic.png"
+                  }
+                  className="rounded-circle border mb-2"
+                  width="100"
+                  height="100"
+                  style={{ objectFit: "cover" }}
+                  alt="p"
+                />
                 <Input
                   type="file"
                   name="profileImage"
                   onChange={handleFileChange}
                   className="form-control-sm"
                 />
-              </FormGroup>
+              </div>
             </Col>
-
             <Col md={4}>
-              <div className="p-2 border rounded bg-light text-center">
-                <Label className="small fw-bold text-uppercase d-block">
-                  KYC Document
-                </Label>
+              <div className="p-3 border rounded text-center bg-light">
+                <Label className="fw-bold d-block mb-2">KYC Identity</Label>
                 <Button
                   size="sm"
-                  color="dark"
-                  className="w-100 mb-2"
-                  onClick={() => downloadFile(editData.kycDocument)}>
-                  Download KYC
+                  color="link"
+                  onClick={() => downloadFile(editData.kycIdentity)}
+                  className="p-0 d-block w-100 text-truncate">
+                  {editData.kycIdentity ? "View Current Doc" : "No File"}
                 </Button>
                 <Input
                   type="file"
-                  name="kycDocument"
+                  name="kycIdentity"
+                  onChange={handleFileChange}
+                  className="form-control-sm"
+                />
+              </div>
+            </Col>
+            <Col md={4}>
+              <div className="p-3 border rounded text-center bg-light">
+                <Label className="fw-bold d-block mb-2">KYC Address</Label>
+                <Button
+                  size="sm"
+                  color="link"
+                  onClick={() => downloadFile(editData.kycAddress)}
+                  className="p-0 d-block w-100 text-truncate">
+                  {editData.kycAddress ? "View Current Doc" : "No File"}
+                </Button>
+                <Input
+                  type="file"
+                  name="kycAddress"
                   onChange={handleFileChange}
                   className="form-control-sm"
                 />
@@ -634,7 +1244,7 @@ const Clients = () => {
             </Col>
           </Row>
         </ModalBody>
-        <ModalFooter>
+        <ModalFooter className="bg-light">
           <Button color="secondary" outline onClick={toggleModal}>
             Cancel
           </Button>
@@ -642,7 +1252,7 @@ const Clients = () => {
             color="warning"
             className="px-5 fw-bold"
             onClick={handleUpdateSubmit}>
-            Save Changes
+            UPDATE PROFILE
           </Button>
         </ModalFooter>
       </Modal>

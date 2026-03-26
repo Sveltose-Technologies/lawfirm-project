@@ -478,17 +478,15 @@ export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 // ================= HELPER FUNCTIONS =================
 
 const formatError = (error) => {
-  // If the interceptor already returned a string, use it.
-  // Otherwise, look for the backend's message.
+  console.error("Format Error Input:", error.response); // Add this line
   if (typeof error === "string") return error;
-  return (
-    error.response?.data?.message ||
-    error.response?.data ||
-    error.message ||
-    "An unexpected error occurred"
-  );
-};
 
+  // If the server returns a specific error message
+  if (error.response?.data?.message) return error.response.data.message;
+  if (error.response?.data?.error) return error.response.data.error;
+
+  return error.message || "An unexpected error occurred";
+};
 export const getAdminId = () => {
   if (typeof window !== "undefined") {
     const userData = localStorage.getItem("user");
@@ -510,8 +508,10 @@ export const getImgUrl = (path) => {
   let cleanPath = path.toString().trim().replace(/\\/g, "/");
   if (/^(http|https|data:image)/.test(cleanPath)) return cleanPath;
   while (cleanPath.startsWith("/")) cleanPath = cleanPath.substring(1);
+  
   const folders = ["uploads/", "public/", "assets/", "images/", "static/"];
   const hasFolder = folders.some((folder) => cleanPath.startsWith(folder));
+  
   return hasFolder
     ? `${IMG_URL}/${cleanPath}`
     : `${IMG_URL}/uploads/${cleanPath}`;
@@ -594,30 +594,40 @@ export const resetPassword = async (payload) => {
 
 // ================= CLIENT PROFILE API =================
 
-export const getClientProfile = async (userId) => {
+
+
+export const getClientById = async (id) => {
   try {
-    const response = await API.get(`/client/get-one/${userId}`);
+    const response = await API.get(`/client/get-by-id/${id}`);
     return response.data;
   } catch (error) {
-    throw formatError(error);
+    throw error;
   }
 };
 
-export const updateClientProfile = async (userId, payload) => {
+export const updateClientProfile = async (userId, formData) => {
   try {
-    const response = await API.put(`/client/update/${userId}`, payload);
+    const response = await API.put(`/client/update/${userId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   } catch (error) {
-    throw formatError(error);
+    throw error;
   }
 };
-
 // ================= ATTORNEY AUTHENTICATION =================
 
 export const signupAttorney = async (payload) => {
   try {
+    console.log("Sending Attorney Payload:", payload); // Check this in console
     const response = await API.post("/attorney/signup", payload);
+    console.log("response", response);
+    
     return response.data;
+     console.log("response", response);
+    
   } catch (error) {
     throw formatError(error);
   }
@@ -2306,3 +2316,10 @@ export const deleteCaseCategory = async (id) => {
   }
 };
 
+// ================= Admin - Messages =================
+ 
+export const adminMessage = async (data) => {
+  const response = await API.post("/client-conversation/send", data);
+  return response.data;
+};
+ 

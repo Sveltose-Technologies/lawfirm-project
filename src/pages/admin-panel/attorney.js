@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -14,11 +16,11 @@ import {
   Col,
   FormGroup,
   Label,
-  Badge, 
+  Badge,
 } from "reactstrap";
 import { toast } from "react-toastify";
 import * as authService from "../../services/authService";
-import PaginationComponent from '../../context/Pagination'
+import PaginationComponent from "../../context/Pagination";
 
 const Attorney = () => {
   const [attorneys, setAttorneys] = useState([]);
@@ -93,81 +95,73 @@ const Attorney = () => {
       toast.error("Failed to update status");
     }
   };
+const handleUpdateSubmit = async () => {
+  try {
+    const formData = new FormData();
 
-  const handleUpdateSubmit = async () => {
-    try {
-      const formData = new FormData();
+    // 1. TEXT FIELDS - Include ALL fields from the modal
+    const textFields = [
+      "firstName",
+      "lastName",
+      "email",
+      "status",
+      "dob",
+      "language",
+      "categoryId",
+      "experience",
+      "phoneCell",
+      "phoneHome",
+      "phoneOffice",
+      "country",
+      "state",
+      "city",
+      "zipCode",
+      "street",
+      "aptBlock",
+      "education",
+      "admission",
+      "servicesOffered",
+      "barCouncilIndiaNo",
+      "barCouncilStateNo",
+      "familyLawPractice",
+      "familyDetails",
+      "linkedin",
+      "twitter",
+      "facebook",
+      "gmail",
+      "aboutus",
+    ];
 
-      const updatableFields = [
-        "firstName",
-        "lastName",
-        "email",
-        "status",
-        "dob",
-        "language",
-        "categoryId",
-        "experience",
-        "phoneCell",
-        "phoneHome",
-        "phoneOffice",
-        "country",
-        "state",
-        "city",
-        "zipCode",
-        "street",
-        "aptBlock",
-        "education",
-        "admission",
-        "servicesOffered",
-        "barCouncilIndiaNo",
-        "barCouncilStateNo",
-        "familyLawPractice",
-        "familyDetails",
-        "linkedin",
-        "twitter",
-        "facebook",
-        "gmail",
-        "aboutus",
-      ];
+    textFields.forEach((key) => {
+      if (editData[key] !== undefined && editData[key] !== null) {
+        // Convert to string and trim
+        formData.append(key, editData[key].toString().trim());
+      }
+    });
 
-      updatableFields.forEach((key) => {
-        const value = editData[key];
+    // 2. FILES - Check for new file uploads
+    // profileImage, kycIdentity, kycAddress, resume, barCouncilIndiaId, barCouncilStateId
+    Object.keys(uploadFiles).forEach((key) => {
+      if (uploadFiles[key] instanceof File) {
+        formData.append(key, uploadFiles[key]);
+      }
+    });
 
-        // 1. Skip null or undefined
-        if (value === null || value === undefined) return;
+    // 3. SERVICE CALL - Use updateAttorney instead of updateClientProfile
+    const res = await authService.updateAttorney(editData.id, formData);
 
-        // 2. Fix Boolean conversion for FormData
-        if (typeof value === "boolean") {
-          formData.append(key, value ? "1" : "0"); // Send as 1/0
-          return;
-        }
+    if (res) {
+      toast.success("Attorney updated successfully!");
 
-        // 3. Don't send empty strings for IDs (it crashes backends)
-        if (
-          (key === "categoryId" || key === "city" || key === "locationId") &&
-          value === ""
-        ) {
-          return;
-        }
-
-        formData.append(key, value);
-      });
-
-      Object.keys(uploadFiles).forEach((key) => {
-        if (uploadFiles[key] instanceof File) {
-          formData.append(key, uploadFiles[key]);
-        }
-      });
-
-      await authService.updateAttorney(editData.id, formData);
-      toast.success("Attorney updated successfully");
       toggleModal();
-      fetchData();
-    } catch (err) {
-      console.error("Update Submit Error:", err.response?.data || err.message);
-      toast.error("Update failed");
+      fetchData(); // Refresh the list
     }
-  };
+  } catch (err) {
+    console.error("Update Error:", err);
+    const errorMessage = err.message || "Update failed. Please try again.";
+    toast.error(errorMessage);
+  }
+};
 
   const openUpdateModal = (attorney) => {
     const langValue = Array.isArray(attorney.language)
@@ -294,7 +288,12 @@ const Attorney = () => {
               <td className="text-secondary small">
                 {u.servicesOffered || "General Law"}
               </td>
-              <td className="text-secondary">{u.experience}</td>
+              <td className="text-secondary">
+                {u.experience
+                  ? u.experience.split(" ").slice(0, 3).join(" ") +
+                    (u.experience.split(" ").length > 3 ? "..." : "")
+                  : "N/A"}
+              </td>
               {/* Added Status Column with Click Event */}
               <td className="text-center">
                 <Badge
@@ -729,6 +728,6 @@ const Attorney = () => {
       </Modal>
     </Container>
   );
-};;
+};
 
 export default Attorney;

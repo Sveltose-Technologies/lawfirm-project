@@ -1,11 +1,39 @@
 "use client";
 import React, { useState } from "react";
-import { Row, Col, Input, ListGroup, ListGroupItem, Badge } from "reactstrap";
+import { Row, Col, Input, ListGroup, ListGroupItem, Button } from "reactstrap";
+import { adminMessage } from "../../services/authService";
 
 const Messages = () => {
   const [selectedChat, setSelectedChat] = useState(null);
+  const [typedMessage, setTypedMessage] = useState("");
 
-  // Static Data for UI demonstration
+  // State to hold messages for each chat ID
+  const [conversations, setConversations] = useState({
+    1: [{ id: 101, text: "Salut", sender: "John", time: "10:00 AM" }],
+    2: [{ id: 102, text: "asdsad", sender: "Name", time: "11:00 AM" }],
+  });
+
+  const handleSendMessages = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user?.id;
+
+    //     "" :
+    //     "clientId" : ,
+    //     "senderType" : "",
+    // "message" : "hii"
+    const payload = {
+      adminId: "adminId",
+      senderType: "admin",
+      message: typedMessage,
+    };
+    console.log("userId", userId);
+    // try {
+    //   const response = await adminMessage(payload);
+    // } catch (error) {
+    //   console.log(error);
+    // }
+  };
+
   const chatList = [
     {
       id: 1,
@@ -17,7 +45,7 @@ const Messages = () => {
     },
     {
       id: 2,
-      name: "Name",
+      name: "Mohit",
       role: "Attorney",
       lastMsg: "asdsad",
       time: "a month ago",
@@ -31,23 +59,48 @@ const Messages = () => {
       time: "4 months ago",
       img: "https://i.pravatar.cc/150?u=robert",
     },
-    {
-      id: 4,
-      name: "Rifat Mia",
-      role: "User",
-      lastMsg: "dlgnei jr",
-      time: "4 months ago",
-      img: "https://i.pravatar.cc/150?u=rifat",
-    },
-    {
-      id: 5,
-      name: "Peter Kungu",
-      role: "Attorney",
-      lastMsg: "hlooo",
-      time: "8 months ago",
-      img: "https://i.pravatar.cc/150?u=peter",
-    },
   ];
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+
+    if (!typedMessage.trim() || !selectedChat) return;
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    console.log("userID", user);
+
+    const payload = {
+      adminId: user?.id || "1",
+      clientId: "7",
+      senderType: "admin",
+      message: typedMessage,
+    };
+
+    try {
+      const adminChatResponse = await adminMessage(payload);
+      console.log("CHAT MESSAGE Successful", adminChatResponse?.data);
+    } catch (error) {
+      console.log("API Error:", error);
+    }
+
+    // UI update
+    const newMessage = {
+      id: Date.now(),
+      text: typedMessage,
+      sender: "Me",
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+
+    setConversations((prev) => ({
+      ...prev,
+      [selectedChat.id]: [...(prev[selectedChat.id] || []), newMessage],
+    }));
+
+    setTypedMessage("");
+  };
 
   return (
     <div
@@ -61,13 +114,12 @@ const Messages = () => {
           className="border-end d-flex flex-column bg-light-subtle">
           <div className="p-3 bg-white border-bottom">
             <h5 className="fw-bold mb-3">Inbox</h5>
-            <div className="position-relative">
-              <Input
-                type="text"
-                placeholder="Search chats..."
-                className="rounded-pill bg-light border-0 ps-3"
-              />
-            </div>
+            <Input
+              type="text"
+              placeholder="Search chats..."
+              className="rounded-pill  border-0 ps-3"
+              style={{ backgroundColor: "#e1e7ee" }}
+            />
           </div>
 
           <ListGroup
@@ -82,13 +134,13 @@ const Messages = () => {
                 className="border-0 border-bottom p-3 d-flex align-items-center gap-3 chat-item">
                 <img
                   src={chat.img}
-                  alt={chat.name}
+                  alt=""
                   className="rounded-circle border"
                   width="45"
                   height="45"
                 />
                 <div className="flex-grow-1">
-                  <div className="d-flex justify-content-between align-items-center">
+                  <div className="d-flex justify-content-between">
                     <span className="fw-bold text-dark">{chat.name}</span>
                     <small className="text-muted" style={{ fontSize: "10px" }}>
                       {chat.time}
@@ -109,7 +161,7 @@ const Messages = () => {
         <Col md="8" lg="9" className="d-flex flex-column bg-white">
           {selectedChat ? (
             <div className="h-100 d-flex flex-column animate-slide-up">
-              {/* Active Chat Header */}
+              {/* Header */}
               <div className="p-3 border-bottom d-flex align-items-center gap-3">
                 <img
                   src={selectedChat.img}
@@ -124,24 +176,91 @@ const Messages = () => {
                 </div>
               </div>
 
-              {/* Placeholder for messages */}
-              <div className="flex-grow-1 p-4 text-center d-flex align-items-center justify-content-center text-muted">
-                <p>Start your conversation with {selectedChat.name}</p>
+              {/* Message Display Area */}
+              <div className="flex-grow-1 p-4 overflow-auto bg-light custom-scrollbar">
+                {(conversations[selectedChat.id] || []).map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`d-flex mb-3 ${msg.sender === "Me" ? "justify-content-end" : "justify-content-start"}`}>
+                    <div
+                      className={`p-3 rounded-4 shadow-sm ${msg.sender === "Me" ? "text-white" : "bg-white text-dark"}`}
+                      style={{
+                        maxWidth: "70%",
+                        backgroundColor:
+                          msg.sender === "Me" ? "#22443e" : "#ffffff", // Dark green for 'Me', white for others
+                        borderRadius:
+                          msg.sender === "Me"
+                            ? "15px 15px 2px 15px"
+                            : "15px 15px 15px 2px",
+                        border:
+                          msg.sender === "Me" ? "none" : "1px solid #e0e0e0", // Optional: adds a light border to white bubbles
+                      }}>
+                      <p
+                        className="mb-1 small"
+                        style={{
+                          color: msg.sender === "Me" ? "#fff" : "#161515",
+                        }}>
+                        {msg.text}
+                      </p>
+                      <div
+                        className="text-end"
+                        style={{
+                          fontSize: "9px",
+                          opacity: 0.6,
+                          color: msg.sender === "Me" ? "#fff" : "#161515",
+                        }}>
+                        {msg.time}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Input Area */}
+              <div className="p-3 border-top bg-white">
+                <form
+                  onSubmit={handleSendMessage}
+                  className="d-flex gap-2 align-items-center">
+                  <Input
+                    type="text"
+                    placeholder="Write a message..."
+                    className="rounded-pill bg-light border-0 px-3 py-2"
+                    value={typedMessage}
+                    onChange={(e) => setTypedMessage(e.target.value)}
+                  />
+                  <Button
+                    type="submit"
+                    className="rounded-circle d-flex align-items-center justify-content-center border-0 shadow-sm"
+                    style={{
+                      width: "42px",
+                      height: "42px",
+                      backgroundColor: "#083f36", // Your deep professional green
+                      color: "#ffffff", // White icon for contrast
+                    }}>
+                    {/* Unicode Plane Icon */}
+                    <span
+                      style={{
+                        fontSize: "20px",
+                        transform: "rotate(0deg)",
+                        display: "inline-block",
+                        // marginTop: "-4px",
+                      }}>
+                      ➤
+                    </span>
+                  </Button>
+                </form>
               </div>
             </div>
           ) : (
-            /* Default Empty State (Matches your screenshot) */
             <div className="h-100 d-flex flex-column align-items-center justify-content-center text-center p-5">
-              <div className="mb-4">
-                <img
-                  src="https://cdn-icons-png.flaticon.com/512/3665/3665922.png"
-                  alt="mobile animation"
-                  className="img-fluid floating-animation"
-                  style={{ width: "120px", opacity: 0.6 }}
-                />
-              </div>
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/3665/3665922.png"
+                alt="empty chat"
+                className="img-fluid floating-animation mb-4"
+                style={{ width: "120px", opacity: 0.6 }}
+              />
               <h5 className="text-muted fw-light">
-                Click an inbox card to view the messages.
+                Select a conversation to start messaging.
               </h5>
             </div>
           )}
@@ -177,26 +296,20 @@ const Messages = () => {
           }
         }
         @keyframes float {
-          0% {
+          0%,
+          100% {
             transform: translateY(0px);
           }
           50% {
             transform: translateY(-15px);
           }
-          100% {
-            transform: translateY(0px);
-          }
-        }
-        .chat-item {
-          transition: background 0.2s;
-          cursor: pointer;
         }
         .chat-item:hover {
           background-color: #f8f9fa !important;
         }
         .chat-item.active {
           background-color: #fff9ed !important;
-          border-left: 4px solid #ffc107 !important;
+          border-left: 4px solid #083f36 !important;
         }
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
@@ -211,258 +324,3 @@ const Messages = () => {
 };
 
 export default Messages;
-
-
-
-
-
-// "use client";
-// import React, { useState, useEffect } from "react";
-// import { Row, Col, Input, ListGroup, ListGroupItem, Button } from "reactstrap";
-// import axios from "axios";
-// import { socket } from "../../socket/socket";
-// import { toast } from "react-toastify";
-
-// const Messages = () => {
-//   const [selectedChat, setSelectedChat] = useState(null);
-//   const [typedMessage, setTypedMessage] = useState("");
-//   const [userId, setuserId] = useState(""); // This will be dynamic
-//   const [conversationId, setConversationId] = useState(null);
-//   const [conversations, setConversations] = useState({});
-
-//   // 🔥 CHANGED: Use real IDs from your database to avoid 500 error
-//   // Your admin ID is 1. Attorney Davil's ID is 14.
-//   const chatList = [
-//     {
-//       id: 14, // Real Numeric ID from your DB
-//       name: "Attorney Davil",
-//       role: "Attorney",
-//       img: "https://i.pravatar.cc/150?u=14",
-//     },
-//     {
-//       id: 2, // Ensure this user exists in your DB
-//       name: "System Admin",
-//       role: "Admin",
-//       img: "https://i.pravatar.cc/150?u=1",
-//     },
-//   ];
-
-//   // 🔥 INIT CHAT & SOCKET
-//   useEffect(() => {
-//     const userData = localStorage.getItem("user");
-//     if (userData) {
-//       const user = JSON.parse(userData);
-//       const currentId = user.id; // Dynamic ID from localStorage
-//       setuserId(currentId);
-
-//       // Connect and register the user
-//       socket.connect();
-//       socket.emit("register", currentId);
-//       console.log("🚀 Socket Registered for User:", currentId);
-//     }
-
-//     socket.on("receiveMessage", (msg) => {
-//       console.log("📩 Message Received:", msg);
-//       setConversations((prev) => ({
-//         ...prev,
-//         [msg.conversationId]: [...(prev[msg.conversationId] || []), msg],
-//       }));
-//     });
-
-//     return () => {
-//       socket.off("receiveMessage");
-//       socket.disconnect(); // Cleanup connection
-//     };
-//   }, []);
-
-//   // 🔥 WHEN CHAT SELECTED (ENDPOINT ADDED)
-//   useEffect(() => {
-//     if (!selectedChat || !userId) return;
-
-//    const initChat = async () => {
-//      // 1. Validation: Don't call API if IDs are missing
-//      if (!userId || !selectedChat?.id) {
-//        console.error("❌ Missing IDs:", {
-//          userId,
-//          selectedChatId: selectedChat?.id,
-//        });
-//        return;
-//      }
-
-//      try {
-//        console.log(
-//          "🚀 Attempting to create conversation between:",
-//          userId,
-//          "and",
-//          selectedChat.id,
-//        );
-
-//        const res = await axios.post(
-//          "https://nodejs.nrislawfirm.com/conversation/create",
-//          {
-//            user1: userId, // Send as is (the backend usually handles string/number)
-//            user2: selectedChat.id,
-//          },
-//        );
-
-//        // 2. Safely get the ID (handle both MongoDB _id and SQL id)
-//        const convoId = res.data?._id || res.data?.id;
-
-//        if (!convoId) {
-//          throw new Error("Server did not return a Conversation ID");
-//        }
-
-//        setConversationId(convoId);
-//        socket.emit("joinConversation", convoId);
-
-//        // 3. Fetch messages
-//        const msgRes = await axios.get(
-//          `https://nodejs.nrislawfirm.com/messages/${convoId}`,
-//        );
-
-//        setConversations((prev) => ({
-//          ...prev,
-//          [convoId]: Array.isArray(msgRes.data) ? msgRes.data : [],
-//        }));
-//      } catch (err) {
-//        // 4. Detailed Error Logging
-//        console.error(
-//          "❌ API Crash Details:",
-//          err.response?.data || err.message,
-//        );
-
-//        if (err.response?.status === 500) {
-//          toast.error(
-//            "Server Error (500): Check if User IDs exist in the Database",
-//          );
-//        } else {
-//          toast.error("Failed to start chat.");
-//        }
-//      }
-//    };
-
-//     initChat();
-//   }, [selectedChat, userId]);
-
-//   // 🔥 SEND MESSAGE
-//   const handleSendMessage = (e) => {
-//     e.preventDefault();
-//     if (!typedMessage.trim() || !conversationId) return;
-
-//     const payload = {
-//       conversationId,
-//       senderId: userId,
-//       receiverId: selectedChat.id,
-//       message: typedMessage,
-//     };
-
-//     // Emit via socket
-//     socket.emit("sendMessage", payload);
-
-//     // Optimistically update local UI
-//     setConversations((prev) => ({
-//       ...prev,
-//       [conversationId]: [...(prev[conversationId] || []), payload],
-//     }));
-
-//     setTypedMessage("");
-//   };
-
-//   return (
-//     // ✅ UI UNCHANGED AS REQUESTED
-//     <div
-//       className="p-4 animate-fade-in"
-//       style={{ height: "calc(100vh - 120px)" }}>
-//       <Row className="h-100 bg-white shadow-sm rounded-4 overflow-hidden g-0 border">
-//         <Col
-//           md="4"
-//           lg="3"
-//           className="border-end d-flex flex-column bg-light-subtle">
-//           <div className="p-3 bg-white border-bottom">
-//             <h5 className="fw-bold mb-3">Inbox</h5>
-//             <Input
-//               type="text"
-//               placeholder="Search chats..."
-//               style={{
-//                 borderRadius: 20,
-//                 borderColor: "#0f0e0e",
-//                 borderWidth: 0.1,
-//               }}
-//               className="rounded-pill border-1 ps-3"
-//             />
-//           </div>
-
-//           <ListGroup flush className="overflow-auto flex-grow-1">
-//             {chatList.map((chat) => (
-//               <ListGroupItem
-//                 key={chat.id}
-//                 action
-//                 active={selectedChat?.id === chat.id}
-//                 onClick={() => setSelectedChat(chat)}
-//                 className="p-3 d-flex align-items-center gap-3"
-//                 style={{
-//                   backgroundColor:
-//                     selectedChat?.id === chat.id ? "#5c81a0" : "#ffffff",
-//                 }}>
-//                 <img
-//                   src={chat.img}
-//                   className="rounded-circle"
-//                   width="45"
-//                   height="45"
-//                   alt="user"
-//                 />
-//                 <div
-//                   className={selectedChat?.id === chat.id ? "text-white" : ""}>
-//                   {chat.name}
-//                 </div>
-//               </ListGroupItem>
-//             ))}
-//           </ListGroup>
-//         </Col>
-
-//         <Col md="8" lg="9" className="d-flex flex-column bg-white">
-//           {selectedChat ? (
-//             <>
-//               <div className="flex-grow-1 p-4 overflow-auto bg-light">
-//                 {(conversations[conversationId] || []).map((msg, i) => (
-//                   <div
-//                     key={i}
-//                     className={`mb-3 d-flex ${msg.senderId === userId ? "justify-content-end" : "justify-content-start"}`}>
-//                     <div
-//                       className={`p-2 px-3 rounded-3 shadow-sm ${msg.senderId === userId ? "bg-primary text-white" : "bg-white border"}`}>
-//                       <small
-//                         className="d-block opacity-75"
-//                         style={{ fontSize: "10px" }}>
-//                         {msg.senderId === userId ? "You" : selectedChat.name}
-//                       </small>
-//                       {msg.message}
-//                     </div>
-//                   </div>
-//                 ))}
-//               </div>
-
-//               <div className="p-3 border-top">
-//                 <form onSubmit={handleSendMessage} className="d-flex gap-2">
-//                   <Input
-//                     placeholder="Write a message..."
-//                     value={typedMessage}
-//                     onChange={(e) => setTypedMessage(e.target.value)}
-//                   />
-//                   <Button type="submit" color="primary">
-//                     Send
-//                   </Button>
-//                 </form>
-//               </div>
-//             </>
-//           ) : (
-//             <div className="h-100 d-flex align-items-center justify-content-center text-muted">
-//               Select a contact to start chatting
-//             </div>
-//           )}
-//         </Col>
-//       </Row>
-//     </div>
-//   );
-// };
-
-// export default Messages;
