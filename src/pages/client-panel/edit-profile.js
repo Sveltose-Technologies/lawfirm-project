@@ -4,6 +4,7 @@
 //   getAllLocationCities,
 //   getAllLocationCountries,
 //   updateClientProfile,
+//   getClientById,
 //   getImgUrl,
 // } from "../../services/authService";
 // import { toast } from "react-toastify";
@@ -15,6 +16,7 @@
 //   const [cities, setCities] = useState([]);
 //   const [countries, setCountries] = useState([]);
 //   const [loading, setLoading] = useState(false);
+//   const [isLoaded, setIsLoaded] = useState(false); // Validation fix ke liye
 
 //   const [profile, setProfile] = useState({
 //     firstName: "",
@@ -31,10 +33,9 @@
 //     dob: "",
 //     password: "",
 //     status: "active",
-//     termsAccepted: false,
-//     profileImage: "",
 //     kycIdentity: "",
 //     kycAddress: "",
+//     profileImage: "",
 //   });
 
 //   const [uploadFiles, setUploadFiles] = useState({
@@ -58,6 +59,48 @@
 //     );
 //   }, [profile.country, cities, countries]);
 
+//   // REFRESH LOGIC: API se fresh data fetch karna
+//   useEffect(() => {
+//     const loadData = async () => {
+//       try {
+//         const [cityRes, countryRes] = await Promise.all([
+//           getAllLocationCities(),
+//           getAllLocationCountries(),
+//         ]);
+//         setCities(cityRes?.data || cityRes || []);
+//         setCountries(countryRes?.data || countryRes || []);
+
+//         const userData = JSON.parse(localStorage.getItem("user"));
+//         if (userData?.id) {
+//           const res = await getClientById(userData.id);
+//           const serverData = res.client || res.data || res;
+
+//           if (serverData) {
+//             setProfile({
+//               ...serverData,
+//               dob: serverData.dob ? serverData.dob.split("T")[0] : "",
+//               password: "",
+//             });
+
+//             if (serverData.profileImage) {
+//               setPreviews({ profileImage: getImgUrl(serverData.profileImage) });
+//             }
+//             // LocalStorage update taaki Header sync rahe
+//             localStorage.setItem(
+//               "user",
+//               JSON.stringify({ ...userData, ...serverData }),
+//             );
+//           }
+//         }
+//         setIsLoaded(true);
+//       } catch (err) {
+//         console.error(err);
+//         setIsLoaded(true);
+//       }
+//     };
+//     loadData();
+//   }, []);
+
 //   const handleChange = (e) => {
 //     const { name, value, type, checked } = e.target;
 //     setProfile((prev) => ({
@@ -73,36 +116,41 @@
 //       const file = files[0];
 //       setUploadFiles((prev) => ({ ...prev, [name]: file }));
 //       if (name === "profileImage") {
-//         setPreviews((prev) => ({
-//           ...prev,
-//           profileImage: URL.createObjectURL(file),
-//         }));
+//         setPreviews({ profileImage: URL.createObjectURL(file) });
 //       }
 //     }
 //   };
 
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
+//     if (!isLoaded) return;
 //     setLoading(true);
 
 //     try {
 //       const userData = JSON.parse(localStorage.getItem("user"));
-//       const userId = userData?.id;
-
-//       if (!userId) return toast.error("User session expired.");
-
 //       const formData = new FormData();
+
+//       // Sari Text Fields append karna
 //       Object.keys(profile).forEach((key) => {
 //         if (
-//           profile[key] !== "" &&
-//           !["profileImage", "kycIdentity", "kycAddress"].includes(key)
+//           !["profileImage", "kycIdentity", "kycAddress", "password"].includes(
+//             key,
+//           )
 //         ) {
-//           let value = profile[key];
-//           if (typeof value === "string") value = value.trim();
-//           formData.append(key, value);
+//           if (
+//             profile[key] !== null &&
+//             profile[key] !== undefined &&
+//             profile[key] !== "" &&
+//             profile[key] !== "null"
+//           ) {
+//             formData.append(key, profile[key].toString().trim());
+//           }
 //         }
 //       });
 
+//       if (profile.password) formData.append("password", profile.password);
+
+//       // Files tabhi append hongi jab nayi select ki ho (instanceof File)
 //       if (uploadFiles.profileImage instanceof File)
 //         formData.append("profileImage", uploadFiles.profileImage);
 //       if (uploadFiles.kycIdentity instanceof File)
@@ -110,58 +158,26 @@
 //       if (uploadFiles.kycAddress instanceof File)
 //         formData.append("kycAddress", uploadFiles.kycAddress);
 
-//       const result = await updateClientProfile(userId, formData);
+//       const result = await updateClientProfile(userData.id, formData);
 
 //       if (result) {
-//         const serverClient = result.client || result.data || {};
-
-//         // Merge server response with existing local data
-//         const finalUserObject = {
-//           ...userData,
-//           ...profile,
-//           profileImage: serverClient.profileImage || userData.profileImage,
-//           kycIdentity: serverClient.kycIdentity || userData.kycIdentity,
-//           kycAddress: serverClient.kycAddress || userData.kycAddress,
-//         };
-
-//         localStorage.setItem("user", JSON.stringify(finalUserObject));
-
-//         // Trigger global event for Header and Sidebar
+//         const updated = result.client || result.data || result;
+//         localStorage.setItem(
+//           "user",
+//           JSON.stringify({ ...userData, ...updated }),
+//         );
 //         window.dispatchEvent(new Event("profileUpdated"));
-
-//         toast.success("Profile updated successfully!");
-//         setProfile((prev) => ({ ...prev, ...serverClient }));
+//         toast.success("Profile updated!");
+//         setProfile((prev) => ({ ...prev, ...updated, password: "" }));
+//         if (updated.profileImage)
+//           setPreviews({ profileImage: getImgUrl(updated.profileImage) });
 //       }
 //     } catch (error) {
-//       toast.error(error.message || "Failed to update profile.");
+//       toast.error("Update failed.");
 //     } finally {
 //       setLoading(false);
 //     }
 //   };
-
-//   useEffect(() => {
-//     const loadData = async () => {
-//       try {
-//         const [cityRes, countryRes] = await Promise.all([
-//           getAllLocationCities(),
-//           getAllLocationCountries(),
-//         ]);
-//         setCities(cityRes?.data || cityRes || []);
-//         setCountries(countryRes?.data || countryRes || []);
-
-//         const userData = JSON.parse(localStorage.getItem("user"));
-//         if (userData) {
-//           setProfile((prev) => ({ ...prev, ...userData, password: "" }));
-//           if (userData.profileImage) {
-//             setPreviews({ profileImage: getImgUrl(userData.profileImage) });
-//           }
-//         }
-//       } catch (err) {
-//         console.error(err);
-//       }
-//     };
-//     loadData();
-//   }, []);
 
 //   return (
 //     <ClientLayout>
@@ -177,10 +193,9 @@
 //               <label className="me-2 small fw-bold">STATUS:</label>
 //               <select
 //                 name="status"
-//                 className={`form-select form-select-sm fw-bold ${profile.status === "active" ? "text-success" : "text-danger"}`}
+//                 className="form-select form-select-sm fw-bold"
 //                 value={profile.status}
-//                 onChange={handleChange}
-//                 style={{ width: "120px" }}>
+//                 onChange={handleChange}>
 //                 <option value="active">ACTIVE</option>
 //                 <option value="inactive">INACTIVE</option>
 //               </select>
@@ -188,167 +203,150 @@
 //           </div>
 
 //           <div className="row g-4">
-//             {/* Left Section: Image and KYC */}
-//             <div className="col-lg-4 border-end">
-//               <div className="text-center mb-4">
-//                 <div className="position-relative d-inline-block">
-//                   <img
-//                     src={previews.profileImage}
-//                     className="rounded-circle border shadow-sm"
-//                     width="140"
-//                     height="140"
-//                     style={{ objectFit: "cover" }}
-//                     alt="avatar"
-//                     onError={(e) => {
-//                       e.target.src = "/assets/images/profilepic.png";
-//                     }}
-//                   />
-//                   <input
-//                     type="file"
-//                     name="profileImage"
-//                     ref={fileInputRef}
-//                     onChange={handleFileChange}
-//                     hidden
-//                     accept="image/*"
-//                   />
-//                   <button
-//                     type="button"
-//                     onClick={() => fileInputRef.current.click()}
-//                     className="btn btn-dark btn-sm rounded-circle position-absolute bottom-0 end-0 p-2">
-//                     <i className="bi bi-camera-fill"></i>
-//                   </button>
-//                 </div>
+//             <div className="col-lg-4 border-end text-center">
+//               <div className="position-relative d-inline-block">
+//                 <img
+//                   src={previews.profileImage}
+//                   className="rounded-circle border shadow-sm"
+//                   width="140"
+//                   height="140"
+//                   style={{ objectFit: "cover" }}
+//                   onError={(e) => {
+//                     e.target.src = "/assets/images/profilepic.png";
+//                   }}
+//                   alt="p"
+//                 />
+//                 <input
+//                   type="file"
+//                   name="profileImage"
+//                   ref={fileInputRef}
+//                   onChange={handleFileChange}
+//                   hidden
+//                   accept="image/*"
+//                 />
+//                 <button
+//                   type="button"
+//                   onClick={() => fileInputRef.current.click()}
+//                   className="btn btn-dark btn-sm rounded-circle position-absolute bottom-0 end-0 p-2">
+//                   <i className="bi bi-camera-fill"></i>
+//                 </button>
 //               </div>
-
-//               <div className="bg-light p-3 rounded-3 mt-4">
-//                 <h6 className="fw-bold small text-primary mb-3 text-uppercase">
-//                   KYC Verification
+//               <div className="bg-light p-3 rounded-3 mt-4 text-start">
+//                 <h6 className="fw-bold small text-primary mb-3">
+//                   KYC DOCUMENTS
 //                 </h6>
-//                 <div className="mb-3">
-//                   <label className="small fw-bold">
-//                     Identity Proof {profile.kycIdentity ? "✅" : "❌"}
-//                   </label>
-//                   <input
-//                     type="file"
-//                     name="kycIdentity"
-//                     className="form-control form-control-sm"
-//                     onChange={handleFileChange}
-//                   />
-//                 </div>
-//                 <div className="mb-1">
-//                   <label className="small fw-bold">
-//                     Address Proof {profile.kycAddress ? "✅" : "❌"}
-//                   </label>
-//                   <input
-//                     type="file"
-//                     name="kycAddress"
-//                     className="form-control form-control-sm"
-//                     onChange={handleFileChange}
-//                   />
-//                 </div>
+//                 <label className="small fw-bold">
+//                   Identity Proof {profile.kycIdentity ? "✅" : "❌"}
+//                 </label>
+//                 <input
+//                   type="file"
+//                   name="kycIdentity"
+//                   className="form-control form-control-sm mb-3"
+//                   onChange={handleFileChange}
+//                 />
+//                 <label className="small fw-bold">
+//                   Address Proof {profile.kycAddress ? "✅" : "❌"}
+//                 </label>
+//                 <input
+//                   type="file"
+//                   name="kycAddress"
+//                   className="form-control form-control-sm"
+//                   onChange={handleFileChange}
+//                 />
 //               </div>
 //             </div>
 
-//             {/* Right Section: Fields */}
 //             <div className="col-lg-8">
 //               <div className="row g-3">
 //                 <div className="col-md-6">
-//                   <label className="form-label small fw-bold">First Name</label>
+//                   <label className="small fw-bold">First Name</label>
 //                   <input
 //                     type="text"
 //                     name="firstName"
 //                     className="form-control"
-//                     value={profile.firstName}
+//                     value={profile.firstName || ""}
 //                     onChange={handleChange}
 //                     required
 //                   />
 //                 </div>
 //                 <div className="col-md-6">
-//                   <label className="form-label small fw-bold">Last Name</label>
+//                   <label className="small fw-bold">Last Name</label>
 //                   <input
 //                     type="text"
 //                     name="lastName"
 //                     className="form-control"
-//                     value={profile.lastName}
+//                     value={profile.lastName || ""}
 //                     onChange={handleChange}
 //                     required
 //                   />
 //                 </div>
 //                 <div className="col-md-8">
-//                   <label className="form-label small fw-bold">Email</label>
+//                   <label className="small fw-bold">Email</label>
 //                   <input
 //                     type="email"
 //                     name="email"
 //                     className="form-control"
-//                     value={profile.email}
+//                     value={profile.email || ""}
 //                     onChange={handleChange}
+//                     required
 //                   />
 //                 </div>
 //                 <div className="col-md-4">
-//                   <label className="form-label small fw-bold">
-//                     Date of Birth
-//                   </label>
+//                   <label className="small fw-bold">DOB</label>
 //                   <input
 //                     type="date"
 //                     name="dob"
 //                     className="form-control"
-//                     value={profile.dob}
+//                     value={profile.dob || ""}
 //                     onChange={handleChange}
 //                   />
 //                 </div>
 //                 <div className="col-md-3">
-//                   <label className="form-label small fw-bold">Code</label>
+//                   <label className="small fw-bold">Code</label>
 //                   <input
 //                     type="text"
 //                     name="countryCode"
 //                     className="form-control"
-//                     value={profile.countryCode}
+//                     value={profile.countryCode || ""}
 //                     onChange={handleChange}
 //                   />
 //                 </div>
 //                 <div className="col-md-9">
-//                   <label className="form-label small fw-bold">Mobile</label>
+//                   <label className="small fw-bold">Mobile</label>
 //                   <input
 //                     type="text"
 //                     name="mobile"
 //                     className="form-control"
-//                     value={profile.mobile}
+//                     value={profile.mobile || ""}
 //                     onChange={handleChange}
 //                   />
 //                 </div>
-
-//                 <div className="col-12 mt-4">
-//                   <h6 className="text-secondary fw-bold small border-bottom pb-1">
-//                     LOCATION & ADDRESS
-//                   </h6>
-//                 </div>
-
 //                 <div className="col-md-8">
-//                   <label className="form-label small fw-bold">Street</label>
+//                   <label className="small fw-bold">Street</label>
 //                   <input
 //                     type="text"
 //                     name="street"
 //                     className="form-control"
-//                     value={profile.street}
+//                     value={profile.street || ""}
 //                     onChange={handleChange}
 //                   />
 //                 </div>
 //                 <div className="col-md-4">
-//                   <label className="form-label small fw-bold">Apt/Block</label>
+//                   <label className="small fw-bold">Apt/Block</label>
 //                   <input
 //                     type="text"
 //                     name="aptBlock"
 //                     className="form-control"
-//                     value={profile.aptBlock}
+//                     value={profile.aptBlock || ""}
 //                     onChange={handleChange}
 //                   />
 //                 </div>
 //                 <div className="col-md-4">
-//                   <label className="form-label small fw-bold">Country</label>
+//                   <label className="small fw-bold">Country</label>
 //                   <select
 //                     name="country"
 //                     className="form-select"
-//                     value={profile.country}
+//                     value={profile.country || ""}
 //                     onChange={handleChange}>
 //                     <option value="">Select Country</option>
 //                     {countries.map((c) => (
@@ -359,11 +357,11 @@
 //                   </select>
 //                 </div>
 //                 <div className="col-md-4">
-//                   <label className="form-label small fw-bold">City</label>
+//                   <label className="small fw-bold">City</label>
 //                   <select
 //                     name="city"
 //                     className="form-select"
-//                     value={profile.city}
+//                     value={profile.city || ""}
 //                     onChange={handleChange}
 //                     disabled={!profile.country}>
 //                     <option value="">Select City</option>
@@ -375,26 +373,17 @@
 //                   </select>
 //                 </div>
 //                 <div className="col-md-4">
-//                   <label className="form-label small fw-bold">Zip Code</label>
+//                   <label className="small fw-bold">Zip Code</label>
 //                   <input
 //                     type="text"
 //                     name="zipCode"
 //                     className="form-control"
-//                     value={profile.zipCode}
+//                     value={profile.zipCode || ""}
 //                     onChange={handleChange}
 //                   />
 //                 </div>
-
-//                 <div className="col-12 mt-4">
-//                   <h6 className="text-secondary fw-bold small border-bottom pb-1">
-//                     SECURITY & CONSENT
-//                   </h6>
-//                 </div>
-
 //                 <div className="col-md-6">
-//                   <label className="form-label small fw-bold">
-//                     Change Password
-//                   </label>
+//                   <label className="small fw-bold">Change Password</label>
 //                   <input
 //                     type="password"
 //                     name="password"
@@ -403,15 +392,14 @@
 //                     onChange={handleChange}
 //                   />
 //                 </div>
-
-//                 <div className="col-12 mt-4 text-end">
+//                 <div className="col-12 text-end mt-4">
 //                   <button
 //                     type="submit"
-//                     disabled={loading}
-//                     className="btn text-white px-5 py-2 fw-bold"
+//                     disabled={loading || !isLoaded}
+//                     className="btn text-white px-5 fw-bold"
 //                     style={{ backgroundColor: navyColor }}>
 //                     {loading ? (
-//                       <span className="spinner-border spinner-border-sm me-2"></span>
+//                       <span className="spinner-border spinner-border-sm"></span>
 //                     ) : (
 //                       "UPDATE PROFILE"
 //                     )}
@@ -444,7 +432,7 @@ export default function EditProfile() {
   const [cities, setCities] = useState([]);
   const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false); // Validation fix ke liye
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const [profile, setProfile] = useState({
     firstName: "",
@@ -457,13 +445,14 @@ export default function EditProfile() {
     state: "",
     country: "",
     zipCode: "",
-    countryCode: "+91",
+    countryCode: "",
     dob: "",
     password: "",
     status: "active",
     kycIdentity: "",
     kycAddress: "",
     profileImage: "",
+    termsAccepted: false,
   });
 
   const [uploadFiles, setUploadFiles] = useState({
@@ -476,6 +465,7 @@ export default function EditProfile() {
     profileImage: "/assets/images/profilepic.png",
   });
 
+  // Filter cities based on selected country ID
   const filteredCities = useMemo(() => {
     if (!profile.country || countries.length === 0) return [];
     const selectedCountryObj = countries.find(
@@ -487,7 +477,6 @@ export default function EditProfile() {
     );
   }, [profile.country, cities, countries]);
 
-  // REFRESH LOGIC: API se fresh data fetch karna
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -508,16 +497,12 @@ export default function EditProfile() {
               ...serverData,
               dob: serverData.dob ? serverData.dob.split("T")[0] : "",
               password: "",
+              status: serverData.status || "active",
             });
 
             if (serverData.profileImage) {
               setPreviews({ profileImage: getImgUrl(serverData.profileImage) });
             }
-            // LocalStorage update taaki Header sync rahe
-            localStorage.setItem(
-              "user",
-              JSON.stringify({ ...userData, ...serverData }),
-            );
           }
         }
         setIsLoaded(true);
@@ -558,27 +543,43 @@ export default function EditProfile() {
       const userData = JSON.parse(localStorage.getItem("user"));
       const formData = new FormData();
 
-      // Sari Text Fields append karna
-      Object.keys(profile).forEach((key) => {
+      // List of all 18 parameters to ensure none are missed
+      const fields = [
+        "firstName",
+        "lastName",
+        "email",
+        "mobile",
+        "street",
+        "aptBlock",
+        "city",
+        "state",
+        "country",
+        "zipCode",
+        "countryCode",
+        "dob",
+        "status",
+        "termsAccepted",
+      ];
+
+      fields.forEach((key) => {
+        const value = profile[key];
         if (
-          !["profileImage", "kycIdentity", "kycAddress", "password"].includes(
-            key,
-          )
+          value !== null &&
+          value !== undefined &&
+          value !== "" &&
+          value !== "null"
         ) {
-          if (
-            profile[key] !== null &&
-            profile[key] !== undefined &&
-            profile[key] !== "" &&
-            profile[key] !== "null"
-          ) {
-            formData.append(key, profile[key].toString().trim());
+          if (key === "termsAccepted") {
+            formData.append(key, value ? "1" : "0");
+          } else {
+            formData.append(key, value.toString().trim());
           }
         }
       });
 
       if (profile.password) formData.append("password", profile.password);
 
-      // Files tabhi append hongi jab nayi select ki ho (instanceof File)
+      // Append files only if they are newly selected
       if (uploadFiles.profileImage instanceof File)
         formData.append("profileImage", uploadFiles.profileImage);
       if (uploadFiles.kycIdentity instanceof File)
@@ -595,13 +596,20 @@ export default function EditProfile() {
           JSON.stringify({ ...userData, ...updated }),
         );
         window.dispatchEvent(new Event("profileUpdated"));
-        toast.success("Profile updated!");
-        setProfile((prev) => ({ ...prev, ...updated, password: "" }));
+        toast.success("Profile updated successfully!");
+
+        setProfile((prev) => ({
+          ...prev,
+          ...updated,
+          dob: updated.dob ? updated.dob.split("T")[0] : "",
+          password: "",
+        }));
+
         if (updated.profileImage)
           setPreviews({ profileImage: getImgUrl(updated.profileImage) });
       }
     } catch (error) {
-      toast.error("Update failed.");
+      toast.error("Failed to update profile.");
     } finally {
       setLoading(false);
     }
@@ -625,12 +633,13 @@ export default function EditProfile() {
                 value={profile.status}
                 onChange={handleChange}>
                 <option value="active">ACTIVE</option>
-                <option value="inactive">INACTIVE</option>
+                <option value="dactive">INACTIVE</option>
               </select>
             </div>
           </div>
 
           <div className="row g-4">
+            {/* Left Column: Image and KYC */}
             <div className="col-lg-4 border-end text-center">
               <div className="position-relative d-inline-block">
                 <img
@@ -642,7 +651,7 @@ export default function EditProfile() {
                   onError={(e) => {
                     e.target.src = "/assets/images/profilepic.png";
                   }}
-                  alt="p"
+                  alt="profile"
                 />
                 <input
                   type="file"
@@ -659,31 +668,37 @@ export default function EditProfile() {
                   <i className="bi bi-camera-fill"></i>
                 </button>
               </div>
+
               <div className="bg-light p-3 rounded-3 mt-4 text-start">
                 <h6 className="fw-bold small text-primary mb-3">
                   KYC DOCUMENTS
                 </h6>
-                <label className="small fw-bold">
-                  Identity Proof {profile.kycIdentity ? "✅" : "❌"}
-                </label>
-                <input
-                  type="file"
-                  name="kycIdentity"
-                  className="form-control form-control-sm mb-3"
-                  onChange={handleFileChange}
-                />
-                <label className="small fw-bold">
-                  Address Proof {profile.kycAddress ? "✅" : "❌"}
-                </label>
-                <input
-                  type="file"
-                  name="kycAddress"
-                  className="form-control form-control-sm"
-                  onChange={handleFileChange}
-                />
+                <div className="mb-3">
+                  <label className="small fw-bold d-block">
+                    Identity Proof {profile.kycIdentity ? "✅" : "❌"}
+                  </label>
+                  <input
+                    type="file"
+                    name="kycIdentity"
+                    className="form-control form-control-sm"
+                    onChange={handleFileChange}
+                  />
+                </div>
+                <div>
+                  <label className="small fw-bold d-block">
+                    Address Proof {profile.kycAddress ? "✅" : "❌"}
+                  </label>
+                  <input
+                    type="file"
+                    name="kycAddress"
+                    className="form-control form-control-sm"
+                    onChange={handleFileChange}
+                  />
+                </div>
               </div>
             </div>
 
+            {/* Right Column: All Text Fields */}
             <div className="col-lg-8">
               <div className="row g-3">
                 <div className="col-md-6">
@@ -709,7 +724,7 @@ export default function EditProfile() {
                   />
                 </div>
                 <div className="col-md-8">
-                  <label className="small fw-bold">Email</label>
+                  <label className="small fw-bold">Email Address</label>
                   <input
                     type="email"
                     name="email"
@@ -720,7 +735,7 @@ export default function EditProfile() {
                   />
                 </div>
                 <div className="col-md-4">
-                  <label className="small fw-bold">DOB</label>
+                  <label className="small fw-bold">Date of Birth</label>
                   <input
                     type="date"
                     name="dob"
@@ -730,17 +745,18 @@ export default function EditProfile() {
                   />
                 </div>
                 <div className="col-md-3">
-                  <label className="small fw-bold">Code</label>
+                  <label className="small fw-bold">Country Code</label>
                   <input
                     type="text"
                     name="countryCode"
                     className="form-control"
+                    placeholder="+91"
                     value={profile.countryCode || ""}
                     onChange={handleChange}
                   />
                 </div>
                 <div className="col-md-9">
-                  <label className="small fw-bold">Mobile</label>
+                  <label className="small fw-bold">Mobile Number</label>
                   <input
                     type="text"
                     name="mobile"
@@ -750,7 +766,7 @@ export default function EditProfile() {
                   />
                 </div>
                 <div className="col-md-8">
-                  <label className="small fw-bold">Street</label>
+                  <label className="small fw-bold">Street Address</label>
                   <input
                     type="text"
                     name="street"
@@ -801,6 +817,16 @@ export default function EditProfile() {
                   </select>
                 </div>
                 <div className="col-md-4">
+                  <label className="small fw-bold">State/Province</label>
+                  <input
+                    type="text"
+                    name="state"
+                    className="form-control"
+                    value={profile.state || ""}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="col-md-4">
                   <label className="small fw-bold">Zip Code</label>
                   <input
                     type="text"
@@ -810,16 +836,35 @@ export default function EditProfile() {
                     onChange={handleChange}
                   />
                 </div>
-                <div className="col-md-6">
-                  <label className="small fw-bold">Change Password</label>
+                <div className="col-md-8">
+                  <label className="small fw-bold">New Password</label>
                   <input
                     type="password"
                     name="password"
                     className="form-control"
-                    placeholder="New Password"
+                    placeholder="Leave blank to keep current password"
                     onChange={handleChange}
                   />
                 </div>
+
+                <div className="col-12 mt-3">
+                  <div className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      name="termsAccepted"
+                      id="termsCheck"
+                      checked={profile.termsAccepted || false}
+                      onChange={handleChange}
+                    />
+                    <label
+                      className="form-check-label small fw-bold"
+                      htmlFor="termsCheck">
+                      I confirm that the above information is correct.
+                    </label>
+                  </div>
+                </div>
+
                 <div className="col-12 text-end mt-4">
                   <button
                     type="submit"

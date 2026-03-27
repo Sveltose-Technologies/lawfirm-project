@@ -132,12 +132,24 @@ const handleUpdateSubmit = async () => {
       "aboutus",
     ];
 
-    textFields.forEach((key) => {
-      if (editData[key] !== undefined && editData[key] !== null) {
-        // Convert to string and trim
-        formData.append(key, editData[key].toString().trim());
-      }
-    });
+textFields.forEach((key) => {
+  let value = editData[key];
+
+  if (key === "status") {
+    formData.append("status", value || "active"); // 🔥 force send
+  } else if (
+    value !== undefined &&
+    value !== null &&
+    value !== "" &&
+    value !== "null"
+  ) {
+    if (key === "dob") {
+      formData.append(key, value.toString().split("T")[0]);
+    } else {
+      formData.append(key, value.toString().trim());
+    }
+  }
+});
 
     // 2. FILES - Check for new file uploads
     // profileImage, kycIdentity, kycAddress, resume, barCouncilIndiaId, barCouncilStateId
@@ -289,9 +301,15 @@ const handleUpdateSubmit = async () => {
                 {u.servicesOffered || "General Law"}
               </td>
               <td className="text-secondary">
-                {u.experience
-                  ? u.experience.split(" ").slice(0, 3).join(" ") +
-                    (u.experience.split(" ").length > 3 ? "..." : "")
+                {u.experience != null
+                  ? (() => {
+                      const expStr = String(u.experience);
+                      const words = expStr.split(" ");
+                      return (
+                        words.slice(0, 3).join(" ") +
+                        (words.length > 3 ? "..." : "")
+                      );
+                    })()
                   : "N/A"}
               </td>
               {/* Added Status Column with Click Event */}
@@ -301,7 +319,7 @@ const handleUpdateSubmit = async () => {
                   pill
                   style={{ cursor: "pointer" }}
                   onClick={() => toggleStatus(u)}>
-                  {u.status === "active" ? "Active" : "dactive"}
+                  {u.status === "active" ? "Active" : "Inactive"}
                 </Badge>
               </td>
               <td className="text-end">
@@ -381,7 +399,7 @@ const handleUpdateSubmit = async () => {
                   value={editData.status || ""}
                   onChange={handleInputChange}>
                   <option value="active">Active</option>
-                  <option value="dactive">Dactive</option>
+                  <option value="dactive">Inactive</option>
                 </Input>
               </FormGroup>
             </Col>

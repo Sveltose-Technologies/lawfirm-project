@@ -389,7 +389,7 @@ export default function EditProfile() {
                   value={formData.status}
                   onChange={handleInputChange}>
                   <option value="active">Active</option>
-                  <option value="dactive">Dactive</option>
+                  <option value="dactive">Inactive</option>
                 </select>
               </div>
             </div>

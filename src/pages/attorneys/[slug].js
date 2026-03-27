@@ -709,27 +709,27 @@
 //           <div className="row align-items-end g-4">
 //             {" "}
 //             {/* Changed align-items-center to align-items-end */}
-//             <div className="col-4 col-md-5 d-flex justify-content-center print-col-img">
-              // <img
-              //   src={
-              //     attorney.profileImage
-              //       ? getImgUrl(attorney.profileImage)
-              //       : "/assets/images/profile.png"
-              //   }
-              //   alt={attorney.firstName}
-              //   className="img-fluid profile-img"
-                // style={{
-                //   width: "100%",
-                //   maxWidth: "300px",
-                //   height: "auto",
-                //   objectFit: "contain",
-                //   display: "block",
-                //   marginBottom: "-1px",
-                // }}
-//                 onError={(e) => {
-//                   e.target.src = "/assets/images/profile.png";
-//                 }}
-//               />
+            // <div className="col-4 col-md-5 d-flex justify-content-center print-col-img">
+            //   <img
+            //     src={
+            //       attorney.profileImage
+            //         ? getImgUrl(attorney.profileImage)
+            //         : "/assets/images/profile.png"
+            //     }
+            //     alt={attorney.firstName}
+            //     className="img-fluid profile-img"
+            //     style={{
+            //       width: "100%",
+            //       maxWidth: "300px",
+            //       height: "auto",
+            //       objectFit: "contain",
+            //       display: "block",
+            //       marginBottom: "-1px",
+            //     }}
+            //     onError={(e) => {
+            //       e.target.src = "/assets/images/profile.png";
+            //     }}
+            //   />
 //             </div>
 //             <div className="col-8 col-md-7 ps-md-5 pb-5 pt-5 text-start print-col-text">
 //               <h1 className="display-3 serif-font mb-4 fw-normal name-title">
@@ -1204,34 +1204,60 @@ export default function AttorneyProfilePage() {
 
   const createNameSlug = (f, l) => createSlug(`${f} ${l || ""}`);
 
-  useEffect(() => {
-    if (!slug) return;
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        const [attRes, newsRes, eventRes, catRes] = await Promise.all([
-          getAllAttorneys(),
-          getAllNews(),
-          getAllEvents(),
-          getAllCapabilityCategories(),
-        ]);
-        const list = attRes?.attorneys || attRes?.data || [];
-        const found = list.find(
-          (attr) => createNameSlug(attr.firstName, attr.lastName) === slug,
-        );
-        if (found) setAttorney(found);
-        setNews(newsRes?.data || []);
-        setEvents(eventRes?.data || []);
-        setCategories(catRes?.data || []);
-      } catch (error) {
-        console.error("Error loading data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, [slug]);
+useEffect(() => {
+  if (!slug) return;
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [attRes, newsRes, eventRes, catRes] = await Promise.all([
+        getAllAttorneys(),
+        getAllNews(),
+        getAllEvents(),
+        getAllCapabilityCategories(),
+      ]);
 
+      const list = attRes?.attorneys || attRes?.data || [];
+      const found = list.find(
+        (attr) => createNameSlug(attr.firstName, attr.lastName) === slug,
+      );
+
+      if (found) {
+        setAttorney(found);
+
+        // Helper function to parse IDs (since backend might send JSON string or Array)
+        const parseIds = (val) => {
+          try {
+            if (!val) return [];
+            return (typeof val === "string" ? JSON.parse(val) : val).map(
+              String,
+            );
+          } catch (e) {
+            return [];
+          }
+        };
+
+        // Filter News that include this attorney's ID
+        const filteredNews = (newsRes?.data || []).filter((item) =>
+          parseIds(item.attorneyId).includes(String(found.id)),
+        );
+        setNews(filteredNews);
+
+        // Filter Events that include this attorney's ID
+        const filteredEvents = (eventRes?.data || []).filter((item) =>
+          parseIds(item.attorneyIds).includes(String(found.id)),
+        );
+        setEvents(filteredEvents);
+      }
+
+      setCategories(catRes?.data || []);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  loadData();
+}, [slug]);
   const handleDownloadPDF = async () => {
     const html2pdf = (await import("html2pdf.js")).default;
     const element = profileRef.current;
@@ -1292,20 +1318,25 @@ export default function AttorneyProfilePage() {
                   {/* Centering the whole block */}
                   <div className="row g-0 align-items-center flex-nowrap-print">
                     {/* Left Side: Image (Content ke paas lane ke liye padding-end add ki hai) */}
-                    <div className="col-5 d-flex justify-content-end pe-4">
+                    <div className="col-4 col-md-5 d-flex justify-content-center print-col-img">
                       <img
                         src={
                           attorney.profileImage
                             ? getImgUrl(attorney.profileImage)
-                            : "/assets/images/profilepic.png"
+                            : "/assets/images/profile.png"
                         }
                         alt={attorney.firstName}
+                        className="img-fluid profile-img"
                         style={{
                           width: "100%",
-                          maxWidth: "320px", // Size adjusted
+                          maxWidth: "380px",
                           height: "auto",
+                          objectFit: "contain",
                           display: "block",
-                          objectFit: "contain", // Image katne se rokne ke liye
+                          marginBottom: "-1px",
+                        }}
+                        onError={(e) => {
+                          e.target.src = "/assets/images/profilepic.png";
                         }}
                       />
                     </div>
@@ -1390,14 +1421,23 @@ export default function AttorneyProfilePage() {
             <div
               className={`accordion-content py-2 text-secondary fs-5 ${expOpen ? "d-block" : "d-none d-print-block"}`}>
               <ul className="ms-3 mb-0">
-                {attorney.experience
-                  ?.split("°")
-                  .filter((i) => i.trim())
-                  .map((item, idx) => (
-                    <li key={idx} className="mb-2">
-                      {item.trim()}
-                    </li>
-                  ))}
+                {Array.isArray(attorney.experience)
+                  ? attorney.experience.map((item, idx) => (
+                      <li key={idx} className="mb-2">
+                        {typeof item === "string"
+                          ? item.trim()
+                          : JSON.stringify(item)}
+                      </li>
+                    ))
+                  : (attorney.experience || "")
+                      .toString()
+                      .split("°")
+                      .filter((i) => i && i.trim())
+                      .map((item, idx) => (
+                        <li key={idx} className="mb-2">
+                          {item.trim()}
+                        </li>
+                      ))}
               </ul>
             </div>
           </div>

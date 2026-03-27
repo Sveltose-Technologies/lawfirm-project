@@ -1,13 +1,7 @@
 import { useEffect } from "react";
 import { useTranslation } from "./useTranslation";
 
-/**
- * Custom hook to manage page titles with translations
- * Updates both document.title and Next.js meta tags when language changes
- *
- * Usage:
- * usePageTitle("pages.ourFirm.title", "pages.ourFirm.description")
- */
+
 export function usePageTitle(
   titleKey,
   descriptionKey = null,
