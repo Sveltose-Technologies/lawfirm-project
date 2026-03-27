@@ -1,109 +1,128 @@
 const Career = require("../models/careerModel");
 
-/* ================= CREATE JOB ================= */
+/* ================= CREATE ================= */
 exports.createCareer = async (req, res) => {
   try {
-    const {
-      adminId,
-      jobTitle,
-      jobCode,
-      address,
-      location,
-      jobType,
-      textEditor,
-    } = req.body;
-
-    if (!adminId || !jobTitle || !jobCode || !location || !jobType || !textEditor) {
-      return res.status(400).json({ message: "All required fields must be filled" });
-    }
-
-const bannerImage = req.file ? `/uploads/${req.file.filename}` : null;
-
-    const job = await Career.create({
-      adminId,
-      bannerImage,
-      jobTitle,
-      jobCode,
-      address,
-      location,
-      jobType,
-      textEditor,
+    const data = await Career.create({
+      ...req.body,
     });
 
     res.status(201).json({
-      message: "Job created successfully",
-      job,
+      status: true,
+      message: "Career created successfully",
+      data,
     });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      status: false,
+      error: error.message,
+    });
   }
 };
 
-/* ================= GET ALL JOBS ================= */
+
+/* ================= GET ALL ================= */
 exports.getAllCareers = async (req, res) => {
   try {
-    const jobs = await Career.findAll({
-      order: [["createdAt", "DESC"]],
+    const data = await Career.findAll({
+      order: [["id", "DESC"]],
     });
 
-    res.status(200).json({ count: jobs.length, jobs });
+    res.status(200).json({
+      status: true,
+      data,
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      status: false,
+      error: error.message,
+    });
   }
 };
 
-/* ================= GET JOB BY ID ================= */
+
+/* ================= GET BY ID ================= */
 exports.getCareerById = async (req, res) => {
   try {
-    const job = await Career.findByPk(req.params.id);
+    const data = await Career.findByPk(req.params.id);
 
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+    if (!data) {
+      return res.status(404).json({
+        status: false,
+        message: "Career not found",
+      });
     }
 
-    res.status(200).json(job);
+    res.status(200).json({
+      status: true,
+      data,
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      status: false,
+      error: error.message,
+    });
   }
 };
 
-/* ================= UPDATE JOB ================= */
+
+/* ================= UPDATE ================= */
 exports.updateCareer = async (req, res) => {
   try {
-    const job = await Career.findByPk(req.params.id);
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+    const career = await Career.findByPk(req.params.id);
+
+    if (!career) {
+      return res.status(404).json({
+        status: false,
+        message: "Career not found",
+      });
     }
 
-    const bannerImage = req.file
-  ? `/uploads/${req.file.filename}`
-  : job.bannerImage;
-
-await job.update({
-  ...req.body,
-  bannerImage,
-});
-    res.status(200).json({
-      message: "Job updated successfully",
-      job,
+    await career.update({
+      ...req.body,
     });
+
+    res.status(200).json({
+      status: true,
+      message: "Career updated successfully",
+      data: career,
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      status: false,
+      error: error.message,
+    });
   }
 };
 
-/* ================= DELETE JOB ================= */
+
+/* ================= DELETE ================= */
 exports.deleteCareer = async (req, res) => {
   try {
-    const job = await Career.findByPk(req.params.id);
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+    const career = await Career.findByPk(req.params.id);
+
+    if (!career) {
+      return res.status(404).json({
+        status: false,
+        message: "Career not found",
+      });
     }
 
-    await job.destroy();
-    res.status(200).json({ message: "Job deleted successfully" });
+    await career.destroy();
+
+    res.status(200).json({
+      status: true,
+      message: "Career deleted successfully",
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      status: false,
+      error: error.message,
+    });
   }
 };

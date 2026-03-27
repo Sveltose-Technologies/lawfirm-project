@@ -1,13 +1,21 @@
 const express = require("express");
-const upload = require("../middleware/upload");
-const { createCareer, getAllCareers, getCareerById, updateCareer, deleteCareer } = require("../controllers/careerController");
 const router = express.Router();
 
+const controller = require("../controllers/careerController");
 
-router.post("/create", upload.single("bannerImage"), createCareer);
-router.get("/getall", getAllCareers);
-router.get("/get/:id", getCareerById);
-router.put("/update/:id", upload.single("bannerImage"), updateCareer);
-router.delete("/delete/:id", deleteCareer);
+// CREATE
+router.post("/create", controller.createCareer);
+
+// GET ALL
+router.get("/get-all", controller.getAllCareers);
+
+// GET BY ID
+router.get("/get-by-id/:id", controller.getCareerById);
+
+// UPDATE
+router.put("/update/:id", controller.updateCareer);
+
+// DELETE
+router.delete("/delete/:id", controller.deleteCareer);
 
 module.exports = router;

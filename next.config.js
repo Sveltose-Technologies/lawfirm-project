@@ -6,13 +6,10 @@ const nextConfig = {
 
   trailingSlash: true,
 
-
   images: {
     unoptimized: false,
-    domains: ["nodejs.nrislawfirm.com"],
+    domains: ["https://api.bluestor.net"],
   },
-
- 
 
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },

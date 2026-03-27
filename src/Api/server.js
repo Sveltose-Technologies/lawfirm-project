@@ -4,16 +4,8 @@ const colors = require("colors");
 const sequelize = require("./configer/dbconfig")
 const cors = require("cors");
 const path = require("path");
-const { request } = require("http");
-const http = require("http");
-const { Server } = require("socket.io");
-const Chat = require("./models/chatModel");
-// const { use } = require("react");
-// const sequelize = require("./config/dbconfig");
 
 const app = express()
-
-const server = http.createServer(app);
 
 const PORT = process.env.PORT || 6000;
 
@@ -21,19 +13,13 @@ const PORT = process.env.PORT || 6000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/uploads", express.static(path.resolve("/home/nrislawfirm/htdocs/uploads")));
-
-// app.use("/uploads", express.static(path.resolve("/home/nodejs.blustor.net/htdocs/uploads")));
+app.use("/uploads", express.static(path.resolve("/home/nodejs.blustor.net/htdocs/uploads")));
 
 app.use(cors());
 
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
-
 
 app.use("/casecategories", require("./routes/casecategorieRoute"))
 app.use("/capability-categories", require("./routes/capabilitycategoriesRoutes"))
@@ -72,40 +58,15 @@ app.use("/home-ranking", require("./routes/homeRankingRoute"));
 app.use("/location", require("./routes/locationPageRoute"));
 app.use("/languages", require("./routes/languageRoute"));
 app.use("/event-banner", require("./routes/eventBannerRoutes"));
-app.use("/chat", require("./routes/chatRoutes"));
+app.use("/client-conversation", require("./routes/ClientConversationRoute"));
+app.use("/attorney-conversation", require("./routes/attorneyConversationRoute"));
+app.use("/attorney-client-conversation", require("./routes/attorneyClientConversationRoutes"));
+app.use("/careerfront", require("./routes/careerFrontRoute"));
+app.use("/law-career-category", require("./routes/lawCareerCategoryRoute"));
+app.use("/career-detail", require("./routes/careerDetailRoute"));
+app.use("/job-category", require("./routes/jobCategoryRoute"));
 
-// Socket io
-const io = new Server(server); 
 
-io.on("connection", (socket) => {
-  console.log("User Connected:", socket.id);
-
-  socket.on("join_room", ({ roomId }) => {
-    socket.join(roomId);
-  });
-
-  socket.on("send_message", async (data) => {
-    const { roomId, senderId, senderType, receiverId, receiverType, message } = data;
-
-    // Save to DB
-    const savedMessage = await Chat.create({
-      roomId,
-      senderId,
-      senderType,
-      receiverId,
-      receiverType,
-      message
-    });
-
-    //  Send real-time
-    io.to(roomId).emit("receive_message", savedMessage);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
-  });
-});
-
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server is running at PORT: http://localhost:${PORT}`.bgBlue.black);
 });

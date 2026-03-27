@@ -40,58 +40,6 @@ const sendOtpEmail = async (fullname, email, otp) => {
 };
 
 
-// exports.clientsignup = async (req, res) => {
-//   try {
-//     const {
-//       firstName,
-//       lastName,
-//       email,
-//       password,
-//       confirmPassword,
-//     } = req.body || {};
-
-//     // 1️⃣ All fields mandatory
-//     if (!firstName || !lastName || !email || !password || !confirmPassword) {
-//       return res.status(400).json({ message: "All fields are mandatory" });
-//     }
-
-//     // 2️⃣ Name length restriction
-//     if (firstName.length < 2 || firstName.length > 50)
-//       return res.status(400).json({ message: "First name must be 2-50 characters" });
-//     if (lastName.length < 2 || lastName.length > 50)
-//       return res.status(400).json({ message: "Last name must be 2-50 characters" });
-
-//     // 3️⃣ Email format validation
-//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//     if (!emailRegex.test(email))
-//       return res.status(400).json({ message: "Invalid email format" });
-
-//     // 4️⃣ Password length and strength validation
-//     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,20}$/;
-//     // Must include: lowercase, uppercase, number, special character, 8-20 chars
-//     if (!passwordRegex.test(password))
-//       return res.status(400).json({ 
-//         message: "Password must be 6-20 characters and include uppercase, lowercase, number, and special character" 
-//       });
-
-//     // 5️⃣ Repeat password validation
-//     if (password !== confirmPassword)
-//       return res.status(400).json({ message: "Passwords do not match" });
-
-//     // 🔹 Check existing client
-//     const existingclient = await Client.findOne({ where: { email } });
-//     if (existingclient)
-//       return res.status(400).json({ message: "Email already registered" });
-
-  
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Server error", error: error.message });
-//   }
-// };
-
-
 /* ================= ATTORNEY SIGNUP ================= */
 exports.clientsignup = async (req, res) => {
   try {
@@ -284,7 +232,7 @@ exports.updateClientProfile = async (req, res) => {
     const {
       firstName, lastName, email, mobile,
       street, aptBlock, city, state, country, zipCode,
-      countryCode, dob, password, termsAccepted
+      countryCode, dob, password, termsAccepted, status
     } = req.body;
 
     const client = await Client.findByPk(id);
@@ -295,10 +243,16 @@ exports.updateClientProfile = async (req, res) => {
       hashedPassword = await bcrypt.hash(password, 10);
     }
 
-    // Update profile image 
-    const profileImage = req.files?.profileImage ? req.files.profileImage[0].path : client.profileImage;
-    const kycIdentity = req.files?.kycIdentity ? req.files.kycIdentity[0].path : client.kycIdentity;
-    const kycAddress = req.files?.kycAddress ? req.files.kycAddress[0].path : client.kycAddress;
+    // // Update profile image 
+    const profileImage =  req.files?.profileImage?.[0]
+  ? `/uploads/${req.files.profileImage[0].filename}`
+  : null;
+    const kycIdentity =  req.files?.kycAddress?.[0]
+  ? `/uploads/${req.files.kycAddress[0].filename}`
+  : null;
+    const kycAddress = req.files?.kycAddress?.[0]
+  ? `/uploads/${req.files.kycAddress[0].filename}`
+  : null;
 
    await client.update({
   firstName: firstName ?? client.firstName,
@@ -317,7 +271,8 @@ exports.updateClientProfile = async (req, res) => {
   profileImage,
   kycIdentity,
   kycAddress,
-  termsAccepted: termsAccepted ?? client.termsAccepted
+  termsAccepted: termsAccepted ?? client.termsAccepted,
+  status,
 });
 
     res.status(200).json({ message: "Profile updated successfully", client });
@@ -464,4 +419,20 @@ exports.resetPassword = async (req, res) => {
 };
 
 
+exports.getClientById = async (req,res) => {
+ try {
+      
+  const client = await Client.findByPk(req.params.id, {
+    attributes: { exclude: ["password"] },
+  })
 
+
+  if(!client) {
+    res.status(400).json({message: "client not found"})
+  }
+
+  res.status(200).json({ message: " client fetched successfully", client})
+ } catch (error) {
+     res.status(500).json({message:"server error", error: error.message})
+ }
+};

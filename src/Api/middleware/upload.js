@@ -4,8 +4,7 @@ const path = require("path");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "/home/nrislawfirm/htdocs/uploads");
-    // cb(null, "/home/nodejs.blustor.net/htdocs/uploads");
+   cb(null, "/home/nodejs.blustor.net/htdocs/uploads");
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);

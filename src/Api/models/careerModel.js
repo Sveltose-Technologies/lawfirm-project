@@ -10,15 +10,6 @@ const Career = sequelize.define(
       primaryKey: true,
     },
 
-    adminId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-
-    bannerImage: {
-      type: DataTypes.STRING,
-    },
-
     jobTitle: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -30,12 +21,32 @@ const Career = sequelize.define(
       unique: true,
     },
 
+    jobCategoryId: {
+      type: DataTypes.JSON,
+      allowNull: false,
+    },
+
+    lawCareerCategoryId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+
+    countryId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+
+    cityId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+
     address: {
       type: DataTypes.STRING,
     },
 
     location: {
-      type: DataTypes.ENUM("Onsite", "Hybrid", "Remote", "All"),
+      type: DataTypes.ENUM("Onsite", "Hybrid", "Remote"),
       allowNull: false,
     },
 
@@ -44,10 +55,10 @@ const Career = sequelize.define(
       allowNull: false,
     },
 
-   textEditor: {
-  type: DataTypes.TEXT("long"),
-  allowNull: false,
-},
+    textEditor: {
+      type: DataTypes.TEXT("long"),
+      allowNull: false,
+    },
   },
   {
     tableName: "careers",

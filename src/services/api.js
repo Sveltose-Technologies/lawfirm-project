@@ -5,7 +5,9 @@ import { errorHandler } from "./errorHandler";
 import { responseHandler } from "./responseHandler";
 
 const API = axios.create({
-  baseURL: "https://nrislaw.rxchartsquare.com",
+
+
+  baseURL:  "https://api.bluestor.net",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",

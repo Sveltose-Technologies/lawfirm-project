@@ -11,7 +11,7 @@ const sequelize = new Sequelize(
     logging: false,
     timezone: "+05:30",
     define: {
-      freezeTableName: true, // ✅ CRITICAL FIX
+      freezeTableName: true, 
     },
   }
 ); 

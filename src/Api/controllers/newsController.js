@@ -39,6 +39,7 @@ exports.getAllNews = async (req, res) => {
   }
 };
 
+
 /**
  * GET BY ID
  */
@@ -123,3 +124,4 @@ exports.deleteNews = async (req, res) => {
     res.status(500).json({ status: false, error: error.message });
   }
 };
+

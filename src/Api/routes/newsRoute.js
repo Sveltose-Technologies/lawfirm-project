@@ -23,7 +23,7 @@ router.post(
  * READ
  */
 router.get("/getall", getAllNews);
-router.get("/get/:id", getNewsById);
+router.get("/get-by-id/:id", getNewsById);
 
 /**
  * UPDATE
