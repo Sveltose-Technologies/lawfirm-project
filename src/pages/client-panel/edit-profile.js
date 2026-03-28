@@ -32,7 +32,7 @@ export default function EditProfile() {
     countryCode: "",
     dob: "",
     password: "",
-    status: "active",
+   
     kycIdentity: "",
     kycAddress: "",
     profileImage: "",
@@ -118,16 +118,103 @@ export default function EditProfile() {
     }
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (!isLoaded) return;
+  //   setLoading(true);
+
+  //   try {
+  //     const userData = JSON.parse(localStorage.getItem("user"));
+  //     const formData = new FormData();
+
+  //     // List of all 18 parameters to ensure none are missed
+  //     const fields = [
+  //       "firstName",
+  //       "lastName",
+  //       "email",
+  //       "mobile",
+  //       "street",
+  //       "aptBlock",
+  //       "city",
+  //       "state",
+  //       "country",
+  //       "zipCode",
+  //       "countryCode",
+  //       "dob",
+  //       "status",
+  //       "termsAccepted",
+  //     ];
+
+  //     fields.forEach((key) => {
+  //       const value = profile[key];
+  //       if (
+  //         value !== null &&
+  //         value !== undefined &&
+  //         value !== "" &&
+  //         value !== "null"
+  //       ) {
+  //         if (key === "termsAccepted") {
+  //           formData.append(key, value ? "1" : "0");
+  //         } else {
+  //           formData.append(key, value.toString().trim());
+  //         }
+  //       }
+  //     });
+
+  //     if (profile.password) formData.append("password", profile.password);
+
+  //     // Append files only if they are newly selected
+  //     if (uploadFiles.profileImage instanceof File)
+  //       formData.append("profileImage", uploadFiles.profileImage);
+  //     if (uploadFiles.kycIdentity instanceof File)
+  //       formData.append("kycIdentity", uploadFiles.kycIdentity);
+  //     if (uploadFiles.kycAddress instanceof File)
+  //       formData.append("kycAddress", uploadFiles.kycAddress);
+
+  //     const result = await updateClientProfile(userData.id, formData);
+
+  //     if (result) {
+  //       const updated = result.client || result.data || result;
+  //       localStorage.setItem(
+  //         "user",
+  //         JSON.stringify({ ...userData, ...updated }),
+  //       );
+  //       window.dispatchEvent(new Event("profileUpdated"));
+  //       toast.success("Profile updated successfully!");
+
+  //       setProfile((prev) => ({
+  //         ...prev,
+  //         ...updated,
+  //         dob: updated.dob ? updated.dob.split("T")[0] : "",
+  //         password: "",
+  //       }));
+
+  //       if (updated.profileImage)
+  //         setPreviews({ profileImage: getImgUrl(updated.profileImage) });
+  //     }
+  //   } catch (error) {
+  //     toast.error("Failed to update profile.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isLoaded) return;
+
+    // 1. Basic Validation
+    if (!profile.termsAccepted) {
+      return toast.error("Please confirm that the information is correct.");
+    }
+
     setLoading(true);
 
     try {
       const userData = JSON.parse(localStorage.getItem("user"));
       const formData = new FormData();
 
-      // List of all 18 parameters to ensure none are missed
+      // 2. Prepare all 14+ text fields
       const fields = [
         "firstName",
         "lastName",
@@ -142,7 +229,6 @@ export default function EditProfile() {
         "countryCode",
         "dob",
         "status",
-        "termsAccepted",
       ];
 
       fields.forEach((key) => {
@@ -153,47 +239,71 @@ export default function EditProfile() {
           value !== "" &&
           value !== "null"
         ) {
-          if (key === "termsAccepted") {
-            formData.append(key, value ? "1" : "0");
-          } else {
-            formData.append(key, value.toString().trim());
-          }
+          formData.append(key, value.toString().trim());
         }
       });
 
-      if (profile.password) formData.append("password", profile.password);
+      // Handle Boolean for terms
+      formData.append("termsAccepted", profile.termsAccepted ? "1" : "0");
 
-      // Append files only if they are newly selected
-      if (uploadFiles.profileImage instanceof File)
+      // Handle Password if provided
+      if (profile.password) {
+        formData.append("password", profile.password);
+      }
+
+      // 3. Handle File Uploads (Only append if a new file was selected)
+      if (uploadFiles.profileImage instanceof File) {
         formData.append("profileImage", uploadFiles.profileImage);
-      if (uploadFiles.kycIdentity instanceof File)
+      }
+      if (uploadFiles.kycIdentity instanceof File) {
         formData.append("kycIdentity", uploadFiles.kycIdentity);
-      if (uploadFiles.kycAddress instanceof File)
+      }
+      if (uploadFiles.kycAddress instanceof File) {
         formData.append("kycAddress", uploadFiles.kycAddress);
+      }
 
+      // 4. Call API
       const result = await updateClientProfile(userData.id, formData);
 
       if (result) {
-        const updated = result.client || result.data || result;
-        localStorage.setItem(
-          "user",
-          JSON.stringify({ ...userData, ...updated }),
-        );
-        window.dispatchEvent(new Event("profileUpdated"));
-        toast.success("Profile updated successfully!");
+        // Extract the updated data from response
+        const updatedServerData = result.client || result.data || result;
 
+        // 5. UPDATE LOCAL STORAGE TO UNLOCK SIDEBAR
+        // We merge the old data with new data and set isProfileComplete to true
+        const updatedUserLocal = {
+          ...userData,
+          ...updatedServerData,
+          isProfileComplete: true, // THIS UNLOCKS THE PANEL
+        };
+
+        localStorage.setItem("user", JSON.stringify(updatedUserLocal));
+
+        // 6. TRIGGER THE LAYOUT REFRESH
+        // This fires the event that ClientLayout is listening for
+        window.dispatchEvent(new Event("profileUpdated"));
+
+        toast.success("Profile Updated! Dashboard features are now unlocked.");
+
+        // 7. Update local component state
         setProfile((prev) => ({
           ...prev,
-          ...updated,
-          dob: updated.dob ? updated.dob.split("T")[0] : "",
-          password: "",
+          ...updatedServerData,
+          dob: updatedServerData.dob ? updatedServerData.dob.split("T")[0] : "",
+          password: "", // Clear password field
         }));
 
-        if (updated.profileImage)
-          setPreviews({ profileImage: getImgUrl(updated.profileImage) });
+        if (updatedServerData.profileImage) {
+          setPreviews({
+            profileImage: getImgUrl(updatedServerData.profileImage),
+          });
+        }
       }
     } catch (error) {
-      toast.error("Failed to update profile.");
+      console.error("Update Error:", error);
+      toast.error(
+        error?.message || "Failed to update profile. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -209,17 +319,16 @@ export default function EditProfile() {
             <h5 className="fw-bold m-0" style={{ color: navyColor }}>
               ACCOUNT SETTINGS
             </h5>
-            <div className="d-flex align-items-center">
-              <label className="me-2 small fw-bold">STATUS:</label>
-              <select
-                name="status"
-                className="form-select form-select-sm fw-bold"
-                value={profile.status}
-                onChange={handleChange}>
-                <option value="active">ACTIVE</option>
-                <option value="dactive">INACTIVE</option>
-              </select>
-            </div>
+        {/* Replace your old status div with this code */}
+<div className="d-flex align-items-center">
+  <label className="me-2 small fw-bold text-uppercase">Status:</label>
+  <span 
+    className={`badge border-0 fw-bold px-3 py-2 ${profile.status === 'active' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}
+    style={{ fontSize: '12px' }}
+  >
+    {profile.status === 'active' ? '● ACTIVE' : '● INACTIVE'}
+  </span>
+</div>
           </div>
 
           <div className="row g-4">

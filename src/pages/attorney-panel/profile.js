@@ -1,6 +1,9 @@
+
+
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import AttorneyLayout from "../../components/layout/AttorneyLayout";
 import {
   getAttorneylanguages,
@@ -13,6 +16,7 @@ import {
 import { toast } from "react-toastify";
 
 export default function EditProfile() {
+  const router = useRouter();
   const [languages, setLanguages] = useState([]);
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
@@ -30,6 +34,7 @@ export default function EditProfile() {
     city: "",
     state: "",
     country: "",
+    location: "",
     zipCode: "",
     phoneCell: "",
     phoneHome: "",
@@ -50,7 +55,6 @@ export default function EditProfile() {
     twitter: "",
     facebook: "",
     gmail: "",
-    status: "active",
     profileImage: null,
     resume: null,
     kycIdentity: null,
@@ -80,69 +84,43 @@ export default function EditProfile() {
         setCities(cityRes?.data || []);
         setCountries(countryRes?.data || []);
 
-        const attorney =
-          profileRes?.attorney ||
-          profileRes?.attorneys?.[0] ||
-          profileRes?.data?.attorney;
+        const attorneyData =
+          profileRes.attorneys && Array.isArray(profileRes.attorneys)
+            ? profileRes.attorneys.find(
+                (a) => Number(a.id) === Number(currentUserId),
+              )
+            : profileRes.attorney || profileRes.data || profileRes;
 
-        if (attorney) {
-          setAttorneyId(attorney.id); // Dynamic ID from backend
+        if (attorneyData) {
+          setAttorneyId(attorneyData.id);
           setFormData({
-            firstName: attorney.firstName || "",
-            lastName: attorney.lastName || "",
-            email: attorney.email || "",
+            ...attorneyData,
+            dob: attorneyData.dob ? attorneyData.dob.split("T")[0] : "",
             password: "",
-            street: attorney.street || "",
-            aptBlock: attorney.aptBlock || "",
-            city: attorney.city?.toString() || "",
-            state: attorney.state || "",
-            country: attorney.country || "",
-            zipCode: attorney.zipCode || "",
-            phoneCell: attorney.phoneCell || "",
-            phoneHome: attorney.phoneHome || "",
-            phoneOffice: attorney.phoneOffice || "",
-            dob: attorney.dob ? attorney.dob.split("T")[0] : "",
-            admission: attorney.admission || "",
-            language: attorney.language || "",
-            servicesOffered: attorney.servicesOffered || "",
-            education: attorney.education || "",
-            experience: attorney.experience || "",
-            barCouncilIndiaNo: attorney.barCouncilIndiaNo || "",
-            barCouncilStateNo: attorney.barCouncilStateNo || "",
+            categoryId: attorneyData.categoryId?.toString() || "",
+            city: attorneyData.city?.toString() || "",
             familyLawPractice:
-              attorney.familyLawPractice?.toString() || "false",
-            familyDetails: attorney.familyDetails || "",
-            aboutus: attorney.aboutus || "",
-            categoryId: attorney.categoryId?.toString() || "",
-            linkedin: attorney.linkedin || "",
-            twitter: attorney.twitter || "",
-            facebook: attorney.facebook || "",
-            gmail: attorney.gmail || "",
-            status: attorney.status || "active",
-            profileImage: null,
-            resume: null,
-            kycIdentity: null,
-            kycAddress: null,
-            barCouncilIndiaId: null,
-            barCouncilStateId: null,
+              attorneyData.familyLawPractice?.toString() || "false",
           });
         }
       } catch (error) {
-        console.error("Load Error:", error);
-        toast.error("Error loading data");
+        console.error("Initialization Error:", error);
+        toast.error("Failed to load profile data.");
       }
     };
     loadInitialData();
   }, []);
-  
+
   const selectedCountryObj = countries.find(
     (c) => c.countryName === formData.country,
   );
+
   const filteredCities = formData.country
     ? cities.filter(
         (ct) => Number(ct.countryId) === Number(selectedCountryObj?.id),
       )
     : [];
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -155,76 +133,11 @@ export default function EditProfile() {
     }
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-
-  //   const finalUpdateId =
-  //     attorneyId || JSON.parse(localStorage.getItem("user")).id;
-
-  //   if (!finalUpdateId) {
-  //     toast.error("ID not found");
-  //     setLoading(false);
-  //     return;
-  //   }
-
-  //   const payload = new FormData();
-  //   const fileFields = [
-  //     "profileImage",
-  //     "resume",
-  //     "kycIdentity",
-  //     "kycAddress",
-  //     "barCouncilIndiaId",
-  //     "barCouncilStateId",
-  //   ];
-
-  //   Object.keys(formData).forEach((key) => {
-  //     // 1. Skip password if empty
-  //     if (key === "password" && !formData[key]) return;
-
-  //     // 2. Handle Files
-  //     if (fileFields.includes(key)) {
-  //       if (formData[key] instanceof File) {
-  //         payload.append(key, formData[key]);
-  //       }
-  //     }
-  //     // 3. Handle Regular Fields
-  //     else {
-  //       let value = formData[key];
-
-  //       // Fix for 500 error: If ID fields are empty strings, don't send them or send null
-  //       if (
-  //         (key === "categoryId" || key === "city" || key === "country") &&
-  //         (value === "" || value === null)
-  //       ) {
-  //         return;
-  //       }
-
-  //       payload.append(key, value === null ? "" : value);
-  //     }
-  //   });
-
-  //   try {
-  //     console.log("Submitting update for dynamic ID:", finalUpdateId);
-  //     const res = await updateAttorney(finalUpdateId, payload);
-  //     toast.success("Profile updated successfully!");
-  //   } catch (error) {
-  //     console.error("Update Error:", error.response?.data || error.message);
-  //     toast.error(
-  //       error.response?.data?.message || "Server Error (500) during update",
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const finalUpdateId =
-      attorneyId || JSON.parse(localStorage.getItem("user")).id;
-
+    const userData = JSON.parse(localStorage.getItem("user") || "{}");
     const payload = new FormData();
 
     const fileFields = [
@@ -237,50 +150,61 @@ export default function EditProfile() {
     ];
 
     Object.keys(formData).forEach((key) => {
-      // 1. Skip password if empty
       if (key === "password" && !formData[key]) return;
+      if (key === "status") return;
 
-      // 2. Handle Files
       if (fileFields.includes(key)) {
         if (formData[key] instanceof File) {
           payload.append(key, formData[key]);
         }
-      }
-      // 3. Handle Regular Fields
-      else {
+      } else {
         let value = formData[key];
 
-        // --- FIX FOR DOB ERROR ---
-        if (key === "dob") {
-          // If dob is empty string or "Invalid date", don't append it
-          // OR append an empty string (depending on your backend's preference)
-          if (!value || value === "" || value === "Invalid date") {
-            return; // Skip sending this field if it's not a valid date
-          }
+        if (["categoryId", "city"].includes(key)) {
+          if (value && value !== "") payload.append(key, Number(value));
+          return;
         }
-        // -------------------------
 
+        // Handle Boolean fields
         if (key === "familyLawPractice") {
           payload.append(key, value === "true");
           return;
         }
 
-        // Avoid sending empty strings for numeric/ID fields which cause 500 errors
-        if (["categoryId", "city"].includes(key)) {
-          if (!value || value === "") return;
-        }
+        // Handle Date
+        if (key === "dob" && (!value || value === "Invalid date")) return;
 
-        payload.append(key, value === null ? "" : value);
+        // Default: Append as string
+        payload.append(
+          key,
+          value === null || value === undefined ? "" : value.toString().trim(),
+        );
       }
     });
 
+    // Force profile complete flag for frontend logic
+    payload.append("isProfileComplete", "true");
+
     try {
-      const res = await updateAttorney(finalUpdateId, payload);
-      toast.success("Profile updated successfully!");
+      const res = await updateAttorney(attorneyId || userData?.id, payload);
+      if (res) {
+        toast.success("Profile Updated Successfully!");
+
+        // Sync local storage with completion flag
+        const updatedUser = { ...userData, isProfileComplete: true };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+
+        // Notify Layout to refresh sidebar
+        window.dispatchEvent(new Event("profileUpdated"));
+
+        // Final redirection to Dashboard
+        router.push("/attorney-panel");
+      }
     } catch (error) {
-      console.error("Update Error:", error.response?.data || error);
-      // This will now show the "Incorrect date value" message in the toast
-      toast.error(error.response?.data?.error || "Update Failed");
+      console.error("Update Error:", error);
+      toast.error(
+        error.response?.data?.message || "Internal Server Error (500)",
+      );
     } finally {
       setLoading(false);
     }
@@ -288,66 +212,79 @@ export default function EditProfile() {
 
   return (
     <AttorneyLayout>
-      <div className="container-fluid py-2">
-        <div className="card border-0 shadow-sm p-4 bg-white">
-          <h4 className="fw-bold mb-4">Edit Full Professional Profile</h4>
+      <div className="container-fluid py-3">
+        <div className="card border-0 shadow-sm p-4 bg-white rounded-4">
+          <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <div>
+              <h4 className="fw-bold m-0" style={{ color: "#002147" }}>
+                Edit Professional Profile
+              </h4>
+              <p className="text-muted small m-0">
+                All 34 fields must be verified by Admin.
+              </p>
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit}>
-            {/* 1. BASIC INFO */}
+            {/* 1. Account & Basic Info */}
+            <h6 className="text-primary fw-bold text-uppercase small">
+              1. Basic Information
+            </h6>
             <div className="row g-3 mb-4">
-              <div className="col-12">
-                <h6 className="text-primary fw-bold">1. Basic Details</h6>
-                <hr />
-              </div>
               <div className="col-md-3">
-                <label className="form-label small fw-bold">First Name</label>
+                <label className="form-label small fw-bold">First Name *</label>
                 <input
                   type="text"
                   name="firstName"
                   className="form-control"
-                  value={formData.firstName || ""}
+                  value={formData.firstName}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <div className="col-md-3">
-                <label className="form-label small fw-bold">Last Name</label>
+                <label className="form-label small fw-bold">Last Name *</label>
                 <input
                   type="text"
                   name="lastName"
                   className="form-control"
-                  value={formData.lastName || ""}
+                  value={formData.lastName}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <div className="col-md-3">
-                <label className="form-label small fw-bold">Email</label>
+                <label className="form-label small fw-bold">Email ID *</label>
                 <input
                   type="email"
                   name="email"
                   className="form-control"
-                  value={formData.email || ""}
+                  value={formData.email}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <div className="col-md-3">
                 <label className="form-label small fw-bold">
-                  Password (Leave blank to keep same)
+                  Update Password
                 </label>
                 <input
                   type="password"
                   name="password"
                   className="form-control"
-                  value={formData.password}
                   onChange={handleInputChange}
+                  placeholder="Leave blank to keep"
                 />
               </div>
               <div className="col-md-3">
-                <label className="form-label small fw-bold">DOB</label>
+                <label className="form-label small fw-bold">
+                  Date of Birth
+                </label>
                 <input
                   type="date"
                   name="dob"
                   className="form-control"
-                  value={formData.dob || ""}
+                  value={formData.dob}
                   onChange={handleInputChange}
                 />
               </div>
@@ -358,56 +295,32 @@ export default function EditProfile() {
                   className="form-select"
                   value={formData.language}
                   onChange={handleInputChange}>
-                  <option value="">Select</option>
-                  {languages.map((l) => (
-                    <option key={l.id} value={l.languageName || l.name}>
+                  <option value="">Select Language</option>
+                  {languages.map((l, i) => (
+                    <option key={i} value={l.languageName || l.name}>
                       {l.languageName || l.name}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="col-md-3">
-                <label className="form-label small fw-bold">Category</label>
-                <select
-                  name="categoryId"
-                  className="form-select"
-                  value={formData.categoryId}
-                  onChange={handleInputChange}>
-                  <option value="">Select Category</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.categoryName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-md-3">
-                <label className="form-label small fw-bold">Status</label>
-                <select
-                  name="status"
-                  className="form-select"
-                  value={formData.status}
-                  onChange={handleInputChange}>
-                  <option value="active">Active</option>
-                  <option value="dactive">Inactive</option>
-                </select>
-              </div>
             </div>
 
-            {/* 2. CONTACT & ADDRESS */}
+            {/* 2. Contact & Location */}
+            <h6 className="text-primary fw-bold text-uppercase small">
+              2. Contact & Address Details
+            </h6>
             <div className="row g-3 mb-4">
-              <div className="col-12">
-                <h6 className="text-primary fw-bold">2. Contact & Address</h6>
-                <hr />
-              </div>
               <div className="col-md-4">
-                <label className="form-label small fw-bold">Phone (Cell)</label>
+                <label className="form-label small fw-bold">
+                  Phone (Mobile) *
+                </label>
                 <input
                   type="text"
                   name="phoneCell"
                   className="form-control"
-                  value={formData.phoneCell || ""}
+                  value={formData.phoneCell}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <div className="col-md-4">
@@ -416,7 +329,7 @@ export default function EditProfile() {
                   type="text"
                   name="phoneHome"
                   className="form-control"
-                  value={formData.phoneHome || ""}
+                  value={formData.phoneHome}
                   onChange={handleInputChange}
                 />
               </div>
@@ -428,39 +341,35 @@ export default function EditProfile() {
                   type="text"
                   name="phoneOffice"
                   className="form-control"
-                  value={formData.phoneOffice || ""}
+                  value={formData.phoneOffice}
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="col-md-6">
-                <label className="form-label small fw-bold">Street</label>
-                <input
-                  type="text"
-                  name="street"
-                  className="form-control"
-                  value={formData.street || ""}
-                  onChange={handleInputChange}
-                />
+              <div className="col-md-4">
+                <label className="form-label small fw-bold">Country</label>
+                <select
+                  name="country"
+                  className="form-select"
+                  value={formData.country}
+                  onChange={handleInputChange}>
+                  <option value="">Select Country</option>
+                  {countries.map((c) => (
+                    <option key={c.id} value={c.countryName}>
+                      {c.countryName}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div className="col-md-3">
-                <label className="form-label small fw-bold">Apt/Block</label>
-                <input
-                  type="text"
-                  name="aptBlock"
-                  className="form-control"
-                  value={formData.aptBlock || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-md-3">
-                <label className="form-label small fw-bold">City</label>
+              <div className="col-md-4">
+                <label className="form-label small fw-bold">
+                  City (Depends on Country)
+                </label>
                 <select
                   name="city"
                   className="form-select"
                   value={formData.city}
                   onChange={handleInputChange}
-                  disabled={!formData.country} // Jab tak country select na ho, city disable rahegi
-                >
+                  disabled={!formData.country}>
                   <option value="">Select City</option>
                   {filteredCities.map((ct) => (
                     <option key={ct.id} value={ct.id}>
@@ -475,50 +384,116 @@ export default function EditProfile() {
                   type="text"
                   name="state"
                   className="form-control"
-                  value={formData.state || ""}
+                  value={formData.state}
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="col-md-4">
-                <label className="form-label small fw-bold">Country</label>
-                <select
-                  name="country"
-                  className="form-select"
-                  value={formData.country}
-                  onChange={(e) => {
-                    handleInputChange(e);
-
-                    setFormData((prev) => ({ ...prev, city: "" }));
-                  }}>
-                  <option value="">Select Country</option>
-                  {countries.map((cn) => (
-                    <option key={cn.id} value={cn.countryName}>
-                      {cn.countryName}
-                    </option>
-                  ))}
-                </select>
+              <div className="col-md-6">
+                <label className="form-label small fw-bold">
+                  Street Address
+                </label>
+                <input
+                  type="text"
+                  name="street"
+                  className="form-control"
+                  value={formData.street}
+                  onChange={handleInputChange}
+                />
               </div>
-              <div className="col-md-4">
+              <div className="col-md-3">
+                <label className="form-label small fw-bold">Apt/Block</label>
+                <input
+                  type="text"
+                  name="aptBlock"
+                  className="form-control"
+                  value={formData.aptBlock}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="col-md-3">
                 <label className="form-label small fw-bold">Zip Code</label>
                 <input
                   type="text"
                   name="zipCode"
                   className="form-control"
-                  value={formData.zipCode || ""}
+                  value={formData.zipCode}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="col-md-12">
+                <label className="form-label small fw-bold">
+                  Exact Location/Landmark
+                </label>
+                <input
+                  type="text"
+                  name="location"
+                  className="form-control"
+                  value={formData.location}
                   onChange={handleInputChange}
                 />
               </div>
             </div>
 
-            {/* 3. PROFESSIONAL EXPERIENCE */}
+            {/* 3. Professional Info */}
+            <h6 className="text-primary fw-bold text-uppercase small">
+              3. Professional Credentials
+            </h6>
             <div className="row g-3 mb-4">
-              <div className="col-12">
-                <h6 className="text-primary fw-bold">
-                  3. Professional Credentials
-                </h6>
-                <hr />
+              <div className="col-md-4">
+                <label className="form-label small fw-bold">
+                  Practice Category
+                </label>
+                <select
+                  name="categoryId"
+                  className="form-select"
+                  value={formData.categoryId}
+                  onChange={handleInputChange}>
+                  <option value="">Select Category</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.categoryName}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="col-md-4">
+                <label className="form-label small fw-bold">
+                  Experience (Text Format) *
+                </label>
+                <input
+                  type="text"
+                  name="experience"
+                  className="form-control"
+                  value={formData.experience}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label small fw-bold">
+                  Admission Date
+                </label>
+                <input
+                  type="text"
+                  name="admission"
+                  className="form-control"
+                  value={formData.admission}
+                  onChange={handleInputChange}
+                  placeholder="YYYY-MM-DD"
+                />
+              </div>
+              <div className="col-md-12">
+                <label className="form-label small fw-bold">
+                  Education Details
+                </label>
+                <textarea
+                  name="education"
+                  className="form-control"
+                  rows="2"
+                  value={formData.education}
+                  onChange={handleInputChange}></textarea>
+              </div>
+              <div className="col-md-6">
                 <label className="form-label small fw-bold">
                   Bar Council India No.
                 </label>
@@ -526,11 +501,11 @@ export default function EditProfile() {
                   type="text"
                   name="barCouncilIndiaNo"
                   className="form-control"
-                  value={formData.barCouncilIndiaNo || ""}
+                  value={formData.barCouncilIndiaNo}
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="col-md-4">
+              <div className="col-md-6">
                 <label className="form-label small fw-bold">
                   Bar Council State No.
                 </label>
@@ -538,35 +513,11 @@ export default function EditProfile() {
                   type="text"
                   name="barCouncilStateNo"
                   className="form-control"
-                  value={formData.barCouncilStateNo || ""}
+                  value={formData.barCouncilStateNo}
                   onChange={handleInputChange}
                 />
               </div>
               <div className="col-md-4">
-                <label className="form-label small fw-bold">
-                  Experience (Years)
-                </label>
-                <input
-                  type="text"
-                  name="experience"
-                  className="form-control"
-                  value={formData.experience || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-md-6">
-                <label className="form-label small fw-bold">
-                  Admission (College/Univ)
-                </label>
-                <input
-                  type="text"
-                  name="admission"
-                  className="form-control"
-                  value={formData.admission || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="col-md-3">
                 <label className="form-label small fw-bold">
                   Family Law Practice?
                 </label>
@@ -579,65 +530,54 @@ export default function EditProfile() {
                   <option value="false">No</option>
                 </select>
               </div>
+              <div className="col-md-8">
+                <label className="form-label small fw-bold">
+                  Family Law Details
+                </label>
+                <input
+                  type="text"
+                  name="familyDetails"
+                  className="form-control"
+                  value={formData.familyDetails}
+                  onChange={handleInputChange}
+                />
+              </div>
               <div className="col-md-12">
-                <label className="form-label small fw-bold">
-                  Bio / About Us
-                </label>
-                <textarea
-                  name="aboutus"
-                  className="form-control"
-                  rows="2"
-                  value={formData.aboutus || ""}
-                  onChange={handleInputChange}></textarea>
-              </div>
-              <div className="col-md-6">
-                <label className="form-label small fw-bold">
-                  Education Details
-                </label>
-                <textarea
-                  name="education"
-                  className="form-control"
-                  rows="2"
-                  value={formData.education || ""}
-                  onChange={handleInputChange}></textarea>
-              </div>
-              <div className="col-md-6">
                 <label className="form-label small fw-bold">
                   Services Offered
                 </label>
                 <textarea
                   name="servicesOffered"
                   className="form-control"
-                  rows="2"
-                  value={formData.servicesOffered || ""}
+                  rows="3"
+                  value={formData.servicesOffered}
                   onChange={handleInputChange}></textarea>
               </div>
               <div className="col-md-12">
                 <label className="form-label small fw-bold">
-                  Family Details (If applicable)
+                  Professional Bio (About Us)
                 </label>
                 <textarea
-                  name="familyDetails"
+                  name="aboutus"
                   className="form-control"
-                  rows="2"
-                  value={formData.familyDetails || ""}
+                  rows="3"
+                  value={formData.aboutus}
                   onChange={handleInputChange}></textarea>
               </div>
             </div>
 
-            {/* 4. SOCIAL MEDIA */}
+            {/* 4. Social Links */}
+            <h6 className="text-primary fw-bold text-uppercase small">
+              4. Social & Web Profiles
+            </h6>
             <div className="row g-3 mb-4">
-              <div className="col-12">
-                <h6 className="text-primary fw-bold">4. Social Links</h6>
-                <hr />
-              </div>
               <div className="col-md-3">
                 <label className="form-label small fw-bold">LinkedIn</label>
                 <input
                   type="text"
                   name="linkedin"
                   className="form-control"
-                  value={formData.linkedin || ""}
+                  value={formData.linkedin}
                   onChange={handleInputChange}
                 />
               </div>
@@ -647,7 +587,7 @@ export default function EditProfile() {
                   type="text"
                   name="twitter"
                   className="form-control"
-                  value={formData.twitter || ""}
+                  value={formData.twitter}
                   onChange={handleInputChange}
                 />
               </div>
@@ -657,100 +597,59 @@ export default function EditProfile() {
                   type="text"
                   name="facebook"
                   className="form-control"
-                  value={formData.facebook || ""}
+                  value={formData.facebook}
                   onChange={handleInputChange}
                 />
               </div>
               <div className="col-md-3">
-                <label className="form-label small fw-bold">Gmail/Google</label>
+                <label className="form-label small fw-bold">
+                  Gmail/Pro Email
+                </label>
                 <input
                   type="text"
                   name="gmail"
                   className="form-control"
-                  value={formData.gmail || ""}
+                  value={formData.gmail}
                   onChange={handleInputChange}
                 />
               </div>
             </div>
 
-            {/* 5. DOCUMENTS & IMAGES */}
-            <div className="row g-3 mb-4">
-              <div className="col-12">
-                <h6 className="text-primary fw-bold">5. Documents Upload</h6>
-                <hr />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label small fw-bold">
-                  Profile Image
-                </label>
-                <input
-                  type="file"
-                  name="profileImage"
-                  className="form-control"
-                  onChange={handleFileChange}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label small fw-bold">Resume (PDF)</label>
-                <input
-                  type="file"
-                  name="resume"
-                  className="form-control"
-                  onChange={handleFileChange}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label small fw-bold">KYC Identity</label>
-                <input
-                  type="file"
-                  name="kycIdentity"
-                  className="form-control"
-                  onChange={handleFileChange}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label small fw-bold">
-                  KYC Address Proof
-                </label>
-                <input
-                  type="file"
-                  name="kycAddress"
-                  className="form-control"
-                  onChange={handleFileChange}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label small fw-bold">
-                  Bar Council India ID Card
-                </label>
-                <input
-                  type="file"
-                  name="barCouncilIndiaId"
-                  className="form-control"
-                  onChange={handleFileChange}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label small fw-bold">
-                  Bar Council State ID Card
-                </label>
-                <input
-                  type="file"
-                  name="barCouncilStateId"
-                  className="form-control"
-                  onChange={handleFileChange}
-                />
-              </div>
+            {/* 5. Document Uploads */}
+            <h6 className="text-primary fw-bold text-uppercase small">
+              5. KYC Documents (Upload Files)
+            </h6>
+            <div className="row g-3 mb-5">
+              {[
+                { label: "Profile Photo", name: "profileImage" },
+                { label: "Resume (CV)", name: "resume" },
+                { label: "Identity Proof", name: "kycIdentity" },
+                { label: "Address Proof", name: "kycAddress" },
+                { label: "BCI ID Card", name: "barCouncilIndiaId" },
+                { label: "State Bar ID", name: "barCouncilStateId" },
+              ].map((doc, idx) => (
+                <div key={idx} className="col-md-4">
+                  <div className="p-3 border rounded bg-light shadow-sm">
+                    <label className="form-label small fw-bold d-block">
+                      {doc.label}
+                    </label>
+                    <input
+                      type="file"
+                      name={doc.name}
+                      className="form-control form-control-sm"
+                      onChange={handleFileChange}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="mt-4">
-              <button
-                type="submit"
-                className="btn btn-warning px-5 fw-bold"
-                disabled={loading}>
-                {loading ? "SAVING..." : "UPDATE PROFILE"}
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="btn btn-warning w-100 fw-bold py-3 rounded-pill"
+              disabled={loading}>
+              {loading ? "SAVING..." : "UPDATE PROFILE & SYNC DASHBOARD"}
+            </button>
           </form>
         </div>
       </div>

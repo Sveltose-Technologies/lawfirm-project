@@ -55,11 +55,10 @@ isVerified: {
   defaultValue: false,
 },
 
-    status: {
-     type: DataTypes.ENUM("active", "dactive"),
-     defaultValue: "dactive"
+status: {
+     type: DataTypes.ENUM("active", "inactive", "verified"),
+     defaultValue: "inactive"
     },
-
   },
   {
     tableName: "client",

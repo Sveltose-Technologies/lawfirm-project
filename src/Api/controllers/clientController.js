@@ -120,7 +120,7 @@ exports.clientsignup = async (req, res) => {
       email,
       password: hashedPassword,
       termsAccepted: false,
-      status: "dactive", 
+      status: "inactive", 
       isVerified: false,
       resetOtp: otp,
       resetOtpExpire: new Date(Date.now() + 5 * 60 * 1000),

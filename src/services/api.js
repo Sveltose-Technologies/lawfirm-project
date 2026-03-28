@@ -5,9 +5,7 @@ import { errorHandler } from "./errorHandler";
 import { responseHandler } from "./responseHandler";
 
 const API = axios.create({
-
-
-  baseURL:  "https://api.bluestor.net",
+  baseURL: "https://api.blustor.net",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",

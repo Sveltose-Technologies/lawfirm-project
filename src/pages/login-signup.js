@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -10,14 +12,10 @@ import {
   verifyOtp,
   resetPassword,
   adminLogin,
-  adminForgotPassword,
-  adminVerifyOtp,
-  adminResetPassword,
   loginAttorney,
   verifyUserOtp,
   verifyAttorneyOtp,
 } from "../services/authService";
-// otp
 import {
   Modal,
   ModalHeader,
@@ -39,10 +37,9 @@ export default function UnifiedAuthPage() {
   const [generatedCaptcha, setGeneratedCaptcha] = useState("");
   const [captchaInput, setCaptchaInput] = useState("");
   const [otpInput, setOtpInput] = useState("");
-  // otp
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [otpCode, setOtpCode] = useState("");
-  const [verifyEmail, setVerifyEmail] = useState(""); // To pass to the verify API
+  const [verifyEmail, setVerifyEmail] = useState("");
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -92,19 +89,16 @@ export default function UnifiedAuthPage() {
     const payload = { email: formData.email, password: formData.password };
 
     try {
-      // Step 1: Try Client Login
       let res = await loginUser(payload);
       toast.success("Login Successful");
       handleLoginSuccess(res, "client");
     } catch (err1) {
       try {
-        // Step 2: Try Attorney Login
         let res = await loginAttorney(payload);
         toast.success("Attorney Login Successful");
         handleLoginSuccess(res, "attorney");
       } catch (err2) {
         try {
-          // Step 3: Try Admin Login
           let res = await adminLogin(formData.email, formData.password);
           if (res.success || res.data?.token) {
             toast.success("Admin Login Successful");
@@ -113,7 +107,6 @@ export default function UnifiedAuthPage() {
             throw new Error();
           }
         } catch (err3) {
-          // If all fail, show one single error toast
           toast.error("Invalid Email or Password");
         }
       }
@@ -123,21 +116,36 @@ export default function UnifiedAuthPage() {
   };
 
   const handleLoginSuccess = (res, detectedRole) => {
-    const userData =
-      res.client || res.attorney || res.admin || res.user || res.data || res;
-    const token = res.token || userData?.token;
-    let role = detectedRole || res.role || userData?.role || "client";
+    const userData = res.client || res.attorney || res.admin || res.user || res.data || res;
+    const role = detectedRole || res.role || userData?.role || "client";
     const finalRole = role.toLowerCase();
-    console.log("token", token);
 
-    if (token) localStorage.setItem("token", token);
-    localStorage.setItem("role", finalRole);
-    localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("isLoggedIn", "true");
+    // PEHLE LOCALSTORAGE ME SAVE KAREIN (Taki Layout ko user mil sake)
+    localStorage.setItem("user", JSON.stringify({
+        ...userData,
+        role: finalRole,
+        id: userData.id || userData._id
+    }));
 
-    if (finalRole === "admin") window.location.href = "/admin-panel";
-    else if (finalRole === "attorney") window.location.href = "/attorney-panel";
-    else window.location.href = "/client-panel";
+    const isProfileComplete =
+      userData.isProfileComplete === true ||
+      userData.isProfileComplete === "true";
+
+    if (finalRole === "admin") {
+      window.location.href = "/admin-panel";
+    } else if (finalRole === "attorney") {
+      if (!isProfileComplete) {
+        window.location.href = "/attorney-panel/profile";
+      } else {
+        window.location.href = "/attorney-panel";
+      }
+    } else if (finalRole === "client") {
+      if (!isProfileComplete) {
+        window.location.href = "/client-panel/edit-profile";
+      } else {
+        window.location.href = "/client-panel";
+      }
+    }
   };
 
   const handleSignup = async (e) => {
@@ -164,7 +172,6 @@ export default function UnifiedAuthPage() {
       toast.success(res.message || "Signup successful!");
       setVerifyEmail(formData.email);
       setIsOtpModalOpen(true);
-      // setView("login");
     } catch (err) {
       toast.error(err?.message || "Signup failed");
     } finally {
@@ -202,26 +209,18 @@ export default function UnifiedAuthPage() {
       setIsLoading(false);
     }
   };
-  // verify otp
+
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
-      const payload = {
-        email: verifyEmail,
-        otp: otpCode,
-      };
-
-      // Call API based on role
-      let res =
-        userRole === "Attorney"
-          ? await verifyAttorneyOtp(payload)
-          : await verifyUserOtp(payload);
-
+      const payload = { email: verifyEmail, otp: otpCode };
+      userRole === "Attorney"
+        ? await verifyAttorneyOtp(payload)
+        : await verifyUserOtp(payload);
       toast.success("Account verified! You can now login.");
-      setIsOtpModalOpen(false); // Close Modal
-      setView("login"); // Redirect to Login view
+      setIsOtpModalOpen(false);
+      setView("login");
     } catch (err) {
       toast.error(err?.message || "Invalid or expired OTP");
     } finally {
@@ -233,7 +232,11 @@ export default function UnifiedAuthPage() {
     <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light-gray">
       <div
         className="card shadow-lg border-0 auth-card"
-        style={{ borderTop: "5px solid #002147" }}>
+        style={{
+          borderTop: "5px solid #002147",
+          width: "100%",
+          maxWidth: "380px",
+        }}>
         <div className="card-body p-4">
           {view === "login" && (
             <div className="fade-in">
@@ -400,62 +403,6 @@ export default function UnifiedAuthPage() {
                   </span>
                 </p>
               </form>
-              <Modal isOpen={isOtpModalOpen} centered backdrop="static">
-                <ModalHeader className="border-0 pb-0">
-                  <span className="fw-bold" style={{ color: "#083f36" }}>
-                    Verify Your Account
-                  </span>
-                </ModalHeader>
-
-                <form onSubmit={handleVerifyOtp}>
-                  <ModalBody>
-                    <p className="small text-muted mb-4">
-                      We've sent a verification code to{" "}
-                      <strong>{verifyEmail}</strong>. Please enter it below to
-                      activate your {userRole} account.
-                    </p>
-
-                    <div className="mb-3">
-                      <label
-                        className="small fw-bold text-uppercase"
-                        style={{ color: "#083f36" }}>
-                        OTP Code
-                      </label>
-                      <Input
-                        type="text"
-                        placeholder="0 0 0 0 0 0"
-                        className="text-center fw-bold border-0 bg-light"
-                        style={{
-                          fontSize: "24px",
-                          letterSpacing: "8px",
-                          height: "60px",
-                        }}
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value)}
-                        maxLength={6}
-                        required
-                      />
-                    </div>
-                  </ModalBody>
-
-                  <ModalFooter className="border-0 pt-0">
-                    <Button
-                      type="submit"
-                      className="w-100 py-2 border-0 shadow-sm"
-                      style={{ backgroundColor: "#083f36", color: "#fff" }}
-                      disabled={isLoading}>
-                      {isLoading ? "Verifying..." : "Confirm & Verify"}
-                    </Button>
-                    <div className="w-100 text-center mt-2">
-                      <small
-                        className="text-muted cursor-pointer text-decoration-underline"
-                        onClick={() => setIsOtpModalOpen(false)}>
-                        Cancel
-                      </small>
-                    </div>
-                  </ModalFooter>
-                </form>
-              </Modal>
             </div>
           )}
 
@@ -591,15 +538,81 @@ export default function UnifiedAuthPage() {
           )}
         </div>
       </div>
-      <style>{`
-        .bg-blue { background-color: #002147 !important; }
-        .text-blue { color: #002147 !important; }
-        .text-gold { color: #EEBB5D !important; }
-        .auth-card { width: 100%; max-width: 380px; }
-        .cursor-pointer { cursor: pointer; }
-        .pass-toggle { position: absolute; right: 10px; top: 32px; font-size: 10px; cursor: pointer; z-index: 10; }
-        .fade-in { animation: fadeIn 0.4s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+      <Modal isOpen={isOtpModalOpen} centered backdrop="static">
+        <ModalHeader className="border-0 pb-0">
+          <span className="fw-bold" style={{ color: "#002147" }}>
+            Verify Your Account
+          </span>
+        </ModalHeader>
+        <form onSubmit={handleVerifyOtp}>
+          <ModalBody>
+            <p className="small text-muted mb-4">
+              Verification code sent to <strong>{verifyEmail}</strong>.
+            </p>
+            <div className="mb-3">
+              <label className="small fw-bold text-uppercase">OTP Code</label>
+              <Input
+                type="text"
+                className="text-center fw-bold border-0 bg-light"
+                style={{
+                  fontSize: "24px",
+                  letterSpacing: "8px",
+                  height: "60px",
+                }}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value)}
+                maxLength={6}
+                required
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter className="border-0 pt-0">
+            <Button
+              type="submit"
+              className="w-100 py-2 border-0 shadow-sm"
+              style={{ backgroundColor: "#002147", color: "#fff" }}
+              disabled={isLoading}>
+              {isLoading ? "Verifying..." : "Confirm & Verify"}
+            </Button>
+          </ModalFooter>
+        </form>
+      </Modal>
+
+      <style jsx>{`
+        .bg-blue {
+          background-color: #002147 !important;
+        }
+        .text-blue {
+          color: #002147 !important;
+        }
+        .text-gold {
+          color: #eebb5d !important;
+        }
+        .cursor-pointer {
+          cursor: pointer;
+        }
+        .pass-toggle {
+          position: absolute;
+          right: 10px;
+          top: 32px;
+          font-size: 10px;
+          cursor: pointer;
+          z-index: 10;
+        }
+        .fade-in {
+          animation: fadeIn 0.4s ease-in;
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
       `}</style>
     </div>
   );

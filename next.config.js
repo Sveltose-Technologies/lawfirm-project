@@ -8,7 +8,7 @@ const nextConfig = {
 
   images: {
     unoptimized: false,
-    domains: ["https://api.bluestor.net"],
+    domains: ["api.blustor.net/"],
   },
 
   eslint: { ignoreDuringBuilds: true },

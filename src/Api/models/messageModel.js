@@ -11,13 +11,23 @@ const Message = sequelize.define(
       primaryKey: true,
     },
 
-    conversationId: {
+    senderId: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+     
+    senderType: {
+        type: DataTypes.ENUM('client','attorney','admin'),
+      allowNull: false,
+    },
 
-    senderId: {
+      receiverId : {
       type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+   
+    receiverType : {
+      type : DataTypes.ENUM('client','attorney','admin'),
       allowNull: false,
     },
 

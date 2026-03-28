@@ -145,11 +145,9 @@ isVerified: {
     },
 
     status: {
-     type: DataTypes.ENUM("active", "dactive"),
-     defaultValue: "dactive"
+     type: DataTypes.ENUM("active", "inactive", "verified"),
+     defaultValue: "inactive"
     },
-
-
 
   },
   {

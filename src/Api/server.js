@@ -13,13 +13,15 @@ const PORT = process.env.PORT || 6000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/uploads", express.static(path.resolve("/home/nodejs.blustor.net/htdocs/uploads")));
+
+app.use("/uploads", express.static(path.resolve("/htdocs/blustor.net/uploads")));
 
 app.use(cors());
 
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
+
 
 app.use("/casecategories", require("./routes/casecategorieRoute"))
 app.use("/capability-categories", require("./routes/capabilitycategoriesRoutes"))

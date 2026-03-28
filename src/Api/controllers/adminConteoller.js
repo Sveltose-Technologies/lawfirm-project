@@ -3,6 +3,9 @@ const sendEmail = require("../services/email");
 const jwt = require("jsonwebtoken");
 const Admin = require("../models/adminModel");
 
+// const generateToken = (id) => {
+//   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+// };
 
 const generateToken = (adminId) => {
   return jwt.sign(

@@ -3,8 +3,7 @@ import API from "./api";
 
 
 
-export const IMG_URL = "https://api.bluestor.net";
-
+export const IMG_URL = "https://api.blustor.net";
 
 // ================= HELPER FUNCTIONS =================
 
