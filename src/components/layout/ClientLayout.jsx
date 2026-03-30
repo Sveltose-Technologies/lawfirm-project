@@ -1,489 +1,210 @@
-// import React, { useState, useEffect } from "react";
-// import Link from "next/link";
-// import { useRouter } from "next/router";
-// import ClientHeader from "./ClientHeader";
-// import { getImgUrl } from "../../services/authService"; // Import helper
+"use client";
 
-// export default function ClientLayout({ children }) {
-//   const router = useRouter();
-//   const [showSidebar, setShowSidebar] = useState(false);
-
-//   // State for dynamic user data
-//   const [userData, setUserData] = useState({
-//     name: "User",
-//     email: "user@gmail.com",
-//     profileImage: "/assets/images/profilepic.png",
-//   });
-// const syncUserData = () => {
-//   const storedUser = localStorage.getItem("user");
-//   if (storedUser) {
-//     try {
-//       const user = JSON.parse(storedUser);
-//       setUserData({
-//         name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User",
-//         email: user.email || "user@gmail.com",
-//         // Yahan check karein ki image "null" (string) to nahi hai
-//         profileImage:
-//           user.profileImage && user.profileImage !== "null"
-//             ? getImgUrl(user.profileImage)
-//             : "/assets/images/profilepic.png",
-//       });
-//     } catch (error) {
-//       console.error("Error parsing user data in layout", error);
-//     }
-//   }
-// };
-
-//   useEffect(() => {
-//     // 1. Initial Load
-//     syncUserData();
-
-//     window.addEventListener("profileUpdated", syncUserData);
-
-//     // 3. Listen for cross-tab storage changes
-//     window.addEventListener("storage", syncUserData);
-
-//     return () => {
-//       window.removeEventListener("profileUpdated", syncUserData);
-//       window.removeEventListener("storage", syncUserData);
-//     };
-//   }, []);
-
-//   const handleLogout = (e) => {
-//     e.preventDefault();
-//     if (confirm("Are you sure?")) {
-//       localStorage.clear();
-//       router.push("/");
-//     }
-//   };
-
-//   const menuItems = [
-//     { name: "Dashboard", icon: "bi-grid", path: "/client-panel" },
-//     { name: "Attorney", icon: "bi-person", path: "/client-panel/attorneys" },
-//     {
-//       name: "Case Details",
-//       icon: "bi-clock-history",
-//       path: "/client-panel/cases",
-//     },
-//     {
-//       name: "Appointments",
-//       icon: "bi-calendar-event",
-//       path: "/client-panel/appointments",
-//     },
-//     {
-//       name: "Documents",
-//       icon: "bi-file-earmark-pdf",
-//       path: "/client-panel/document-management",
-//     },
-//     {
-//       name: "Transactions",
-//       icon: "bi-credit-card",
-//       path: "/client-panel/transaction-management",
-//     },
-//     { name: "Messages", icon: "bi-chat", path: "/client-panel/messages" },
-//     {
-//       name: "Profile Settings",
-//       icon: "bi-gear",
-//       path: "/client-panel/edit-profile",
-//     },
-//   ];
-
-//   return (
-//     <div style={{ backgroundColor: "#f4f7fa", minHeight: "100vh" }}>
-//       <ClientHeader onToggleSidebar={() => setShowSidebar(!showSidebar)} />
-
-//       <div className="container py-4">
-//         <div className="row g-4">
-//           <aside
-//             className={`col-lg-3 ${showSidebar ? "sidebar-mobile-view" : "d-none d-lg-block"}`}>
-//             <div
-//               className="card border-0 shadow-sm rounded-4 overflow-hidden sticky-top"
-//               style={{ top: "90px" }}>
-//               {/* DYNAMIC USER PROFILE SECTION */}
-//               <div className="p-4 text-center border-bottom bg-white">
-//                 <div
-//                   className="mx-auto mb-3"
-//                   style={{ width: "90px", height: "90px" }}>
-//                   <img
-//                     src={userData.profileImage}
-//                     className="rounded-circle shadow-sm w-100 h-100"
-//                     style={{ objectFit: "cover", border: "3px solid #f8f9fa" }}
-//                     alt="user"
-//                     onError={(e) => {
-//                       e.target.src = "/assets/images/profilepic.png";
-//                     }}
-//                   />
-//                 </div>
-//                 <h6 className="fw-bold mb-1 text-navy text-capitalize">
-//                   {userData.name}
-//                 </h6>
-//                 <p
-//                   className="text-muted mb-0 small"
-//                   style={{ wordBreak: "break-all" }}>
-//                   {userData.email}
-//                 </p>
-//               </div>
-
-//               <div className="p-3 bg-white">
-//                 <nav className="nav flex-column sidebar-nav">
-//                   {menuItems.map((item, idx) => (
-//                     <Link key={idx} href={item.path}>
-//                       <a
-//                         className={`nav-link ${router.pathname === item.path ? "active" : ""}`}
-//                         onClick={() => setShowSidebar(false)}>
-//                         <i className={`bi ${item.icon} me-3`}></i> {item.name}
-//                       </a>
-//                     </Link>
-//                   ))}
-//                   <div className="mt-4 pt-3 border-top">
-//                     <a
-//                       href="#"
-//                       className="nav-link text-danger fw-bold"
-//                       onClick={handleLogout}>
-//                       <i className="bi bi-box-arrow-right me-3"></i> Logout
-//                     </a>
-//                   </div>
-//                 </nav>
-//               </div>
-//             </div>
-//           </aside>
-
-//           <main className="col-lg-9">
-//             <div className="bg-transparent">{children}</div>
-//           </main>
-//         </div>
-//       </div>
-
-//       {showSidebar && (
-//         <div
-//           className="overlay d-lg-none"
-//           onClick={() => setShowSidebar(false)}></div>
-//       )}
-
-//       <style jsx>{`
-//         .text-navy {
-//           color: #002147;
-//         }
-//         .sidebar-nav .nav-link {
-//           color: #444 !important;
-//           font-size: 14px;
-//           padding: 12px 18px;
-//           border-radius: 10px;
-//           transition: 0.3s;
-//           margin-bottom: 5px;
-//           font-weight: 500;
-//           text-decoration: none;
-//           display: flex;
-//           align-items: center;
-//         }
-//         .sidebar-nav .nav-link:hover {
-//           background: #f8f9fa;
-//           color: #de9f57 !important;
-//         }
-//         .sidebar-nav .nav-link.active {
-//           background: #fcf6ef;
-//           color: #de9f57 !important;
-//           font-weight: bold;
-//         }
-//         @media (max-width: 991px) {
-//           .sidebar-mobile-view {
-//             position: fixed;
-//             top: 70px;
-//             left: 0;
-//             width: 100%;
-//             padding: 15px;
-//             z-index: 1050;
-//             display: block !important;
-//           }
-//           .overlay {
-//             position: fixed;
-//             top: 0;
-//             left: 0;
-//             width: 100%;
-//             height: 100%;
-//             background: rgba(0, 0, 0, 0.4);
-//             z-index: 1040;
-//           }
-//         }
-//       `}</style>
-//     </div>
-//   );
-// }
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import ClientHeader from "./ClientHeader";
-import { getImgUrl } from "../../services/authService";
+import { getImgUrl, getClientById } from "../../services/authService";
 
 export default function ClientLayout({ children }) {
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Set default to null to prevent "flicker"
-  const [isProfileComplete, setIsProfileComplete] = useState(null);
-
-  const [userData, setUserData] = useState({
-    name: "User",
-    email: "user@gmail.com",
-    profileImage: "/assets/images/profilepic.png",
-  });
-
-  const syncUserData = () => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
-
-        // Logic 1: Has the user updated their profile?
-        const isUpdated =
-          user.isProfileComplete === true ||
-          user.isProfileComplete === "true" ||
-          (user.mobile && user.city);
-
-        // Logic 2: Has the Admin activated the account?
-        const isAdminActive = user.status === "active";
-
-        // Access is ONLY allowed if Profile is Updated AND Admin set Status to Active
-        const canAccessTabs = isUpdated && isAdminActive;
-
-        setIsProfileComplete(canAccessTabs);
-
-        const fullName =
-          `${user.firstName || ""} ${user.lastName || ""}`.trim();
-        setUserData({
-          name: fullName || "User",
-          email: user.email || "user@gmail.com",
-          profileImage:
-            user.profileImage && user.profileImage !== "null"
-              ? getImgUrl(user.profileImage)
-              : "/assets/images/profilepic.png",
-        });
-
-        // Forced Redirect: Only if they have NEVER updated the profile
-        if (!isUpdated && router.pathname !== "/client-panel/edit-profile") {
-          router.push("/client-panel/edit-profile");
-        }
-      } catch (error) {
-        console.error("Error parsing user data in layout", error);
-      }
-    } else {
-      router.push("/");
-    }
-  };
-
-  useEffect(() => {
-    syncUserData();
-    window.addEventListener("profileUpdated", syncUserData);
-    window.addEventListener("storage", syncUserData);
-    return () => {
-      window.removeEventListener("profileUpdated", syncUserData);
-      window.removeEventListener("storage", syncUserData);
-    };
-  }, [router.pathname]);
-
-  const handleLogout = (e) => {
-    e.preventDefault();
-    if (confirm("Are you sure?")) {
-      localStorage.clear();
-      router.push("/");
-    }
-  };
+  const [clientData, setClientData] = useState({ name: "User", image: "" });
+  const [isProfileDone, setIsProfileDone] = useState(false);
+  const [isFullyAccessible, setIsFullyAccessible] = useState(false);
 
   const menuItems = [
-    { name: "Dashboard", icon: "bi-grid", path: "/client-panel" },
-    { name: "Attorney", icon: "bi-person", path: "/client-panel/attorneys" },
+    { name: "Dashboard", icon: "bi-grid-fill", path: "/client-panel" },
     {
-      name: "Case Details",
-      icon: "bi-clock-history",
-      path: "/client-panel/cases",
+      name: "Find Attorney",
+      icon: "bi-person-badge-fill",
+      path: "/client-panel/attorneys",
     },
+    { name: "My Cases", icon: "bi-clock-history", path: "/client-panel/cases" },
     {
       name: "Appointments",
-      icon: "bi-calendar-event",
+      icon: "bi-calendar-check",
       path: "/client-panel/appointments",
     },
     {
       name: "Documents",
-      icon: "bi-file-earmark-pdf",
+      icon: "bi-file-earmark-pdf-fill",
       path: "/client-panel/document-management",
     },
     {
       name: "Transactions",
-      icon: "bi-credit-card",
+      icon: "bi-credit-card-fill",
       path: "/client-panel/transaction-management",
     },
-    { name: "Messages", icon: "bi-chat", path: "/client-panel/messages" },
     {
-      name: "Profile Settings",
-      icon: "bi-gear",
+      name: "Messages",
+      icon: "bi-chat-dots-fill",
+      path: "/client-panel/messages",
+    },
+    {
+      name: "Edit Profile",
+      icon: "bi-person-bounding-box",
       path: "/client-panel/edit-profile",
     },
   ];
 
-  if (isProfileComplete === null) return null;
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const syncData = async () => {
+    if (typeof window === "undefined") return;
+    const stored = localStorage.getItem("user");
+    if (!stored) {
+      router.push("/");
+      return;
+    }
+
+    try {
+      const localUser = JSON.parse(stored);
+      const userId = localUser.id || localUser._id;
+
+      // Using getClientById to ensure we get Client data, NOT Attorney data
+      const res = await getClientById(userId);
+      const user = res.client || res.data || res;
+
+      if (user) {
+        // 1. Status Check (Unlocks tabs)
+        const status = (user.status || "").toLowerCase().trim();
+        const activeState = status === "active" || status === "verified";
+
+        // 2. Profile Completion Check (Based on your JSON fields)
+        const profileComplete = !!(user.mobile && user.city && user.country);
+
+        setIsProfileDone(profileComplete);
+        setIsFullyAccessible(activeState);
+
+        // 3. Name & Image Sync
+        const fullName =
+          `${user.firstName || ""} ${user.lastName || ""}`.trim();
+        let finalImg = `https://ui-avatars.com/api/?name=${fullName.replace(" ", "+")}&background=de9f57&color=fff`;
+        if (user.profileImage && user.profileImage !== "null") {
+          finalImg = getImgUrl(user.profileImage);
+        }
+
+        setClientData({ name: fullName || "User", image: finalImg });
+
+        // Update LocalStorage
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            ...localUser,
+            ...user,
+            isProfileComplete: profileComplete,
+          }),
+        );
+
+        if (
+          !profileComplete &&
+          router.pathname !== "/client-panel/edit-profile"
+        ) {
+          router.push("/client-panel/edit-profile");
+        }
+      }
+    } catch (error) {
+      console.error("Layout Sync Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isMounted) syncData();
+    window.addEventListener("profileUpdated", syncData);
+    return () => window.removeEventListener("profileUpdated", syncData);
+  }, [isMounted, router.asPath]);
+
+  if (!isMounted || loading) return null;
 
   return (
-    <div style={{ backgroundColor: "#f4f7fa", minHeight: "100vh" }}>
+    <div className="bg-light min-vh-100">
       <ClientHeader onToggleSidebar={() => setShowSidebar(!showSidebar)} />
-
-      <div className="container py-4">
+      <div className="container-fluid py-4">
         <div className="row g-4">
           <aside
-            className={`col-lg-3 ${showSidebar ? "sidebar-mobile-view" : "d-none d-lg-block"}`}>
+            className={`col-lg-3 ${showSidebar ? "d-block position-fixed start-0 top-0 vh-100 z-3 bg-white w-75 p-3 shadow" : "d-none d-lg-block"}`}>
             <div
-              className="card border-0 shadow-sm rounded-4 overflow-hidden sticky-top"
+              className="card border-0 shadow-sm rounded-4 sticky-top"
               style={{ top: "90px" }}>
-              {/* Profile Header Section */}
-              <div className="p-4 text-center border-bottom bg-white">
-                <div
-                  className="mx-auto mb-3"
-                  style={{ width: "90px", height: "90px" }}>
-                  <img
-                    src={userData.profileImage}
-                    className="rounded-circle shadow-sm w-100 h-100"
-                    style={{ objectFit: "cover", border: "3px solid #f8f9fa" }}
-                    alt="user"
-                  />
-                </div>
-                <h6 className="fw-bold mb-1 text-navy text-capitalize">
-                  {userData.name}
-                </h6>
-                <p
-                  className="text-muted mb-0 small"
-                  style={{ wordBreak: "break-all" }}>
-                  {userData.email}
-                </p>
-
-                {/* Status Badges */}
-                <div className="mt-2">
-                  {JSON.parse(localStorage.getItem("user"))?.status !==
-                  "active" ? (
-                    <span
-                      className="badge bg-warning-subtle text-warning fw-bold"
-                      style={{ fontSize: "10px" }}>
-                      Wait for Admin Approval
-                    </span>
-                  ) : !isProfileComplete ? (
-                    <span
-                      className="badge bg-danger-subtle text-danger fw-bold"
-                      style={{ fontSize: "10px" }}>
-                      Please Update Profile
+             <div className="p-4 text-center border-bottom">
+  <img
+    src={clientData.image}
+  
+    className="rounded-circle mb-2 border border-2 border-warning shadow-sm d-block mx-auto"
+    style={{ width: "80px", height: "80px", objectFit: "cover" }}
+    alt="profile"
+  />
+  <h6 className="fw-bold mb-0 text-truncate text-capitalize">
+    {clientData.name}
+  </h6>
+                <div className="mt-3">
+                  {isFullyAccessible ? (
+                    <span className="badge bg-success-subtle text-success py-2 border border-success small w-100">
+                      ● Active Account
                     </span>
                   ) : (
-                    <span
-                      className="badge bg-success-subtle text-success fw-bold"
-                      style={{ fontSize: "10px" }}>
-                      Account Active
+                    <span className="badge bg-danger-subtle text-danger py-2 border border-danger small w-100">
+                      ● Pending Approval
                     </span>
                   )}
                 </div>
               </div>
-
-              {/* Navigation Section */}
-              <div className="p-3 bg-white">
-                <nav className="nav flex-column sidebar-nav">
+              <div className="p-3">
+                <nav className="nav flex-column gap-1">
                   {menuItems.map((item, idx) => {
+                    // Logic: If profile is complete AND status is active, REMOVE LOCKS
                     const isDisabled =
-                      !isProfileComplete &&
-                      item.path !== "/client-panel/edit-profile";
+                      (!isProfileDone &&
+                        item.path !== "/client-panel/edit-profile") ||
+                      (isProfileDone &&
+                        !isFullyAccessible &&
+                        item.path !== "/client-panel/edit-profile" &&
+                        item.path !== "/client-panel");
 
                     return (
-                      <Link key={idx} href={isDisabled ? "#" : item.path}>
+                      <Link
+                        key={idx}
+                        href={isDisabled ? "#" : item.path}
+                        legacyBehavior>
                         <a
-                          className={`nav-link ${router.pathname === item.path ? "active" : ""} ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                          className={`nav-link rounded-3 py-2 px-3 d-flex align-items-center ${router.pathname === item.path ? "bg-light text-warning fw-bold shadow-sm" : "text-dark"} ${isDisabled ? "opacity-50" : ""}`}
                           onClick={(e) => {
                             if (isDisabled) {
                               e.preventDefault();
                               alert(
-                                "Access Denied: Either your profile is incomplete or your account is waiting for admin activation.",
+                                isProfileDone
+                                  ? "Waiting for Admin Approval"
+                                  : "Please update Profile",
                               );
                               return;
                             }
                             setShowSidebar(false);
                           }}>
-                          <i className={`bi ${item.icon} me-3`}></i>
-                          {item.name}
+                          <i
+                            className={`bi ${item.icon} me-3 fs-5 ${router.pathname === item.path ? "text-warning" : "text-muted"}`}></i>
+                          <span style={{ fontSize: "14px" }}>{item.name}</span>
                           {isDisabled && (
-                            <i className="bi bi-lock-fill ms-auto small"></i>
+                            <i className="bi bi-lock-fill ms-auto text-danger small"></i>
                           )}
                         </a>
                       </Link>
                     );
                   })}
-                  <div className="mt-4 pt-3 border-top">
-                    <a
-                      href="#"
-                      className="nav-link text-danger fw-bold"
-                      onClick={handleLogout}>
-                      <i className="bi bi-box-arrow-right me-3"></i> Logout
-                    </a>
-                  </div>
                 </nav>
               </div>
             </div>
           </aside>
-
-          <main className="col-lg-9">
-            <div className="bg-transparent">{children}</div>
-          </main>
+          <main className="col-lg-9">{children}</main>
         </div>
       </div>
-
-      {showSidebar && (
-        <div
-          className="overlay d-lg-none"
-          onClick={() => setShowSidebar(false)}></div>
-      )}
-
-      <style jsx>{`
-        .text-navy {
-          color: #002147;
-        }
-        .sidebar-nav .nav-link {
-          color: #444 !important;
-          font-size: 14px;
-          padding: 12px 18px;
-          border-radius: 10px;
-          transition: 0.3s;
-          margin-bottom: 5px;
-          font-weight: 500;
-          text-decoration: none;
-          display: flex;
-          align-items: center;
-        }
-        .sidebar-nav .nav-link:hover:not(.opacity-50) {
-          background: #f8f9fa;
-          color: #de9f57 !important;
-        }
-        .sidebar-nav .nav-link.active {
-          background: #fcf6ef;
-          color: #de9f57 !important;
-          font-weight: bold;
-        }
-        .cursor-not-allowed {
-          cursor: not-allowed !important;
-        }
-        @media (max-width: 991px) {
-          .sidebar-mobile-view {
-            position: fixed;
-            top: 70px;
-            left: 0;
-            width: 100%;
-            padding: 15px;
-            z-index: 1050;
-            display: block !important;
-          }
-          .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 1040;
-          }
-        }
-      `}</style>
     </div>
   );
 }

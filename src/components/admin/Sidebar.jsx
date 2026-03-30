@@ -15,7 +15,7 @@ const navigation = [
     href: "/admin-panel/attorney",
     icon: "bi bi-person-workspace",
   },
-
+  { title: "Services", href: "/admin-panel/services", icon: "bi bi-gear" },
   { title: "Users", href: "/admin-panelusers", icon: "bi bi-person-circle" },
   { title: "Roles", href: "/roles", icon: "bi bi-ui-checks" },
   {
@@ -79,7 +79,7 @@ const navigation = [
   },
   { title: "Review & Rating", href: "/review-rating", icon: "bi bi-stars" },
   { header: "OTHER" },
-  { title: "Service", href: "/service", icon: "bi bi-gear" },
+
   { title: "Newsletter", href: "/newsletter", icon: "bi bi-envelope-paper" },
   { title: "Testimonial", href: "/testimonial", icon: "bi bi-chat-quote" },
   { title: "Contact Leads", href: "/contact", icon: "bi bi-person-lines-fill" },

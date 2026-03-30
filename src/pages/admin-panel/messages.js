@@ -1,155 +1,187 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Row, Col, Input, ListGroup, ListGroupItem, Button } from "reactstrap";
-import { adminMessage } from "../../services/authService";
+import * as authService from "../../services/authService";
 
 const Messages = () => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [typedMessage, setTypedMessage] = useState("");
+  const [chatList, setChatList] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [conversations, setConversations] = useState({});
+  const scrollRef = useRef(null);
 
-  // State to hold messages for each chat ID
-  const [conversations, setConversations] = useState({
-    1: [{ id: 101, text: "Salut", sender: "John", time: "10:00 AM" }],
-    2: [{ id: 102, text: "asdsad", sender: "Name", time: "11:00 AM" }],
-  });
+  // Auto-scroll to bottom
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [conversations, selectedChat]);
 
-  const handleSendMessages = async () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const userId = user?.id;
+  const getAllUserData = async () => {
+    try {
+      const [alluserResponse, allAttorneysResponse] = await Promise.all([
+        authService.getAllUsers(),
+        authService.getAllAttorneys(),
+      ]);
 
-    //     "" :
-    //     "clientId" : ,
-    //     "senderType" : "",
-    // "message" : "hii"
-    const payload = {
-      adminId: "adminId",
-      senderType: "admin",
-      message: typedMessage,
-    };
-    console.log("userId", userId);
-    // try {
-    //   const response = await adminMessage(payload);
-    // } catch (error) {
-    //   console.log(error);
-    // }
+      const usersList =
+        alluserResponse?.clients?.map((user) => ({
+          id: user.id,
+          chatId: `user-${user.id}`,
+          name: `${user.firstName} ${user.lastName || ""}`,
+          role: "User",
+          img: user.profileImage
+            ? authService.getImgUrl(user.profileImage)
+            : null,
+        })) || [];
+
+      const attorneysList =
+        allAttorneysResponse?.attorneys?.map((attorney) => ({
+          id: attorney.id,
+          chatId: `attorney-${attorney.id}`,
+          name: `${attorney.firstName || attorney.name} ${attorney.lastName || ""}`,
+          role: "Attorney",
+          img: attorney.profileImage
+            ? authService.getImgUrl(attorney.profileImage)
+            : null,
+        })) || [];
+
+      setChatList([...usersList, ...attorneysList]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
 
-  const chatList = [
-    {
-      id: 1,
-      name: "John",
-      role: "User",
-      lastMsg: "Salut",
-      time: "a month ago",
-      img: "https://i.pravatar.cc/150?u=john",
-    },
-    {
-      id: 2,
-      name: "Mohit",
-      role: "Attorney",
-      lastMsg: "asdsad",
-      time: "a month ago",
-      img: "https://i.pravatar.cc/150?u=name",
-    },
-    {
-      id: 3,
-      name: "Robert",
-      role: "User",
-      lastMsg: "hi",
-      time: "4 months ago",
-      img: "https://i.pravatar.cc/150?u=robert",
-    },
-  ];
+  const getChatHistory = async () => {
+    if (!selectedChat) return;
+    const user = JSON.parse(localStorage.getItem("user"));
+    try {
+      let response;
+      if (selectedChat.role === "User") {
+        response = await authService.getUserMessageHistory(
+          user?.id,
+          selectedChat.id,
+        );
+      } else {
+        response = await authService.getAttorneyMessageHistory(
+          user?.id,
+          selectedChat.id,
+        );
+      }
+
+      const formattedMessages = (response?.data || []).map((msg) => ({
+        id: msg.id,
+        text: msg.message,
+        sender: msg.senderType === "admin" ? "Me" : selectedChat.name,
+        time: new Date(msg.createdAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      }));
+
+      setConversations((prev) => ({
+        ...prev,
+        [selectedChat.chatId]: formattedMessages,
+      }));
+    } catch (error) {
+      console.error("Error history:", error);
+    }
+  };
+
+  useEffect(() => {
+    getAllUserData();
+  }, []);
+  useEffect(() => {
+    if (selectedChat) getChatHistory();
+  }, [selectedChat]);
 
   const handleSendMessage = async (e) => {
-    e.preventDefault();
-
+    if (e) e.preventDefault();
     if (!typedMessage.trim() || !selectedChat) return;
 
     const user = JSON.parse(localStorage.getItem("user"));
-    console.log("userID", user);
+    const currentMsg = typedMessage;
+    setTypedMessage("");
 
     const payload = {
-      adminId: user?.id || "1",
-      clientId: "7",
+      adminId: user?.id,
       senderType: "admin",
-      message: typedMessage,
+      message: currentMsg,
     };
 
     try {
-      const adminChatResponse = await adminMessage(payload);
-      console.log("CHAT MESSAGE Successful", adminChatResponse?.data);
+      if (selectedChat.role === "Attorney") {
+        payload.attorneyId = selectedChat.id;
+        await authService.adminAttorneyMessage(payload);
+      } else {
+        payload.clientId = selectedChat.id;
+        await authService.adminClientMessage(payload);
+      }
+
+      const newMessage = {
+        id: Date.now(),
+        text: currentMsg,
+        sender: "Me",
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+
+      setConversations((prev) => ({
+        ...prev,
+        [selectedChat.chatId]: [
+          ...(prev[selectedChat.chatId] || []),
+          newMessage,
+        ],
+      }));
     } catch (error) {
-      console.log("API Error:", error);
+      console.error("Send error:", error);
     }
-
-    // UI update
-    const newMessage = {
-      id: Date.now(),
-      text: typedMessage,
-      sender: "Me",
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-
-    setConversations((prev) => ({
-      ...prev,
-      [selectedChat.id]: [...(prev[selectedChat.id] || []), newMessage],
-    }));
-
-    setTypedMessage("");
   };
 
+  const filteredChatList = chatList.filter((chat) =>
+    chat.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
   return (
-    <div
-      className="p-4 animate-fade-in"
-      style={{ height: "calc(100vh - 120px)" }}>
-      <Row className="h-100 bg-white shadow-sm rounded-4 overflow-hidden g-0 border">
-        {/* Left Side: Inbox List */}
+    <div className="p-2 p-md-3" style={{ height: "calc(100vh - 100px)" }}>
+      <Row className="h-100 g-0 shadow-sm rounded-4 border overflow-hidden bg-white">
+        {/* LEFT SIDE: Inbox */}
         <Col
           md="4"
           lg="3"
-          className="border-end d-flex flex-column bg-light-subtle">
+          className="border-end d-flex flex-column h-100 bg-light">
           <div className="p-3 bg-white border-bottom">
-            <h5 className="fw-bold mb-3">Inbox</h5>
+            <h5 className="fw-bold mb-3">Messages</h5>
             <Input
-              type="text"
-              placeholder="Search chats..."
-              className="rounded-pill  border-0 ps-3"
-              style={{ backgroundColor: "#e1e7ee" }}
+              placeholder="Search..."
+              className="rounded-pill border-0 bg-light px-3"
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-
           <ListGroup
             flush
             className="overflow-auto flex-grow-1 custom-scrollbar">
-            {chatList.map((chat) => (
+            {filteredChatList.map((chat) => (
               <ListGroupItem
-                key={chat.id}
-                action
-                active={selectedChat?.id === chat.id}
+                key={chat.chatId}
+                active={selectedChat?.chatId === chat.chatId}
                 onClick={() => setSelectedChat(chat)}
-                className="border-0 border-bottom p-3 d-flex align-items-center gap-3 chat-item">
+                className="p-3 border-0 border-bottom chat-item d-flex align-items-center gap-3"
+                style={{ cursor: "pointer" }}>
                 <img
-                  src={chat.img}
-                  alt=""
-                  className="rounded-circle border"
+                  src={chat.img || "/assets/images/profilepic.png"}
                   width="45"
                   height="45"
+                  className="rounded-circle border"
+                  alt=""
                 />
                 <div className="flex-grow-1">
-                  <div className="d-flex justify-content-between">
-                    <span className="fw-bold text-dark">{chat.name}</span>
-                    <small className="text-muted" style={{ fontSize: "10px" }}>
-                      {chat.time}
-                    </small>
-                  </div>
-                  <div
-                    className="small text-muted text-truncate"
-                    style={{ maxWidth: "150px" }}>
-                    {chat.role} • {chat.lastMsg}
+                  <div className="fw-bold text-dark small">{chat.name}</div>
+                  <div className="text-muted" style={{ fontSize: "11px" }}>
+                    {chat.role}
                   </div>
                 </div>
               </ListGroupItem>
@@ -157,58 +189,50 @@ const Messages = () => {
           </ListGroup>
         </Col>
 
-        {/* Right Side: Message Content */}
-        <Col md="8" lg="9" className="d-flex flex-column bg-white">
+        {/* RIGHT SIDE: Chat Window */}
+        <Col md="8" lg="9" className="d-flex flex-column h-100 bg-white">
           {selectedChat ? (
-            <div className="h-100 d-flex flex-column animate-slide-up">
+            <>
               {/* Header */}
-              <div className="p-3 border-bottom d-flex align-items-center gap-3">
+              <div className="p-3 border-bottom d-flex align-items-center gap-3 bg-white">
                 <img
-                  src={selectedChat.img}
-                  className="rounded-circle"
+                  src={selectedChat.img || "/assets/images/profilepic.png"}
                   width="40"
                   height="40"
+                  className="rounded-circle border"
                   alt=""
                 />
                 <div>
-                  <div className="fw-bold">{selectedChat.name}</div>
-                  <small className="text-success">Online</small>
+                  <div className="fw-bold small">{selectedChat.name}</div>
+                  <div className="text-primary" style={{ fontSize: "11px" }}>
+                    {selectedChat.role}
+                  </div>
                 </div>
               </div>
 
-              {/* Message Display Area */}
-              <div className="flex-grow-1 p-4 overflow-auto bg-light custom-scrollbar">
-                {(conversations[selectedChat.id] || []).map((msg) => (
+              {/* Messages Area */}
+              <div
+                className="flex-grow-1 p-3 overflow-auto bg-light custom-scrollbar"
+                ref={scrollRef}>
+                {(conversations[selectedChat.chatId] || []).map((msg) => (
                   <div
                     key={msg.id}
                     className={`d-flex mb-3 ${msg.sender === "Me" ? "justify-content-end" : "justify-content-start"}`}>
                     <div
-                      className={`p-3 rounded-4 shadow-sm ${msg.sender === "Me" ? "text-white" : "bg-white text-dark"}`}
+                      className={`p-2 px-3 shadow-sm ${msg.sender === "Me" ? "text-white" : "bg-white text-dark"}`}
                       style={{
-                        maxWidth: "70%",
+                        maxWidth: "75%",
                         backgroundColor:
-                          msg.sender === "Me" ? "#22443e" : "#ffffff", // Dark green for 'Me', white for others
+                          msg.sender === "Me" ? "#083f36" : "#ffffff",
                         borderRadius:
                           msg.sender === "Me"
-                            ? "15px 15px 2px 15px"
-                            : "15px 15px 15px 2px",
-                        border:
-                          msg.sender === "Me" ? "none" : "1px solid #e0e0e0", // Optional: adds a light border to white bubbles
+                            ? "12px 12px 2px 12px"
+                            : "12px 12px 12px 2px",
                       }}>
-                      <p
-                        className="mb-1 small"
-                        style={{
-                          color: msg.sender === "Me" ? "#fff" : "#161515",
-                        }}>
-                        {msg.text}
-                      </p>
+                      <div className="small">{msg.text}</div>
                       <div
                         className="text-end"
-                        style={{
-                          fontSize: "9px",
-                          opacity: 0.6,
-                          color: msg.sender === "Me" ? "#fff" : "#161515",
-                        }}>
+                        style={{ fontSize: "9px", opacity: 0.7 }}>
                         {msg.time}
                       </div>
                     </div>
@@ -216,107 +240,52 @@ const Messages = () => {
                 ))}
               </div>
 
-              {/* Input Area */}
+              {/* Input Area (Ispe Border-Top hai taaki alag dikhe) */}
               <div className="p-3 border-top bg-white">
-                <form
-                  onSubmit={handleSendMessage}
-                  className="d-flex gap-2 align-items-center">
+                <form onSubmit={handleSendMessage} className="d-flex gap-2">
                   <Input
                     type="text"
                     placeholder="Write a message..."
-                    className="rounded-pill bg-light border-0 px-3 py-2"
+                    className="rounded-pill bg-light border-0 px-4"
                     value={typedMessage}
                     onChange={(e) => setTypedMessage(e.target.value)}
                   />
                   <Button
                     type="submit"
-                    className="rounded-circle d-flex align-items-center justify-content-center border-0 shadow-sm"
+                    className="rounded-circle border-0 d-flex align-items-center justify-content-center"
                     style={{
-                      width: "42px",
-                      height: "42px",
-                      backgroundColor: "#083f36", // Your deep professional green
-                      color: "#ffffff", // White icon for contrast
+                      backgroundColor: "#083f36",
+                      width: "45px",
+                      height: "45px",
                     }}>
-                    {/* Unicode Plane Icon */}
-                    <span
-                      style={{
-                        fontSize: "20px",
-                        transform: "rotate(0deg)",
-                        display: "inline-block",
-                        // marginTop: "-4px",
-                      }}>
-                      ➤
-                    </span>
+                    <i className="bi bi-send-fill text-white"></i>
                   </Button>
                 </form>
               </div>
-            </div>
+            </>
           ) : (
-            <div className="h-100 d-flex flex-column align-items-center justify-content-center text-center p-5">
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/3665/3665922.png"
-                alt="empty chat"
-                className="img-fluid floating-animation mb-4"
-                style={{ width: "120px", opacity: 0.6 }}
-              />
-              <h5 className="text-muted fw-light">
-                Select a conversation to start messaging.
-              </h5>
+            <div className="h-100 d-flex flex-column align-items-center justify-content-center text-muted">
+              <i className="bi bi-chat-dots fs-1 opacity-25"></i>
+              <p className="mt-2">Select a chat to start</p>
             </div>
           )}
         </Col>
       </Row>
 
       <style jsx>{`
-        .animate-fade-in {
-          animation: fadeIn 0.5s ease-in-out;
-        }
-        .animate-slide-up {
-          animation: slideUp 0.3s ease-out;
-        }
-        .floating-animation {
-          animation: float 3s ease-in-out infinite;
-        }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        @keyframes slideUp {
-          from {
-            transform: translateY(10px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-15px);
-          }
-        }
         .chat-item:hover {
           background-color: #f8f9fa !important;
         }
         .chat-item.active {
-          background-color: #fff9ed !important;
+          background-color: #e9ecef !important;
           border-left: 4px solid #083f36 !important;
         }
         .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
+          width: 5px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #e0e0e0;
-          border-radius: 10px;
+          background: #ccc;
+          border-radius: 5px;
         }
       `}</style>
     </div>

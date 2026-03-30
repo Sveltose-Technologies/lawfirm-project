@@ -1,9 +1,8 @@
 import API from "./api";
 
+export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
-
-
-export const IMG_URL = "https://api.blustor.net";
+// export const IMG_URL = "https://api.blustor.net";
 
 // ================= HELPER FUNCTIONS =================
 
@@ -38,10 +37,10 @@ export const getImgUrl = (path) => {
   let cleanPath = path.toString().trim().replace(/\\/g, "/");
   if (/^(http|https|data:image)/.test(cleanPath)) return cleanPath;
   while (cleanPath.startsWith("/")) cleanPath = cleanPath.substring(1);
-  
+
   const folders = ["uploads/", "public/", "assets/", "images/", "static/"];
   const hasFolder = folders.some((folder) => cleanPath.startsWith(folder));
-  
+
   return hasFolder
     ? `${IMG_URL}/${cleanPath}`
     : `${IMG_URL}/uploads/${cleanPath}`;
@@ -124,8 +123,6 @@ export const resetPassword = async (payload) => {
 
 // ================= CLIENT PROFILE API =================
 
-
-
 export const getClientById = async (id) => {
   try {
     const response = await API.get(`/client/get-by-id/${id}`);
@@ -154,10 +151,9 @@ export const signupAttorney = async (payload) => {
     console.log("Sending Attorney Payload:", payload); // Check this in console
     const response = await API.post("/attorney/signup", payload);
     console.log("response", response);
-    
+
     return response.data;
-     console.log("response", response);
-    
+    console.log("response", response);
   } catch (error) {
     throw formatError(error);
   }
@@ -1847,9 +1843,18 @@ export const deleteCaseCategory = async (id) => {
 };
 
 // ================= Admin - Messages =================
- 
+
 export const adminMessage = async (data) => {
   const response = await API.post("/client-conversation/send", data);
   return response.data;
 };
- 
+
+// Service Management APIs
+export const createService = (data) => API.post(`/services/create`, data);
+export const updateService = (id, data) =>
+  API.put(`/services/update/${id}`, data);
+export const deleteService = (id) => API.delete(`/services/delete/${id}`);
+export const getServiceById = (id) => API.get(`/services/get-by-id/${id}`);
+export const getAllServices = () => API.get(`/services/get-all`);
+
+
