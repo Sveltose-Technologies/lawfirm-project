@@ -261,6 +261,7 @@ exports.updateAttorneyProfile = async (req, res) => {
       twitter,
       facebook,
       gmail,
+      servicesId,
       status
 
     } = req.body;
@@ -334,10 +335,12 @@ barCouncilStateId: req.files?.barCouncilStateId?.[0]
       facebook,
       gmail,
       status: status ? status : attorney.status,
-  termsAccepted,
+      servicesId,
+  termsAccepted
 });
     res.status(200).json({
       message: "Attorney profile updated successfully",
+      attorney
     });
 
   } catch (error) {

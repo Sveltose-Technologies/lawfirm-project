@@ -8,6 +8,7 @@ import {
   getAllNews,
   getAllEvents,
   IMG_URL,
+  getImgUrl,
 } from "../../../services/authService";
 
 export default function SubCategoryDetail() {
@@ -15,8 +16,8 @@ export default function SubCategoryDetail() {
   const { slug } = router.query;
 
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
-  const [sameCategorySubs, setSameCategorySubs] = useState([]); 
-  const [otherCategorySubs, setOtherCategorySubs] = useState([]); 
+  const [sameCategorySubs, setSameCategorySubs] = useState([]);
+  const [otherCategorySubs, setOtherCategorySubs] = useState([]);
   const [newsList, setNewsList] = useState([]);
   const [eventsList, setEventsList] = useState([]);
   const [subCmsData, setSubCmsData] = useState(null);
@@ -100,9 +101,7 @@ export default function SubCategoryDetail() {
     );
   if (!selectedSubCategory) return null;
 
-  const bannerUrl = selectedSubCategory.bannerImage?.startsWith("uploads")
-    ? `${IMG_URL}/${selectedSubCategory.bannerImage}`
-    : selectedSubCategory.bannerImage;
+  const bannerUrl = getImgUrl(selectedSubCategory.bannerImage);
 
   const isEventTab = activeTab === "Upcoming Events";
   const displayList = isEventTab

@@ -14,11 +14,15 @@ router.get("/admin/:adminId", controller.getConversationByAdminId);
 // get by attorney
 router.get("/attorney/:attorneyId", controller.getConversationByAttorneyId);
 
-router.get("/client/:clientId", controller.getConversationByClientId);
+// router.get("/client/:clientId", controller.getConversationByClientId);
+
 // get by id
-router.get("/get-all/:id", controller.getConversationById);
+router.get("/get-by-id/:id", controller.getConversationById);
 
 // delete
 router.delete("/delete/:id", controller.deleteConversation);
+
+router.get("/get-all", controller.getAllConversations);
+
 
 module.exports = router;

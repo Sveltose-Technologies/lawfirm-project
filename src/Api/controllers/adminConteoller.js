@@ -164,7 +164,7 @@ exports.adminLogin = async (req, res) => {
 
 exports.updateAdminProfile = async (req, res) => {
   try {
-    const { id } = req.params; // admin id from params
+    const { id } = req.params; 
 
     const {
       firstName,

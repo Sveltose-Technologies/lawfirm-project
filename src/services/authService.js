@@ -35,15 +35,24 @@ export const getAdminId = () => {
 export const getImgUrl = (path) => {
   if (!path || path === "null" || path === "undefined") return "";
   let cleanPath = path.toString().trim().replace(/\\/g, "/");
+
+  // If it's already a full URL (http/https/data:image), return as is
   if (/^(http|https|data:image)/.test(cleanPath)) return cleanPath;
+
+  // Remove leading slashes
   while (cleanPath.startsWith("/")) cleanPath = cleanPath.substring(1);
 
+  // Check if path already contains known folder prefixes
   const folders = ["uploads/", "public/", "assets/", "images/", "static/"];
   const hasFolder = folders.some((folder) => cleanPath.startsWith(folder));
 
-  return hasFolder
-    ? `${IMG_URL}/${cleanPath}`
-    : `${IMG_URL}/uploads/${cleanPath}`;
+  // If it has a folder prefix, just add the base URL
+  if (hasFolder) {
+    return `${IMG_URL}/${cleanPath}`;
+  }
+
+  // Otherwise, assume it's in the uploads folder
+  return `${IMG_URL}/uploads/${cleanPath}`;
 };
 
 export const getCurrentUser = () => {
@@ -306,7 +315,7 @@ export const getAllCapabilityCategories = async () => {
     console.log("🚀 Fetching all Capability Categories...");
     const response = await API.get("/capability-categories/get-all");
     console.log("✅ Categories fetched:", response.data);
-    return response.data;
+    return { success: true, data: response.data };
   } catch (error) {
     console.error(
       "❌ Fetch Categories Error:",
@@ -841,14 +850,24 @@ export const deleteNews = async (id) => {
 
 export const getAllEvents = async () => {
   try {
-    console.log("🚀 Fetching all Events...");
     const response = await API.get("/event/getall");
-    let data =
-      response.data?.data || response.data?.events || response.data || [];
-    console.log("✅ Events fetched:", data);
-    return { success: true, data };
+    const data =
+      response.data?.events || response.data?.data || response.data || [];
+    return { success: true, data: Array.isArray(data) ? data : [] };
   } catch (error) {
-    console.error("❌ Get Events Error:", error);
+    console.error("❌ getAllEvents Error:", error);
+    return { success: false, data: [] };
+  }
+};
+
+export const getBanner = async () => {
+  try {
+    const response = await API.get("/event-banner/get-all");
+    const data =
+      response.data?.banner || response.data?.data || response.data || [];
+    return { success: true, data: Array.isArray(data) ? data : [] };
+  } catch (error) {
+    console.error("❌ getBanner Error:", error);
     return { success: false, data: [] };
   }
 };
@@ -888,19 +907,6 @@ export const deleteBannerEvent = async (id) => {
   } catch (error) {
     console.error("❌ Delete Event Error:", error);
     throw error;
-  }
-};
-export const getBanner = async () => {
-  try {
-    console.log("🚀 Fetching all News...");
-    const response = await API.get("/event-banner/get-all");
-    let data =
-      response.data?.data || response.data?.banner || response.data || [];
-    console.log("✅ News Banner:", data);
-    return { success: true, data };
-  } catch (error) {
-    console.error("❌ Get News Error:", error);
-    return { success: false, data: [] };
   }
 };
 
@@ -947,10 +953,11 @@ export const deleteEvent = async (id) => {
 // ================= CAREERS APIs =================
 export const getAllCareers = async () => {
   try {
-    const response = await API.get("/career/getall");
-    // Based on your JSON log: response.data contains { count, jobs: [] }
-    const data = response.data?.jobs || [];
-    return { success: true, data };
+    const response = await API.get("/career/get-all");
+    // API returns { count, jobs: [...] } or similar structure
+    const data =
+      response.data?.jobs || response.data?.data || response.data || [];
+    return { success: true, data: Array.isArray(data) ? data : [] };
   } catch (error) {
     console.error("❌ Get Careers Error:", error);
     return { success: false, data: [] };
@@ -999,7 +1006,8 @@ export const getAllCountries = async () => {
     console.log("🚀 Fetching all countries...");
     const response = await API.get("/location-country/getall");
     console.log("✅ Countries fetched successfully:", response.data);
-    return response.data;
+    const data = response.data?.data || response.data || [];
+    return { success: true, data: Array.isArray(data) ? data : [] };
   } catch (error) {
     console.error(
       "❌ Fetch Countries Error:",
@@ -1124,10 +1132,11 @@ export const getAllCities = async () => {
     console.log("🚀 Fetching all cities...");
     const res = await API.get("/location-city/getall");
     console.log("✅ Cities response:", res.data);
-    return res.data;
+    const data = res.data?.data || res.data || [];
+    return { success: true, data: Array.isArray(data) ? data : [] };
   } catch (error) {
     console.error("❌ Get Cities Error:", error);
-    throw error;
+    return { success: false, data: [] };
   }
 };
 
@@ -1136,7 +1145,8 @@ export const getAllLocationCities = async () => {
     console.log("🚀 Fetching Location City records...");
     const response = await API.get("/location-city/getall");
     console.log("✅ Location Cities fetched:", response.data);
-    return response.data;
+    const data = response.data?.data || response.data || [];
+    return { success: true, data: Array.isArray(data) ? data : [] };
   } catch (error) {
     console.error("❌ Location City API Error:", error);
     return { success: false, data: [] };
@@ -1857,7 +1867,6 @@ export const deleteService = (id) => API.delete(`/services/delete/${id}`);
 export const getServiceById = (id) => API.get(`/services/get-by-id/${id}`);
 export const getAllServices = () => API.get(`/services/get-all`);
 
-
 // ============================================================
 // 1. CLIENT-CONVERSATION APIs (Admin <-> Client)
 // ============================================================
@@ -2033,7 +2042,6 @@ export const deleteAttorneyClientMessage = async (id) => {
   return res.data;
 };
 
-
 export const getAllUsers = async () => {
   try {
     console.log("🚀 [AuthService] Fetching All Clients...");
@@ -2045,3 +2053,194 @@ export const getAllUsers = async () => {
     throw error;
   }
 };
+
+// Law Career Category
+export const getAllLawCareerCategories = async () => {
+  try {
+    console.log("🚀 [LawCareer] Fetching All Categories...");
+    const response = await API.get("/law-career-category/getall");
+
+    const rawData = response.data?.data || response.data || [];
+
+    const finalData = Array.isArray(rawData) ? rawData : [];
+
+    console.log("✅ [LawCareer] Categories Fetched:", finalData);
+    return { success: true, data: finalData };
+  } catch (error) {
+    console.error("❌ [LawCareer] getAllLawCareerCategories Error:", error);
+    return { success: false, data: [] };
+  }
+};
+export const createLawCareerCategory = async (data) => {
+  try {
+    console.log("🚀 [LawCareer] Creating Category...", data);
+    const response = await API.post("/law-career-category/create", data);
+    console.log("✅ [LawCareer] Category Created:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ [LawCareer] createLawCareerCategory Error:", error);
+    throw error;
+  }
+};
+
+export const updateLawCareerCategory = async (id, data) => {
+  try {
+    console.log(`🚀 [LawCareer] Updating Category ID: ${id}...`, data);
+    const response = await API.put(`/law-career-category/update/${id}`, data);
+    console.log("✅ [LawCareer] Category Updated:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ [LawCareer] updateLawCareerCategory Error:", error);
+    throw error;
+  }
+};
+
+export const deleteLawCareerCategory = async (id) => {
+  try {
+    console.log(`🚀 [LawCareer] Deleting Category ID: ${id}...`);
+    const response = await API.delete(`/law-career-category/delete/${id}`);
+    console.log("✅ [LawCareer] Category Deleted:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ [LawCareer] deleteLawCareerCategory Error:", error);
+    throw error;
+  }
+};
+
+// Career Front
+export const getAllCareerFront = async () => {
+  try {
+    console.log("🚀 [CareerFront] Fetching All Fronts...");
+    const response = await API.get("/careerfront/get-all");
+    console.log("✅ [CareerFront] Fronts Fetched:", response.data);
+    const data = response.data?.data || response.data || [];
+    return { success: true, data: Array.isArray(data) ? data : [] };
+  } catch (error) {
+    console.error("❌ [CareerFront] getAllCareerFront Error:", error);
+    return { success: false, data: [] };
+  }
+};
+
+export const createCareerFront = async (fd) => {
+  try {
+    console.log("🚀 [CareerFront] Creating Front (FormData)...");
+    const response = await API.post("/careerfront/create", fd);
+    console.log("✅ [CareerFront] Front Created:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ [CareerFront] createCareerFront Error:", error);
+    throw error;
+  }
+};
+
+export const updateCareerFront = async (id, fd) => {
+  try {
+    console.log(`🚀 [CareerFront] Updating Front ID: ${id}...`);
+    const response = await API.put(`/careerfront/update/${id}`, fd);
+    console.log("✅ [CareerFront] Front Updated:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ [CareerFront] updateCareerFront Error:", error);
+    throw error;
+  }
+};
+
+export const deleteCareerFront = async (id) => {
+  try {
+    console.log(`🚀 [CareerFront] Deleting Front ID: ${id}...`);
+    const response = await API.delete(`/careerfront/delete/${id}`);
+    console.log("✅ [CareerFront] Front Deleted:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ [CareerFront] deleteCareerFront Error:", error);
+    throw error;
+  }
+};
+// Career Detail
+export const getAllCareerDetails = async () => {
+  try {
+    console.log("🚀 [CareerDetail] Fetching All Details...");
+    const response = await API.get("/career-detail/getall");
+    console.log("✅ [CareerDetail] Details Fetched:", response.data);
+    const data = response.data?.data || response.data || [];
+    return { success: true, data: Array.isArray(data) ? data : [] };
+  } catch (error) {
+    console.error("❌ [CareerDetail] getAllCareerDetails Error:", error);
+    return { success: false, data: [] };
+  }
+};
+export const createCareerDetail = (fd) =>
+  API.post("/career-detail/create", fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+export const updateCareerDetail = (id, fd) =>
+  API.put(`/career-detail/update/${id}`, fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+export const deleteCareerDetail = async (id) => {
+  try {
+    console.log(`🚀 [CareerDetail] Deleting Detail ID: ${id}...`);
+    const response = await API.delete(`/career-detail/delete/${id}`);
+    console.log("✅ [CareerDetail] Detail Deleted:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ [CareerDetail] deleteCareerDetail Error:", error);
+    throw error;
+  }
+};
+
+// Job Category
+export const getAllJobCategories = async () => {
+  try {
+    console.log("🚀 [JobCategory] Fetching All Job Categories...");
+    const response = await API.get("/job-category/get-all");
+    console.log("✅ [JobCategory] Job Categories Fetched:", response.data);
+    const data = response.data?.data || response.data || [];
+    return { success: true, data: Array.isArray(data) ? data : [] };
+  } catch (error) {
+    console.error("❌ [JobCategory] getAllJobCategories Error:", error);
+    return { success: false, data: [] };
+  }
+};
+
+export const createJobCategory = async (data) => {
+  try {
+    console.log("🚀 [JobCategory] Creating Job Category...", data);
+    const response = await API.post("/job-category/create", data);
+    console.log("✅ [JobCategory] Job Category Created:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ [JobCategory] createJobCategory Error:", error);
+    throw error;
+  }
+};
+
+export const updateJobCategory = async (id, data) => {
+  try {
+    console.log(`🚀 [JobCategory] Updating Job Category ID: ${id}...`, data);
+    const response = await API.put(`/job-category/update/${id}`, data);
+    console.log("✅ [JobCategory] Job Category Updated:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ [JobCategory] updateJobCategory Error:", error);
+    throw error;
+  }
+};
+
+export const deleteJobCategory = async (id) => {
+  try {
+    console.log(`🚀 [JobCategory] Deleting Job Category ID: ${id}...`);
+    const response = await API.delete(`/job-category/delete/${id}`);
+    console.log("✅ [JobCategory] Job Category Deleted:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ [JobCategory] deleteJobCategory Error:", error);
+    throw error;
+  }
+};
+
+
+
+

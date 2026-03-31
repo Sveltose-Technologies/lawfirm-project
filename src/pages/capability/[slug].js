@@ -9,6 +9,7 @@ import {
   getAllNews,
   getAllEvents,
   IMG_URL,
+  getImgUrl,
 } from "../../services/authService";
 
 export default function CapabilityDetail() {
@@ -121,9 +122,7 @@ export default function CapabilityDetail() {
     );
   if (!selectedCategory) return null;
 
-  const bannerUrl = selectedCategory.bannerImage?.startsWith("uploads")
-    ? `${IMG_URL}/${selectedCategory.bannerImage}`
-    : selectedCategory.bannerImage;
+  const bannerUrl = getImgUrl(selectedCategory.bannerImage);
   const isEventTab =
     activeTab === "Past Events" || activeTab === "Upcoming Events";
   const displayList = isEventTab

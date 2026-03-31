@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../configer/dbconfig.js");
+const Category = require("./capabilitiescategoriesModel.js");
 
 const Attorney = sequelize.define(
   "attorney",
@@ -105,7 +106,6 @@ isVerified: {
   defaultValue: false,
 },
 
-
     termsAccepted: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -149,6 +149,11 @@ isVerified: {
      defaultValue: "inactive"
     },
 
+     servicesId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+ 
   },
   {
     tableName: "attorney",

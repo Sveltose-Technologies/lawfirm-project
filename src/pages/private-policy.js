@@ -78,7 +78,7 @@ const PrivacyNotice = () => {
       <style jsx>{`
         .privacy-content-wrapper :global(p) {
           margin-bottom: 1.2rem;
-          white-space: normal !important; /* 👈 Yeh f फालतू spaces aur single line problem solve karega */
+          white-space: normal !important;
         }
         .privacy-content-wrapper :global(ul),
         .privacy-content-wrapper :global(ol) {

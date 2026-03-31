@@ -148,21 +148,42 @@ exports.getConversationById = async (req, res) => {
   }
 };
 
-// get conversation by clientId
-exports.getConversationByClientId = async (req, res) => {
+// // get conversation by clientId
+// exports.getConversationByClientId = async (req, res) => {
+//   try {
+//     const { clientId } = req.params;
+
+//     if (!clientId) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "clientId is required",
+//       });
+//     }
+
+//     const chats = await ClientConversation.findAll({
+//       where: { clientId },
+//       order: [["createdAt", "ASC"]],
+//     });
+
+//     res.status(200).json({
+//       status: true,
+//       total: chats.length,
+//       data: chats,
+//     });
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       status: false,
+//       message: "Server error",
+//     });
+//   }
+// };
+
+exports.getAllConversations = async (req, res) => {
   try {
-    const { clientId } = req.params;
-
-    if (!clientId) {
-      return res.status(400).json({
-        status: false,
-        message: "clientId is required",
-      });
-    }
-
-    const chats = await ClientConversation.findAll({
-      where: { clientId },
-      order: [["createdAt", "ASC"]],
+    const chats = await AttorneyConversation.findAll({
+      order: [["createdAt", "DESC"]],
     });
 
     res.status(200).json({

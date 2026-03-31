@@ -80,9 +80,11 @@ function Capabilities() {
     setOpenCategoryIds([]);
   };
 
-  const filteredCategories = categories.filter((cat) =>
-    cat.categoryName?.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredCategories = Array.isArray(categories)
+    ? categories.filter((cat) =>
+        cat.categoryName?.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    : [];
 
   const midPoint = Math.ceil(filteredCategories.length / 2);
   const leftColumn = filteredCategories.slice(0, midPoint);

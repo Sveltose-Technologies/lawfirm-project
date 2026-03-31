@@ -155,7 +155,6 @@ export default function ClientPortal() {
                       onChange={(e) => setEmail(e.target.value)}
                       required 
                     />
-                    {/* FIXED: ' को &apos; से बदला गया */}
                     <div className="form-text text-muted" style={{fontSize: '0.75rem'}}>Try &apos;exist@lawfirm.com&apos; to test error validation.</div>
                   </div>
 

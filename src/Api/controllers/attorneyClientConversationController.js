@@ -78,25 +78,6 @@ exports.getByAttorneyId = async (req, res) => {
   }
 };
 
-exports.getByAttorneyId = async (req, res) => {
-  try {
-    const { attorneyId } = req.params;
-
-    const chats = await AttorneyClientConversation.findAll({
-      where: { attorneyId },
-      order: [["createdAt", "ASC"]],
-    });
-
-    res.json({
-      status: true,
-      total: chats.length,
-      data: chats,
-    });
-
-  } catch (error) {
-    res.status(500).json({ status: false });
-  }
-};
 
 exports.getChat = async (req, res) => {
   try {

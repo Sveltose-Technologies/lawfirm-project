@@ -66,9 +66,11 @@ const CapabilityCategory = () => {
     setLoading(true);
     try {
       const res = await authService.getAllCapabilityCategories();
-      setCategories(res.data || (Array.isArray(res) ? res : []));
+      const data = res?.data || [];
+      setCategories(Array.isArray(data) ? data : []);
     } catch (error) {
       toast.error(error || "Failed to load categories");
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -137,10 +139,12 @@ const CapabilityCategory = () => {
     setModal(true);
   };
 
-  const currentItems = categories.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  const currentItems = Array.isArray(categories)
+    ? categories.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage,
+      )
+    : [];
 
   return (
     <Container fluid className="py-4 bg-light-gray min-vh-100">
@@ -226,7 +230,7 @@ const CapabilityCategory = () => {
 
       <div className="mt-4 d-flex justify-content-center">
         <PaginationComponent
-          totalItems={categories.length}
+          totalItems={Array.isArray(categories) ? categories.length : 0}
           itemsPerPage={itemsPerPage}
           currentPage={currentPage}
           onPageChange={setCurrentPage}
