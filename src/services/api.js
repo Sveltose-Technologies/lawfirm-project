@@ -51,7 +51,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://nrislaw.rxchartsquare.com",
+  baseURL: "https://api.blustor.net",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
