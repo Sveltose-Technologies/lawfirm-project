@@ -1,191 +1,343 @@
-import React, { useState } from 'react';
-import Head from 'next/head';
-import ClientLayout from '../../components/layout/ClientLayout'; // ClientLayout use kiya hai kyuki excel ke mutabik client attorney se baat kar raha hai
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+// Add these lines below:
+import { Row, Col } from "reactstrap";
+import ClientLayout from "../../components/layout/ClientLayout";
+import {
+  getAllAttorneys,
+  getAdminProfile,
+  getUserMessageHistory,
+  getClientAttorneyMessageHistory,
+  adminClientMessage,
+  attorneyClientMessage,
+  getImgUrl,
+} from "../../services/authService";
 
+// ... rest of your code
 export default function Messages() {
-  const navyColor = '#002147';
-  const [activeTab, setActiveTab] = useState('attorney'); // Default tab 'attorney'
-  const [selectedChat, setSelectedChat] = useState({ id: 1, name: "Adv. Rajesh Malhotra", online: true, img: "/assets/images/attorney1.png", role: "Senior Attorney" });
-  const [msgInput, setMsgInput] = useState("");
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [typedMessage, setTypedMessage] = useState("");
+  const [chatList, setChatList] = useState([]);
+  const [conversations, setConversations] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [adminId, setAdminId] = useState("");
+  const scrollRef = useRef(null);
 
-  // Excel sheet ke hisaab se categories
-  const chatList = {
-    attorney: [
-      { id: 1, name: "Adv. Rajesh Malhotra", lastMsg: "Please share the property docs.", time: "10:30 AM", online: true, img: "/assets/images/attorney1.png", role: "Senior Attorney" },
-      { id: 2, name: "Adv. Suman Lata", lastMsg: "Hearing is scheduled for tomorrow.", time: "Yesterday", online: false, img: "/assets/images/attorney1.png", role: "Legal Consultant" },
-    ],
-    staff: [
-      { id: 101, name: "Rahul (Support)", lastMsg: "Your payment is verified.", time: "09:15 AM", online: true, img: "/assets/images/attorney1.png", role: "Case Manager" },
-      { id: 102, name: "Priya Singh", lastMsg: "Document upload pending.", time: "11:00 AM", online: true, img: "/assets/images/attorney1.png", role: "Office Staff" },
-    ]
-  };
+  const professionalGreen = "#083f36";
 
-  const [messages, setMessages] = useState([
-    { id: 1, text: "Hello, can I get an update on my case?", sender: "me", time: "10:00 AM" },
-    { id: 2, text: "Yes, we are reviewing the documents right now.", sender: "other", time: "10:05 AM" },
-    { id: 3, text: "I'll update you by the evening.", sender: "other", time: "10:06 AM" },
-  ]);
+  // 1. Auto-scroll to bottom
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [conversations, selectedChat]);
 
-  const handleSendMessage = (e) => {
+  // 2. Fetch Contacts (Admin & Verified Attorneys)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [adminRes, attorneysRes] = await Promise.all([
+          getAdminProfile(),
+          getAllAttorneys(),
+        ]);
+
+        let combined = [];
+
+        // Process Admin (Admins are usually always verified/active)
+        if (adminRes && adminRes.id) {
+          setAdminId(adminRes.id);
+          combined.push({
+            id: adminRes.id,
+            role: "Admin",
+            chatId: `admin-${adminRes.id}`,
+            name: adminRes.firstName || "Admin Office",
+            img: getImgUrl(adminRes.profileImage),
+          });
+        }
+
+        // Process Attorneys - ONLY VERIFIED
+        const verifiedAttorneys = (attorneysRes?.attorneys || [])
+          .filter((a) => a.status === "verified")
+          .map((a) => ({
+            id: a.id,
+            role: "Attorney",
+            chatId: `attorney-${a.id}`,
+            name: `${a.firstName} ${a.lastName || ""}`,
+            img: getImgUrl(a.profileImage),
+          }));
+
+        const fullList = [...combined, ...verifiedAttorneys];
+        setChatList(fullList);
+
+        // PERSISTENCE: Restore active chat on refresh
+        const savedChatId = localStorage.getItem("client_active_chat");
+        if (savedChatId) {
+          const found = fullList.find((c) => c.chatId === savedChatId);
+          if (found) setSelectedChat(found);
+        }
+      } catch (err) {
+        console.error("Fetch contacts error:", err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // 3. Fetch History when Chat is selected
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!selectedChat) return;
+
+      // Save to localStorage for refresh persistence
+      localStorage.setItem("client_active_chat", selectedChat.chatId);
+
+      const user = JSON.parse(localStorage.getItem("user")); // Logged-in Client
+      try {
+        let response;
+        if (selectedChat.role === "Admin") {
+          // Client <-> Admin History
+          response = await getUserMessageHistory(selectedChat.id, user.id);
+        } else {
+          // Client <-> Attorney History
+          response = await getClientAttorneyMessageHistory(
+            selectedChat.id,
+            user.id,
+          );
+        }
+
+        const formattedMessages = (response?.data || []).map((msg) => ({
+          id: msg.id,
+          text: msg.message,
+          // If senderType is 'client', it's "Me"
+          sender: msg.senderType === "client" ? "Me" : selectedChat.name,
+          time: new Date(msg.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        }));
+
+        setConversations((prev) => ({
+          ...prev,
+          [selectedChat.chatId]: formattedMessages,
+        }));
+      } catch (error) {
+        console.error("History fetch error:", error);
+      }
+    };
+    fetchHistory();
+  }, [selectedChat]);
+
+  // 4. Send Message
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!msgInput.trim()) return;
-    const newMsg = { id: Date.now(), text: msgInput, sender: "me", time: "Just now" };
-    setMessages([...messages, newMsg]);
-    setMsgInput("");
+    if (!typedMessage.trim() || !selectedChat) return;
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    const msgText = typedMessage;
+    setTypedMessage("");
+
+    try {
+      if (selectedChat.role === "Attorney") {
+        await attorneyClientMessage({
+          attorneyId: selectedChat.id,
+          clientId: user?.id,
+          senderType: "client",
+          message: msgText,
+        });
+      } else {
+        await adminClientMessage({
+          adminId: selectedChat.id,
+          clientId: user?.id,
+          senderType: "client",
+          message: msgText,
+        });
+      }
+
+      // Local UI update (Optimistic Update)
+      const newMessage = {
+        id: Date.now(),
+        text: msgText,
+        sender: "Me",
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+
+      setConversations((prev) => ({
+        ...prev,
+        [selectedChat.chatId]: [
+          ...(prev[selectedChat.chatId] || []),
+          newMessage,
+        ],
+      }));
+    } catch (err) {
+      console.error("Send error:", err);
+    }
   };
+
+  const filteredChatList = chatList.filter((c) =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   return (
     <ClientLayout>
- 
-
-      <div className="container-fluid px-0">
-        {/* Page Header */}
-        <div className="mb-4">
-          <h4 className="fw-bold mb-1" style={{ color: navyColor, fontSize: '20px' }}>Messages</h4>
-          <p className="text-muted small">Connect with your Attorneys and Office Staff.</p>
-        </div>
-
-        <div className="card border-0 shadow-sm rounded-4 bg-white overflow-hidden" style={{ height: '75vh', minHeight: '600px' }}>
-          <div className="row g-0 h-100">
-            
-            {/* --- LEFT SIDEBAR: CATEGORIES & CONTACTS --- */}
-            <div className="col-lg-4 col-md-5 border-end d-flex flex-column h-100 bg-white">
-              
-              {/* Tabs based on Excel (Attorney / Office Staff) */}
-              <div className="p-3 border-bottom">
-                <div className="d-flex p-1 bg-light rounded-3 shadow-sm">
-                  <button 
-                    className={`btn flex-grow-1 py-2 fw-bold small transition-all border-0 ${activeTab === 'attorney' ? 'bg-white shadow-sm text-navy' : 'text-muted'}`} 
-                    onClick={() => setActiveTab('attorney')}
-                    style={{ borderRadius: '8px' }}
-                  >
-                    Attorney
-                  </button>
-                  <button 
-                    className={`btn flex-grow-1 py-2 fw-bold small transition-all border-0 ${activeTab === 'staff' ? 'bg-white shadow-sm text-navy' : 'text-muted'}`} 
-                    onClick={() => setActiveTab('staff')}
-                    style={{ borderRadius: '8px' }}
-                  >
-                    Office Staff
-                  </button>
-                </div>
-              </div>
-
-              {/* Contact List */}
-              <div className="flex-grow-1 overflow-auto custom-scrollbar">
-                {chatList[activeTab].map(user => (
-                  <div 
-                    key={user.id} 
-                    className={`d-flex align-items-center p-3 border-bottom cursor-pointer transition-all ${selectedChat?.id === user.id ? 'active-chat-bg' : 'hover-chat-item'}`}
-                    onClick={() => setSelectedChat(user)}
-                  >
-                    <div className="position-relative">
-                      <img src={user.img} className="circular-avatar-md" alt="user" />
-                      {user.online && <span className="online-indicator"></span>}
-                    </div>
-                    <div className="ms-3 flex-grow-1 overflow-hidden">
-                      <h6 className="mb-0 fw-bold text-navy small">{user.name}</h6>
-                      <p className="mb-0 text-muted text-truncate x-small">{user.lastMsg}</p>
-                    </div>
-                    <span className="x-small text-muted">{user.time}</span>
-                  </div>
-                ))}
-              </div>
+      <div className="p-2 p-md-3" style={{ height: "calc(100vh - 120px)" }}>
+        <Row className="h-100 g-0 shadow-sm rounded-4 border overflow-hidden bg-white">
+          {/* LEFT SIDE: CONTACT LIST */}
+          <Col
+            md="4"
+            lg="3"
+            className="border-end d-flex flex-column h-100 bg-light">
+            <div className="p-3 bg-white border-bottom">
+              <h5 className="fw-bold mb-3">Messages</h5>
+              <input
+                placeholder="Search..."
+                className="form-control rounded-pill border-0 bg-light px-3"
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-
-            {/* --- RIGHT: CHAT AREA --- */}
-            <div className="col-lg-8 col-md-7 d-flex flex-column h-100 bg-light-gray">
-              {selectedChat ? (
-                <>
-                  {/* Top Bar */}
-                  <div className="p-3 border-bottom d-flex align-items-center bg-white">
-                    <img src={selectedChat.img} className="circular-avatar-sm" alt="selected" />
-                    <div className="ms-3">
-                      <h6 className="mb-0 fw-bold text-navy small">{selectedChat.name}</h6>
-                      <span className="x-small text-muted">{selectedChat.role} • <span className="text-success fw-bold">Online</span></span>
+            <div className="overflow-auto flex-grow-1 custom-scrollbar">
+              {filteredChatList.map((chat) => (
+                <div
+                  key={chat.chatId}
+                  className={`p-3 border-bottom d-flex align-items-center gap-3 cursor-pointer transition-all ${
+                    selectedChat?.chatId === chat.chatId
+                      ? "bg-white active-chat"
+                      : "hover-item"
+                  }`}
+                  onClick={() => setSelectedChat(chat)}>
+                  <img
+                    src={chat.img || "/assets/images/default-avatar.png"}
+                    width="45"
+                    height="45"
+                    className="rounded-circle border"
+                    alt=""
+                  />
+                  <div className="flex-grow-1 overflow-hidden">
+                    <div className="fw-bold text-dark small text-truncate">
+                      {chat.name}
+                    </div>
+                    <div className="text-muted" style={{ fontSize: "11px" }}>
+                      {chat.role}
                     </div>
                   </div>
+                </div>
+              ))}
+            </div>
+          </Col>
 
-                  {/* Messages */}
-                  <div className="flex-grow-1 overflow-auto p-4 bg-dots custom-scrollbar">
-                    {messages.map(msg => (
-                      <div key={msg.id} className={`d-flex mb-3 ${msg.sender === 'me' ? 'justify-content-end' : 'justify-content-start'}`}>
-                        <div className={`msg-bubble shadow-sm ${msg.sender === 'me' ? 'me-msg' : 'other-msg'}`}>
-                          <p className="mb-1">{msg.text}</p>
-                          <span className="msg-time">{msg.time}</span>
+          {/* RIGHT SIDE: CHAT AREA */}
+          <Col md="8" lg="9" className="d-flex flex-column h-100 bg-white">
+            {selectedChat ? (
+              <>
+                {/* Header */}
+                <div className="p-3 border-bottom d-flex align-items-center gap-3 bg-white">
+                  <img
+                    src={
+                      selectedChat.img || "/assets/images/default-avatar.png"
+                    }
+                    width="40"
+                    height="40"
+                    className="rounded-circle border"
+                    alt=""
+                  />
+                  <div>
+                    <div className="fw-bold small">{selectedChat.name}</div>
+                    <div
+                      className="text-primary fw-bold"
+                      style={{ fontSize: "10px" }}>
+                      {selectedChat.role}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Messages Area */}
+                <div
+                  className="flex-grow-1 p-4 overflow-auto bg-dots custom-scrollbar"
+                  ref={scrollRef}>
+                  {(conversations[selectedChat.chatId] || []).map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`d-flex mb-3 ${msg.sender === "Me" ? "justify-content-end" : "justify-content-start"}`}>
+                      <div
+                        className={`p-3 shadow-sm ${msg.sender === "Me" ? "msg-me" : "msg-other"}`}
+                        style={{ maxWidth: "75%" }}>
+                        <div className="small">{msg.text}</div>
+                        <div
+                          className="text-end mt-1"
+                          style={{ fontSize: "9px", opacity: 0.7 }}>
+                          {msg.time}
                         </div>
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Input Form */}
-                  <form className="p-3 border-top bg-white d-flex align-items-center gap-2" onSubmit={handleSendMessage}>
-                    <div className="input-group bg-light rounded-pill px-3 border-0 flex-grow-1 shadow-sm">
-                      <button type="button" className="btn border-0 text-muted"><i className="bi bi-plus-circle fs-5"></i></button>
-                      <input 
-                        type="text" 
-                        className="form-control border-0 bg-transparent py-2" 
-                        placeholder="Type your message..." 
-                        style={{ fontSize: '14px' }}
-                        value={msgInput}
-                        onChange={(e) => setMsgInput(e.target.value)}
-                      />
-                      <button type="button" className="btn border-0 text-muted"><i className="bi bi-emoji-smile fs-5"></i></button>
                     </div>
-                    
-                    <button type="submit" className="send-btn-black">
-                      <i className="bi bi-send-fill"></i>
+                  ))}
+                </div>
+
+                {/* Input Area */}
+                <div className="p-3 border-top bg-white">
+                  <form onSubmit={handleSendMessage} className="d-flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Write a message..."
+                      className="form-control rounded-pill bg-light border-0 px-4"
+                      value={typedMessage}
+                      onChange={(e) => setTypedMessage(e.target.value)}
+                    />
+                    <button
+                      type="submit"
+                      className="btn rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                      style={{
+                        backgroundColor: professionalGreen,
+                        width: "45px",
+                        height: "45px",
+                        color: "#fff",
+                      }}>
+                      ➤
                     </button>
                   </form>
-                </>
-              ) : (
-                <div className="h-100 d-flex flex-column align-items-center justify-content-center text-muted">
-                  <i className="bi bi-chat-dots display-1 opacity-25"></i>
-                  <p className="fw-bold mt-3">Select a person from {activeTab} section to start</p>
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <div className="h-100 d-flex flex-column align-items-center justify-content-center text-muted">
+                <i className="bi bi-chat-dots fs-1 opacity-25"></i>
+                <p className="mt-2 fw-bold">Select a chat to start</p>
+              </div>
+            )}
+          </Col>
+        </Row>
 
-          </div>
-        </div>
+        <style jsx>{`
+          .active-chat {
+            border-left: 4px solid ${professionalGreen} !important;
+          }
+          .hover-item:hover {
+            background-color: #f8f9fa;
+          }
+          .msg-me {
+            background-color: ${professionalGreen};
+            color: white;
+            border-radius: 15px 15px 2px 15px;
+          }
+          .msg-other {
+            background-color: white;
+            color: #333;
+            border-radius: 15px 15px 15px 2px;
+            border: 1px solid #e0e0e0;
+          }
+          .bg-dots {
+            background-color: #f8f9fa;
+            background-image: radial-gradient(#d1d5db 0.8px, transparent 0.8px);
+            background-size: 20px 20px;
+          }
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 5px;
+          }
+        `}</style>
       </div>
-
-      <style jsx>{`
-        .text-navy { color: #002147; }
-        .bg-light-gray { background-color: #f8f9fa; }
-        .active-chat-bg { background-color: #f0f4f8; border-right: 4px solid #002147; }
-        .hover-chat-item:hover { background-color: #f8f9fa; }
-
-        .circular-avatar-md { width: 45px; height: 45px; border-radius: 50% !important; object-fit: cover; }
-        .circular-avatar-sm { width: 38px; height: 38px; border-radius: 50% !important; object-fit: cover; }
-        .online-indicator { width: 12px; height: 12px; background: #28a745; border: 2px solid white; border-radius: 50%; position: absolute; bottom: 0; right: 0; }
-
-        .msg-bubble { padding: 10px 16px; max-width: 75%; font-size: 14px; }
-        .me-msg { background: #002147; color: white; border-radius: 18px 18px 2px 18px; }
-        .other-msg { background: white; color: #333; border-radius: 18px 18px 18px 2px; }
-        .msg-time { font-size: 10px; display: block; margin-top: 4px; opacity: 0.7; }
-
-        .send-btn-black { 
-          background: #000; 
-          border: none; 
-          color: #fff; 
-          width: 40px; 
-          height: 40px; 
-          border-radius: 50%; 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          transition: 0.3s;
-          cursor: pointer;
-        }
-        .send-btn-black:hover { transform: scale(1.05); background: #333; }
-
-        .bg-dots { background-color: #f8f9fa; background-image: radial-gradient(#d1d5db 0.8px, transparent 0.8px); background-size: 24px 24px; }
-        .x-small { font-size: 11px; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .form-control:focus { box-shadow: none; }
-      `}</style>
     </ClientLayout>
   );
 }

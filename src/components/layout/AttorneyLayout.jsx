@@ -81,7 +81,7 @@ export default function AttorneyLayout({ children }) {
 
       if (serverUser) {
         const currentStatus = (serverUser.status || "").toLowerCase().trim();
-        const isActive = currentStatus === "active";
+        const isActive = currentStatus === "verified";
 
         // Profile Completion Check
         const profileDone =

@@ -758,14 +758,43 @@ export default function EditProfile() {
         if (attorneyData) {
           setAttorneyId(attorneyData.id);
           setFormData({
-            ...attorneyData,
-            dob: attorneyData.dob ? attorneyData.dob.split("T")[0] : "",
+            firstName: attorneyData.firstName || "",
+            lastName: attorneyData.lastName || "",
+            email: attorneyData.email || "",
             password: "",
-            categoryId: attorneyData.categoryId?.toString() || "",
+            street: attorneyData.street || "",
+            aptBlock: attorneyData.aptBlock || "",
             city: attorneyData.city?.toString() || "",
+            state: attorneyData.state || "",
+            country: attorneyData.country || "",
+            location: attorneyData.location || "",
+            zipCode: attorneyData.zipCode || "",
+            phoneCell: attorneyData.phoneCell || "",
+            phoneHome: attorneyData.phoneHome || "",
+            phoneOffice: attorneyData.phoneOffice || "",
+            dob: attorneyData.dob ? attorneyData.dob.split("T")[0] : "",
+            admission: attorneyData.admission || "",
+            language: attorneyData.language || "",
+            servicesOffered: attorneyData.servicesOffered || "",
+            education: attorneyData.education || "",
+            experience: attorneyData.experience || "",
+            barCouncilIndiaNo: attorneyData.barCouncilIndiaNo || "",
+            barCouncilStateNo: attorneyData.barCouncilStateNo || "",
             familyLawPractice:
               attorneyData.familyLawPractice?.toString() || "false",
-            servicesOffered: attorneyData.servicesOffered || "", // Ensure this is bound
+            familyDetails: attorneyData.familyDetails || "",
+            aboutus: attorneyData.aboutus || "",
+            categoryId: attorneyData.categoryId?.toString() || "",
+            linkedin: attorneyData.linkedin || "",
+            twitter: attorneyData.twitter || "",
+            facebook: attorneyData.facebook || "",
+            gmail: attorneyData.gmail || "",
+            profileImage: null,
+            resume: null,
+            kycIdentity: null,
+            kycAddress: null,
+            barCouncilIndiaId: null,
+            barCouncilStateId: null,
           });
         }
       } catch (error) {

@@ -74,7 +74,10 @@ export default function ClientLayout({ children }) {
       if (user) {
         // 1. Status Check (Unlocks tabs)
         const status = (user.status || "").toLowerCase().trim();
-        const activeState = status === "active" || status === "verified";
+        // const activeState = status === "active" || status === "verified";
+
+                const activeState =  status === "verified";
+
 
         // 2. Profile Completion Check (Based on your JSON fields)
         const profileComplete = !!(user.mobile && user.city && user.country);

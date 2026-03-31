@@ -1858,3 +1858,190 @@ export const getServiceById = (id) => API.get(`/services/get-by-id/${id}`);
 export const getAllServices = () => API.get(`/services/get-all`);
 
 
+// ============================================================
+// 1. CLIENT-CONVERSATION APIs (Admin <-> Client)
+// ============================================================
+
+export const adminClientMessage = async (data) => {
+  console.log("🚀 [Admin-Client] Sending Message:", data);
+  const res = await API.post("/client-conversation/send", data);
+  console.log("✅ [Admin-Client] Send Success:", res.data);
+  return res.data;
+};
+
+export const getAllAdminClientConversations = async () => {
+  console.log("🚀 [Admin-Client] Fetching All...");
+  const res = await API.get("/client-conversation/get-all");
+  console.log("✅ [Admin-Client] All Data:", res.data);
+  return res.data;
+};
+
+export const getAdminClientMessageById = async (id) => {
+  console.log(`🚀 [Admin-Client] Fetching by ID: ${id}`);
+  const res = await API.get(`/client-conversation/get-by-id/${id}`);
+  console.log("✅ [Admin-Client] Data by ID:", res.data);
+  return res.data;
+};
+
+export const getAdminClientByAdminId = async (adminId) => {
+  console.log(`🚀 [Admin-Client] Fetching by Admin ID: ${adminId}`);
+  const res = await API.get(`/client-conversation/admin/${adminId}`);
+  console.log("✅ [Admin-Client] Data by Admin:", res.data);
+  return res.data;
+};
+
+export const getAdminClientByClientId = async (clientId) => {
+  console.log(`🚀 [Admin-Client] Fetching by Client ID: ${clientId}`);
+  const res = await API.get(`/client-conversation/client/${clientId}`);
+  console.log("✅ [Admin-Client] Data by Client:", res.data);
+  return res.data;
+};
+
+// Main History Method for Admin-Client
+export const getUserMessageHistory = async (adminId, clientId) => {
+  console.log(
+    `🚀 [Admin-Client] Fetching History: Admin ${adminId}, Client ${clientId}`,
+  );
+  const res = await API.get(`/client-conversation/get/${adminId}/${clientId}`);
+  console.log("✅ [Admin-Client] History Loaded:", res.data);
+  return res.data;
+};
+
+export const deleteAdminClientMessage = async (id) => {
+  console.log(`🚀 [Admin-Client] Deleting ID: ${id}`);
+  const res = await API.delete(`/client-conversation/delete/${id}`);
+  console.log("✅ [Admin-Client] Deleted Success");
+  return res.data;
+};
+
+// ============================================================
+// 2. ATTORNEY-CONVERSATION APIs (Admin <-> Attorney)
+// ============================================================
+
+export const adminAttorneyMessage = async (data) => {
+  console.log("🚀 [Admin-Attorney] Sending Message:", data);
+  const res = await API.post("/attorney-conversation/send", data);
+  console.log("✅ [Admin-Attorney] Send Success:", res.data);
+  return res.data;
+};
+
+export const getAllAdminAttorneyConversations = async () => {
+  console.log("🚀 [Admin-Attorney] Fetching All...");
+  const res = await API.get("/attorney-conversation/get-all");
+  console.log("✅ [Admin-Attorney] All Data:", res.data);
+  return res.data;
+};
+
+export const getAdminAttorneyMessageById = async (id) => {
+  console.log(`🚀 [Admin-Attorney] Fetching by ID: ${id}`);
+  const res = await API.get(`/attorney-conversation/get-by-id/${id}`);
+  console.log("✅ [Admin-Attorney] Data by ID:", res.data);
+  return res.data;
+};
+
+export const getAdminAttorneyByAdminId = async (adminId) => {
+  console.log(`🚀 [Admin-Attorney] Fetching by Admin ID: ${adminId}`);
+  const res = await API.get(`/attorney-conversation/admin/${adminId}`);
+  console.log("✅ [Admin-Attorney] Data by Admin:", res.data);
+  return res.data;
+};
+
+export const getAdminAttorneyByAttorneyId = async (attorneyId) => {
+  console.log(`🚀 [Admin-Attorney] Fetching by Attorney ID: ${attorneyId}`);
+  const res = await API.get(`/attorney-conversation/attorney/${attorneyId}`);
+  console.log("✅ [Admin-Attorney] Data by Attorney:", res.data);
+  return res.data;
+};
+
+// Main History Method for Admin-Attorney
+export const getAttorneyMessageHistory = async (adminId, attorneyId) => {
+  console.log(
+    `🚀 [Admin-Attorney] Fetching History: Admin ${adminId}, Attorney ${attorneyId}`,
+  );
+  // Using the exact route from your doc: /attorney-conversationget/get/
+  const res = await API.get(
+    `/attorney-conversation/get/${adminId}/${attorneyId}`,
+  );
+  console.log("✅ [Admin-Attorney] History Loaded:", res.data);
+  return res.data;
+};
+
+export const deleteAdminAttorneyMessage = async (id) => {
+  console.log(`🚀 [Admin-Attorney] Deleting ID: ${id}`);
+  const res = await API.delete(`/attorney-conversation/delete/${id}`);
+  console.log("✅ [Admin-Attorney] Deleted Success");
+  return res.data;
+};
+
+// ============================================================
+// 3. ATTORNEY-CLIENT APIs (Attorney <-> Client)
+// ============================================================
+
+export const attorneyClientMessage = async (data) => {
+  console.log("🚀 [Attorney-Client] Sending Message:", data);
+  const res = await API.post("/attorney-client-conversation/send", data);
+  console.log("✅ [Attorney-Client] Send Success:", res.data);
+  return res.data;
+};
+
+export const getAllAttorneyClientConversations = async () => {
+  console.log("🚀 [Attorney-Client] Fetching All...");
+  const res = await API.get("/attorney-client-conversation/get-all");
+  console.log("✅ [Attorney-Client] All Data:", res.data);
+  return res.data;
+};
+
+export const getAttorneyClientMessageById = async (id) => {
+  console.log(`🚀 [Attorney-Client] Fetching by ID: ${id}`);
+  const res = await API.get(`/attorney-client-conversation/get-by-id/${id}`);
+  console.log("✅ [Attorney-Client] Data by ID:", res.data);
+  return res.data;
+};
+
+export const getAttorneyClientByAttorneyId = async (attorneyId) => {
+  console.log(`🚀 [Attorney-Client] Fetching by Attorney ID: ${attorneyId}`);
+  const res = await API.get(
+    `/attorney-client-conversation/attorney/${attorneyId}`,
+  );
+  console.log("✅ [Attorney-Client] Data by Attorney:", res.data);
+  return res.data;
+};
+
+export const getAttorneyClientByClientId = async (clientId) => {
+  console.log(`🚀 [Attorney-Client] Fetching by Client ID: ${clientId}`);
+  const res = await API.get(`/attorney-client-conversation/client/${clientId}`);
+  console.log("✅ [Attorney-Client] Data by Client:", res.data);
+  return res.data;
+};
+
+// Main History Method for Attorney-Client
+export const getClientAttorneyMessageHistory = async (attorneyId, clientId) => {
+  console.log(
+    `🚀 [Attorney-Client] Fetching History: Attorney ${attorneyId}, Client ${clientId}`,
+  );
+  const res = await API.get(
+    `/attorney-client-conversation/get/${attorneyId}/${clientId}`,
+  );
+  console.log("✅ [Attorney-Client] History Loaded:", res.data);
+  return res.data;
+};
+
+export const deleteAttorneyClientMessage = async (id) => {
+  console.log(`🚀 [Attorney-Client] Deleting ID: ${id}`);
+  const res = await API.delete(`/attorney-client-conversation/delete/${id}`);
+  console.log("✅ [Attorney-Client] Deleted Success");
+  return res.data;
+};
+
+
+export const getAllUsers = async () => {
+  try {
+    console.log("🚀 [AuthService] Fetching All Clients...");
+    const response = await API.get("/client/getall");
+    console.log("✅ [AuthService] Clients Fetched:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ [AuthService] getAllUsers Error:", error);
+    throw error;
+  }
+};
