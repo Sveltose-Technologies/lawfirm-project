@@ -60,8 +60,12 @@ const CapabilitySubCategory = () => {
         authService.getAllCapabilitySubCategories(),
         authService.getAllCapabilityCategories(),
       ]);
-      setSubcategories(subRes.data || subRes || []);
-      setParentCategories(catRes.data || catRes || []);
+      setSubcategories(
+        Array.isArray(subRes.data || subRes) ? subRes.data || subRes : [],
+      );
+      setParentCategories(
+        Array.isArray(catRes.data || catRes) ? catRes.data || catRes : [],
+      );
     } catch (error) {
       toast.error(error || "Data loading failed");
     } finally {

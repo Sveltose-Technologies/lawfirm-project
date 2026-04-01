@@ -62,19 +62,29 @@ const CapabilityCategory = () => {
     [],
   );
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await authService.getAllCapabilityCategories();
-      const data = res?.data || [];
-      setCategories(Array.isArray(data) ? data : []);
-    } catch (error) {
-      toast.error(error || "Failed to load categories");
+const fetchData = useCallback(async () => {
+  setLoading(true);
+  try {
+    const res = await authService.getAllCapabilityCategories();
+
+    // Debugging ke liye yahan log lagayein
+    console.log("Full API Response in Component:", res);
+
+    // Agar response { success: true, data: [...] } hai
+    const actualData = res?.data || [];
+
+    if (Array.isArray(actualData)) {
+      setCategories(actualData);
+    } else {
       setCategories([]);
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  } catch (error) {
+    toast.error("Failed to load categories");
+    setCategories([]);
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     fetchData();

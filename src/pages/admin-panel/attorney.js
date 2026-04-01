@@ -70,13 +70,31 @@ const Attorney = () => {
           authService.getAttorneylanguages(), // Fetching Languages
         ]);
       setAttorneys(
-        attorneyRes?.attorneys || attorneyRes?.data || attorneyRes || [],
+        Array.isArray(
+          attorneyRes?.attorneys || attorneyRes?.data || attorneyRes,
+        )
+          ? attorneyRes?.attorneys || attorneyRes?.data || attorneyRes
+          : [],
       );
-      setCities(cityRes?.data || cityRes || []);
-      setCountries(countryRes?.data || countryRes || []);
-      setCategories(catRes?.data || catRes || []);
-      setServicesList(serviceRes?.data?.data || serviceRes?.data || []);
-      setLanguagesList(langRes?.data || langRes || []); // Setting Languages
+      setCities(
+        Array.isArray(cityRes?.data || cityRes) ? cityRes?.data || cityRes : [],
+      );
+      setCountries(
+        Array.isArray(countryRes?.data || countryRes)
+          ? countryRes?.data || countryRes
+          : [],
+      );
+      setCategories(
+        Array.isArray(catRes?.data?.data) ? catRes?.data?.data : [],
+      );
+      setServicesList(
+        Array.isArray(serviceRes?.data?.data || serviceRes?.data)
+          ? serviceRes?.data?.data || serviceRes?.data
+          : [],
+      );
+      setLanguagesList(
+        Array.isArray(langRes?.data || langRes) ? langRes?.data || langRes : [],
+      );
     } catch (err) {
       toast.error("Failed to load data");
     }

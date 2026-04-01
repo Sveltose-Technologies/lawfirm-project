@@ -1,15 +1,16 @@
 import API from "./api";
 
 
-export const IMG_URL = "https://api.blustor.net";
+// export const IMG_URL = "https://api.blustor.net";
+
+export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
 // ================= HELPER FUNCTIONS =================
 
 const formatError = (error) => {
-  console.error("Format Error Input:", error.response); // Add this line
+  console.error("Format Error Input:", error.response); 
   if (typeof error === "string") return error;
 
-  // If the server returns a specific error message
   if (error.response?.data?.message) return error.response.data.message;
   if (error.response?.data?.error) return error.response.data.error;
 
@@ -35,22 +36,19 @@ export const getImgUrl = (path) => {
   if (!path || path === "null" || path === "undefined") return "";
   let cleanPath = path.toString().trim().replace(/\\/g, "/");
 
-  // If it's already a full URL (http/https/data:image), return as is
   if (/^(http|https|data:image)/.test(cleanPath)) return cleanPath;
 
   // Remove leading slashes
   while (cleanPath.startsWith("/")) cleanPath = cleanPath.substring(1);
 
-  // Check if path already contains known folder prefixes
   const folders = ["uploads/", "public/", "assets/", "images/", "static/"];
   const hasFolder = folders.some((folder) => cleanPath.startsWith(folder));
 
-  // If it has a folder prefix, just add the base URL
+ 
   if (hasFolder) {
     return `${IMG_URL}/${cleanPath}`;
   }
 
-  // Otherwise, assume it's in the uploads folder
   return `${IMG_URL}/uploads/${cleanPath}`;
 };
 
@@ -152,11 +150,12 @@ export const updateClientProfile = async (userId, formData) => {
     throw error;
   }
 };
+
 // ================= ATTORNEY AUTHENTICATION =================
 
 export const signupAttorney = async (payload) => {
   try {
-    console.log("Sending Attorney Payload:", payload); // Check this in console
+    console.log("Sending Attorney Payload:", payload);
     const response = await API.post("/attorney/signup", payload);
     console.log("response", response);
 
@@ -311,19 +310,13 @@ export const updateAdminProfile = async (id, formData) => {
 
 export const getAllCapabilityCategories = async () => {
   try {
-    console.log("🚀 Fetching all Capability Categories...");
     const response = await API.get("/capability-categories/get-all");
-    console.log("✅ Categories fetched:", response.data);
-    return { success: true, data: response.data };
+    return response.data; 
   } catch (error) {
-    console.error(
-      "❌ Fetch Categories Error:",
-      error.response?.data || error.message,
-    );
+    console.error("❌ Fetch Categories Error:", error);
     return { success: false, data: [] };
   }
 };
-
 export const createCapabilityCategory = async (formData) => {
   try {
     console.log("🚀 Creating New Category...");
@@ -2159,7 +2152,7 @@ export const deleteCareerFront = async (id) => {
 export const getAllCareerDetails = async () => {
   try {
     console.log("🚀 [CareerDetail] Fetching All Details...");
-    const response = await API.get("/career-detail/getall");
+    const response = await API.get("/career-detail/get-all");
     console.log("✅ [CareerDetail] Details Fetched:", response.data);
     const data = response.data?.data || response.data || [];
     return { success: true, data: Array.isArray(data) ? data : [] };
