@@ -35,14 +35,16 @@ export default function AttorneysPage() {
   const [filterValue, setFilterValue] = useState("");
   const [limit, setLimit] = useState(5);
 
-  const createSlug = (text) =>
-    text
-      ?.toLowerCase()
-      .trim()
-      .replace(/&/g, "and")
-      .replace(/[^a-z0-9 -]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-") || "";
+const createSlug = (text) => {
+  if (!text) return "";
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "and") 
+    .replace(/[^a-z0-9 -]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+};
 
   const createNameSlug = (fname, lname) => {
     if (!fname) return "";

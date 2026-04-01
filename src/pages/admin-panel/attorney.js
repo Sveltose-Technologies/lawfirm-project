@@ -58,48 +58,51 @@ const Attorney = () => {
   };
   const toggleDocModal = () => setDocModal(!docModal);
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [attorneyRes, cityRes, countryRes, catRes, serviceRes, langRes] =
-        await Promise.all([
-          authService.getAllAttorneys(),
-          authService.getAllLocationCities(),
-          authService.getAllCountries(),
-          authService.getAllCapabilityCategories(),
-          authService.getAllServices(),
-          authService.getAttorneylanguages(), // Fetching Languages
-        ]);
-      setAttorneys(
-        Array.isArray(
-          attorneyRes?.attorneys || attorneyRes?.data || attorneyRes,
-        )
-          ? attorneyRes?.attorneys || attorneyRes?.data || attorneyRes
-          : [],
-      );
-      setCities(
-        Array.isArray(cityRes?.data || cityRes) ? cityRes?.data || cityRes : [],
-      );
-      setCountries(
-        Array.isArray(countryRes?.data || countryRes)
-          ? countryRes?.data || countryRes
-          : [],
-      );
-      setCategories(
-        Array.isArray(catRes?.data?.data) ? catRes?.data?.data : [],
-      );
-      setServicesList(
-        Array.isArray(serviceRes?.data?.data || serviceRes?.data)
-          ? serviceRes?.data?.data || serviceRes?.data
-          : [],
-      );
-      setLanguagesList(
-        Array.isArray(langRes?.data || langRes) ? langRes?.data || langRes : [],
-      );
-    } catch (err) {
-      toast.error("Failed to load data");
-    }
-  }, []);
+const fetchData = useCallback(async () => {
+  try {
+    const [attorneyRes, cityRes, countryRes, catRes, serviceRes, langRes] =
+      await Promise.all([
+        authService.getAllAttorneys(),
+        authService.getAllLocationCities(),
+        authService.getAllCountries(),
+        authService.getAllCapabilityCategories(),
+        authService.getAllServices(),
+        authService.getAttorneylanguages(),
+      ]);
 
+    // 1. Attorneys
+    setAttorneys(
+      attorneyRes?.attorneys ||
+        attorneyRes?.data ||
+        (Array.isArray(attorneyRes) ? attorneyRes : []),
+    );
+
+    // 2. Cities
+    setCities(cityRes?.data || (Array.isArray(cityRes) ? cityRes : []));
+
+    // 3. Countries
+    setCountries(
+      countryRes?.data || (Array.isArray(countryRes) ? countryRes : []),
+    );
+
+    // 4. Categories (FIXED LINE)
+    const finalCats = catRes?.data || (Array.isArray(catRes) ? catRes : []);
+    setCategories(finalCats);
+
+    // 5. Services
+    setServicesList(
+      serviceRes?.data?.data ||
+        serviceRes?.data ||
+        (Array.isArray(serviceRes) ? serviceRes : []),
+    );
+
+    // 6. Languages
+    setLanguagesList(langRes?.data || (Array.isArray(langRes) ? langRes : []));
+  } catch (err) {
+    console.error("Fetch Error:", err);
+    toast.error("Failed to load data");
+  }
+}, []);
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -171,65 +174,84 @@ const Attorney = () => {
     }
   };
 
-  const handleUpdateSubmit = async () => {
-    const formData = new FormData();
-    const fields = [
-      "firstName",
-      "lastName",
-      "email",
-      "street",
-      "aptBlock",
-      "city",
-      "state",
-      "country",
-      "location",
-      "zipCode",
-      "phoneCell",
-      "phoneHome",
-      "phoneOffice",
-      "dob",
-      "admission",
-      "language",
-      "servicesOffered",
-      "education",
-      "experience",
-      "barCouncilIndiaNo",
-      "barCouncilStateNo",
-      "familyLawPractice",
-      "familyDetails",
-      "aboutus",
-      "categoryId",
-      "linkedin",
-      "twitter",
-      "facebook",
-      "gmail",
-      "status",
-    ];
+const handleUpdateSubmit = async () => {
+  const formData = new FormData();
 
-    fields.forEach((f) => {
-      if (editData[f] !== undefined && editData[f] !== null) {
-        let value = editData[f];
-        if (f === "dob" && value.includes("T")) value = value.split("T")[0];
-        if (f === "categoryId" || f === "city")
-          value = value === "" ? "" : Number(value);
-        formData.append(f, value);
+  // 1. IMPORTANT: REMOVE file keys from this array.
+  // DO NOT include: profileImage, kycIdentity, kycAddress, resume, barCouncilIndiaId, barCouncilStateId
+  const textFields = [
+    "firstName",
+    "lastName",
+    "email",
+    "street",
+    "aptBlock",
+    "city",
+    "state",
+    "country",
+    "location",
+    "zipCode",
+    "phoneCell",
+    "phoneHome",
+    "phoneOffice",
+    "dob",
+    "admission",
+    "language",
+    "servicesOffered",
+    "education",
+    "experience",
+    "barCouncilIndiaNo",
+    "barCouncilStateNo",
+    "familyLawPractice",
+    "familyDetails",
+    "aboutus",
+    "categoryId",
+    "linkedin",
+    "twitter",
+    "facebook",
+    "gmail",
+    "status",
+  ];
+
+  // 2. Append only the text/data fields
+  textFields.forEach((f) => {
+    if (editData[f] !== undefined && editData[f] !== null) {
+      let value = editData[f];
+
+      // Format Date
+      if (f === "dob" && typeof value === "string" && value.includes("T")) {
+        value = value.split("T")[0];
       }
-    });
 
-    Object.keys(uploadFiles).forEach((k) => {
-      if (uploadFiles[k] instanceof File) formData.append(k, uploadFiles[k]);
-    });
+      // Ensure Numeric IDs
+      if (f === "categoryId" || f === "city") {
+        value = value === "" ? "" : Number(value);
+      }
 
-    try {
-      await authService.updateAttorney(editData.id, formData);
-      toast.success("Updated Successfully!");
-      toggleModal();
-      fetchData();
-    } catch (e) {
-      toast.error("Error updating profile");
+      formData.append(f, value);
     }
-  };
+  });
 
+  // 3. Append files ONLY if a NEW file was selected by the user
+  // (Instance check ensures we don't send the old string path)
+  Object.keys(uploadFiles).forEach((k) => {
+    if (uploadFiles[k] instanceof File) {
+      formData.append(k, uploadFiles[k]);
+      console.log(`Appending new file for: ${k}`);
+    }
+  });
+
+  try {
+    // This will now only send text data + any newly selected files.
+    // Existing files in the database will remain untouched.
+    await authService.updateAttorney(editData.id, formData);
+    toast.success("Updated Successfully!");
+    toggleModal();
+    fetchData();
+  } catch (e) {
+    console.error("Update Error:", e);
+    toast.error("Error updating profile");
+  }
+};
   const filteredData = attorneys.filter((u) =>
     `${u.firstName} ${u.lastName} ${u.email}`
       .toLowerCase()
@@ -675,7 +697,7 @@ const Attorney = () => {
             </Col>
             <Col md={4}>
               <FormGroup>
-                <Label className="small fw-bold">Practice Category</Label>
+                <Label className="small fw-bold">Category</Label>
                 <Input
                   type="select"
                   name="categoryId"

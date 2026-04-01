@@ -32,12 +32,16 @@ export default function AttorneyProfilePage() {
 
   const gtGold = "#c5a059";
 
-  const createSlug = (text) =>
-    text
-      ?.toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_-]+/g, "-");
+const createSlug = (text) => {
+  if (!text) return "";
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "and") 
+    .replace(/[^a-z0-9 -]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+};
 
   const createNameSlug = (f, l) => createSlug(`${f} ${l || ""}`);
 

@@ -31,11 +31,13 @@ const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const AdminCareerManagement = () => {
   const [activeTab, setActiveTab] = useState("1");
+  const [activeSubTab, setActiveSubTab] = useState("Banner");
   const [loading, setLoading] = useState(false);
 
   // Data States
   const [lawCategories, setLawCategories] = useState([]);
   const [careerFronts, setCareerFronts] = useState([]);
+  const [careerBanners, setCareerBanners] = useState([]);
   const [careerDetails, setCareerDetails] = useState([]);
   const [jobCategories, setJobCategories] = useState([]);
   const [careers, setCareers] = useState([]);
@@ -60,14 +62,8 @@ const AdminCareerManagement = () => {
   const [frontForm, setFrontForm] = useState({
     categoryId: "",
     bannerText: "",
-    firstText: "",
-    secondText: "",
-    thirdText: "",
     countryId: "",
     bannerImage: null,
-    firstImage: null,
-    secondImage: null,
-    thirdImage: null,
   });
   const [careerForm, setCareerForm] = useState({
     jobTitle: "",
@@ -82,16 +78,20 @@ const AdminCareerManagement = () => {
     textEditor: "",
   });
 
-  // Helper function to truncate text
+  const getItemId = (item) => item?.id || item?._id;
+
   const truncateText = (text) => {
     if (!text) return "N/A";
     const plainText = text.replace(/<[^>]*>/g, "");
-    const words = plainText.trim().split(/\s+/);
-    return words.length > 2 ? words.slice(0, 2).join(" ") + "..." : plainText;
+    return plainText.length > 50
+      ? plainText.substring(0, 50) + "..."
+      : plainText;
   };
 
-  // Helper to get ID (handles both id and _id)
-  const getItemId = (item) => item.id || item._id;
+  const getCatName = (id) => {
+    const cat = lawCategories.find((c) => getItemId(c) == id);
+    return cat ? cat.name : "";
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -104,6 +104,7 @@ const AdminCareerManagement = () => {
         careerRes,
         countryRes,
         cityRes,
+        bannerRes,
       ] = await Promise.all([
         authService.getAllLawCareerCategories(),
         authService.getAllCareerFront(),
@@ -112,38 +113,27 @@ const AdminCareerManagement = () => {
         authService.getAllCareers(),
         authService.getAllCountries(),
         authService.getAllCities(),
+        authService.getAllCareerBanners(),
       ]);
 
-     const extractData = (response) => {
-       // 1. If the response IS the array (Direct)
-       if (Array.isArray(response)) return response;
-
-       // 2. Look for common keys: 'jobs', 'data', or 'data.data'
-       const result =
-         response?.jobs || response?.data?.data || response?.data || [];
-
-       return Array.isArray(result) ? result : [];
-     };
-
-      const sortByID = (arr) => {
-        if (!Array.isArray(arr)) return [];
-        return [...arr].sort(
-          (a, b) => (getItemId(a) || 0) - (getItemId(b) || 0),
-        );
+      const extract = (res) => {
+        if (Array.isArray(res)) return res;
+        return res?.jobs || res?.data?.data || res?.data || [];
       };
 
-      setLawCategories(sortByID(extractData(lawRes)));
-      setCareerFronts(sortByID(extractData(frontRes)));
-      setCareerDetails(sortByID(extractData(detailRes)));
-      setJobCategories(sortByID(extractData(jobCatRes)));
-      setCareers(sortByID(extractData(careerRes)));
-      setCountries(extractData(countryRes));
-      setCities(extractData(cityRes));
+      // SORTING: Ascending (1, 2, 3...)
+      const sortAsc = (arr) =>
+        [...extract(arr)].sort((a, b) => getItemId(a) - getItemId(b));
 
-      console.log("✅ All data fetched successfully");
-      console.log("Careers data:", extractData(careerRes)); // Debug careers data
+      setLawCategories(sortAsc(lawRes));
+      setCareerFronts(sortAsc(frontRes));
+      setCareerDetails(sortAsc(detailRes));
+      setJobCategories(sortAsc(jobCatRes));
+      setCareers(sortAsc(careerRes));
+      setCountries(extract(countryRes));
+      setCities(extract(cityRes));
+      setCareerBanners(sortAsc(bannerRes));
     } catch (error) {
-      console.error("❌ Fetch Error:", error);
       toast.error("Failed to load data");
     } finally {
       setLoading(false);
@@ -161,14 +151,8 @@ const AdminCareerManagement = () => {
     setFrontForm({
       categoryId: "",
       bannerText: "",
-      firstText: "",
-      secondText: "",
-      thirdText: "",
       countryId: "",
       bannerImage: null,
-      firstImage: null,
-      secondImage: null,
-      thirdImage: null,
     });
     setCareerForm({
       jobTitle: "",
@@ -191,32 +175,24 @@ const AdminCareerManagement = () => {
       edit,
       id: data ? getItemId(data) : null,
     });
-
     if (!modal.open && data) {
-      if (type === "lawCat") {
-        setLawCatForm({ name: data.name || "" });
-      } else if (type === "jobCat") {
-        setJobCatForm({ jobCategory: data.jobCategory || data.name || "" });
-      } else if (type === "detail") {
+      if (type === "lawCat") setLawCatForm({ name: data.name || "" });
+      else if (type === "jobCat")
+        setJobCatForm({ jobCategory: data.jobCategory || "" });
+      else if (type === "detail")
         setDetailForm({
           bannerText: data.bannerText || "",
           description: data.description || "",
-          bannerImage: null,
+          bannerImage: data.bannerImage,
         });
-      } else if (type === "front") {
+      else if (type === "front")
         setFrontForm({
           categoryId: data.categoryId || "",
-          bannerText: data.bannerText || "",
-          firstText: data.firstText || "",
-          secondText: data.secondText || "",
-          thirdText: data.thirdText || "",
+          bannerText: data.content || data.bannerText || "",
           countryId: data.countryId || "",
-          bannerImage: null,
-          firstImage: null,
-          secondImage: null,
-          thirdImage: null,
+          bannerImage: data.bannerImage,
         });
-      } else if (type === "career") {
+      else if (type === "career")
         setCareerForm({
           jobTitle: data.jobTitle || "",
           jobCode: data.jobCode || "",
@@ -229,83 +205,56 @@ const AdminCareerManagement = () => {
           jobType: data.jobType || "FullTime",
           textEditor: data.textEditor || data.description || "",
         });
-      }
     } else {
       resetForms();
+      if (type === "front" && activeSubTab !== "Banner") {
+        const match = lawCategories.find((c) => c.name === activeSubTab);
+        if (match)
+          setFrontForm((prev) => ({ ...prev, categoryId: getItemId(match) }));
+      }
     }
   };
 
   const handleAction = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       let res;
       const id = modal.id;
-      if (modal.type === "lawCat") {
-        
-        const selectedName = lawCatForm.name;
+      const fd = new FormData();
 
-        if (!selectedName) {
-          toast.error("Please select a category!");
-          setLoading(false);
-          return;
-        }
-
-        
-        const payload = { name: selectedName };
-
-        console.log("🚀 [LawCareer] Sending Payload:", payload);
-
+      if (modal.type === "front" && activeSubTab === "Banner") {
+        fd.append("content", frontForm.bannerText);
+        if (frontForm.bannerImage instanceof File)
+          fd.append("bannerImage", frontForm.bannerImage);
         res = modal.edit
-          ? await authService.updateLawCareerCategory(modal.id, payload)
-          : await authService.createLawCareerCategory(payload);
-      } else if (modal.type === "jobCat") {
-        const payload = {
-          jobCategory: jobCatForm.jobCategory.trim(),
-        };
-
-        res = modal.edit
-          ? await authService.updateJobCategory(id, payload)
-          : await authService.createJobCategory(payload);
-      } else if (modal.type === "detail") {
-        const fd = new FormData();
-        fd.append("bannerText", detailForm.bannerText || "");
-        fd.append("description", detailForm.description || "");
-
-        if (detailForm.bannerImage && detailForm.bannerImage instanceof File) {
-          fd.append("bannerImage", detailForm.bannerImage);
-        }
-
-        res = modal.edit
-          ? await authService.updateCareerDetail(id, fd)
-          : await authService.createCareerDetail(fd);
+          ? await authService.updateCareerBanner(id, fd)
+          : await authService.createCareerBanner(fd);
       } else if (modal.type === "front") {
-        const fd = new FormData();
-
-        // Append text fields
-        Object.keys(frontForm).forEach((key) => {
-          if (typeof frontForm[key] === "string" && frontForm[key]) {
-            fd.append(key, frontForm[key]);
-          }
-        });
-
-        // Append files only if they are valid File objects
-        const imageFields = [
-          "bannerImage",
-          "firstImage",
-          "secondImage",
-          "thirdImage",
-        ];
-        imageFields.forEach((field) => {
-          if (frontForm[field] && frontForm[field] instanceof File) {
-            fd.append(field, frontForm[field]);
-          }
-        });
-
+        fd.append("categoryId", frontForm.categoryId);
+        fd.append("countryId", frontForm.countryId);
+        fd.append("bannerText", frontForm.bannerText);
+        if (frontForm.bannerImage instanceof File)
+          fd.append("bannerImage", frontForm.bannerImage);
         res = modal.edit
           ? await authService.updateCareerFront(id, fd)
           : await authService.createCareerFront(fd);
+      } else if (modal.type === "lawCat") {
+        res = modal.edit
+          ? await authService.updateLawCareerCategory(id, lawCatForm)
+          : await authService.createLawCareerCategory(lawCatForm);
+      } else if (modal.type === "jobCat") {
+        res = modal.edit
+          ? await authService.updateJobCategory(id, jobCatForm)
+          : await authService.createJobCategory(jobCatForm);
+      } else if (modal.type === "detail") {
+        fd.append("bannerText", detailForm.bannerText);
+        fd.append("description", detailForm.description);
+        if (detailForm.bannerImage instanceof File)
+          fd.append("bannerImage", detailForm.bannerImage);
+        res = modal.edit
+          ? await authService.updateCareerDetail(id, fd)
+          : await authService.createCareerDetail(fd);
       } else if (modal.type === "career") {
         res = modal.edit
           ? await authService.updateCareer(id, careerForm)
@@ -313,63 +262,49 @@ const AdminCareerManagement = () => {
       }
 
       if (res) {
-        toast.success(`${modal.edit ? "Updated" : "Created"} successfully!`);
+        toast.success("Success!");
         toggleModal();
         fetchData();
       }
     } catch (error) {
-      console.error("❌ Action Error:", error);
-      toast.error(
-        `Failed to ${modal.edit ? "update" : "create"}: ${error.message || "Unknown error"}`,
-      );
+      toast.error("Operation failed");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (type, id) => {
-    if (!window.confirm("Are you sure you want to delete this item?")) return;
-
+    if (!window.confirm("Delete this item?")) return;
     try {
-      setLoading(true);
-
-      if (type === "lawCat") await authService.deleteLawCareerCategory(id);
+      if (type === "Banner") await authService.deleteCareerBanner(id);
+      else if (type === "front") await authService.deleteCareerFront(id);
+      else if (type === "lawCat") await authService.deleteLawCareerCategory(id);
       else if (type === "jobCat") await authService.deleteJobCategory(id);
       else if (type === "detail") await authService.deleteCareerDetail(id);
-      else if (type === "front") await authService.deleteCareerFront(id);
       else if (type === "career") await authService.deleteCareer(id);
-
-      toast.success("Deleted successfully!");
+      toast.success("Deleted!");
       fetchData();
     } catch (error) {
-      console.error("❌ Delete Error:", error);
-      toast.error(`Failed to delete: ${error.message || "Unknown error"}`);
-    } finally {
-      setLoading(false);
+      toast.error("Delete failed");
     }
   };
 
   return (
     <Container fluid className="p-2 p-md-4 bg-light-gray min-vh-100">
       <ToastContainer theme="colored" />
-      <div className="mb-4">
-        <h2 className="fw-bold text-blue font-serif">Career Management CMS</h2>
-      </div>
+      <h2 className="fw-bold text-blue mb-4">Career Management CMS</h2>
 
-      <Nav tabs className="border-0 mb-4 flex-nowrap overflow-auto custom-nav">
+      <Nav tabs className="border-0 mb-4 overflow-auto flex-nowrap custom-nav">
         {[
           "Law Categories",
           "Career Front",
           "Career Details",
-
           "Job Categories",
           "Active Jobs",
         ].map((label, i) => (
           <NavItem key={i}>
             <NavLink
-              className={`border-0 fw-bold px-3 py-2 cursor-pointer ${
-                activeTab === `${i + 1}` ? "active" : "text-muted"
-              }`}
+              className={`border-0 fw-bold px-3 py-2 cursor-pointer ${activeTab === `${i + 1}` ? "active" : "text-muted"}`}
               onClick={() => setActiveTab(`${i + 1}`)}>
               {label}
             </NavLink>
@@ -378,23 +313,20 @@ const AdminCareerManagement = () => {
       </Nav>
 
       <TabContent activeTab={activeTab}>
-        {/* TAB 1: LAW CATEGORY */}
+        {/* TAB 1: LAW CATEGORIES */}
         <TabPane tabId="1">
           <Button
-            className="btn-primary-custom mb-3 w-auto px-4"
-            onClick={() => toggleModal("lawCat")}
-            disabled={loading}>
+            className="btn-primary-custom mb-3 px-4 py-2"
+            onClick={() => toggleModal("lawCat")}>
             + Add Law Category
           </Button>
           <Card className="card-shadow border-0">
             <Table hover responsive className="align-middle mb-0">
               <thead className="table-dark-custom">
                 <tr>
-                  <th style={{ width: "80px" }}>ID</th>
-                  <th>Name</th>
-                  <th className="text-end" style={{ width: "120px" }}>
-                    Actions
-                  </th>
+                  <th>ID</th>
+                  <th>NAME</th>
+                  <th className="text-end">ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
@@ -407,16 +339,14 @@ const AdminCareerManagement = () => {
                         size="sm"
                         color="white"
                         className="border me-1"
-                        onClick={() => toggleModal("lawCat", true, item)}
-                        disabled={loading}>
+                        onClick={() => toggleModal("lawCat", true, item)}>
                         ✏️
                       </Button>
                       <Button
                         size="sm"
                         color="white"
                         className="border text-danger"
-                        onClick={() => handleDelete("lawCat", getItemId(item))}
-                        disabled={loading}>
+                        onClick={() => handleDelete("lawCat", getItemId(item))}>
                         🗑️
                       </Button>
                     </td>
@@ -429,51 +359,74 @@ const AdminCareerManagement = () => {
 
         {/* TAB 2: CAREER FRONT */}
         <TabPane tabId="2">
+          <Nav pills className="mb-3 bg-white p-2 rounded border shadow-sm">
+            {["Banner", "Law Students", "Attorneys", "Professional Staff"].map(
+              (sub) => (
+                <NavItem key={sub}>
+                  <NavLink
+                    className={`cursor-pointer px-4 py-2 border-0 fw-bold ${activeSubTab === sub ? "active text-white" : "text-muted"}`}
+                    style={{
+                      backgroundColor:
+                        activeSubTab === sub ? "#7b4433" : "transparent",
+                    }}
+                    onClick={() => setActiveSubTab(sub)}>
+                    {sub}
+                  </NavLink>
+                </NavItem>
+              ),
+            )}
+          </Nav>
           <Button
-            className="btn-primary-custom mb-3 w-auto px-4"
-            onClick={() => toggleModal("front")}
-            disabled={loading}>
-            + Add Career Front
+            className="btn-primary-custom mb-3 px-4 py-2"
+            onClick={() => toggleModal("front")}>
+            + Add {activeSubTab}
           </Button>
           <Card className="card-shadow border-0">
             <Table hover responsive className="align-middle mb-0">
               <thead className="table-dark-custom">
                 <tr>
-                  <th>Image</th>
-                  <th>Cat ID</th>
-                  <th>Banner Text</th>
-                  <th className="text-end">Actions</th>
+                  <th>IMAGE</th>
+                  <th>SECTION</th>
+                  <th>DESCRIPTION</th>
+                  <th className="text-end">ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
-                {careerFronts.map((item) => (
+                {(activeSubTab === "Banner"
+                  ? careerBanners
+                  : careerFronts.filter(
+                      (item) => getCatName(item.categoryId) === activeSubTab,
+                    )
+                ).map((item) => (
                   <tr key={getItemId(item)}>
                     <td>
                       <img
                         src={authService.getImgUrl(item.bannerImage)}
-                        width="50"
-                        height="40"
-                        className="rounded object-fit-cover"
+                        width="60"
+                        className="rounded border"
                         alt=""
                       />
                     </td>
-                    <td>{item.categoryId}</td>
-                    <td>{truncateText(item.bannerText)}</td>
+                    <td className="fw-bold text-blue">{activeSubTab}</td>
+                    <td>{truncateText(item.content || item.bannerText)}</td>
                     <td className="text-end">
                       <Button
                         size="sm"
                         color="white"
                         className="border me-1"
-                        onClick={() => toggleModal("front", true, item)}
-                        disabled={loading}>
+                        onClick={() => toggleModal("front", true, item)}>
                         ✏️
                       </Button>
                       <Button
                         size="sm"
                         color="white"
                         className="border text-danger"
-                        onClick={() => handleDelete("front", getItemId(item))}
-                        disabled={loading}>
+                        onClick={() =>
+                          handleDelete(
+                            activeSubTab === "Banner" ? "Banner" : "front",
+                            getItemId(item),
+                          )
+                        }>
                         🗑️
                       </Button>
                     </td>
@@ -487,49 +440,29 @@ const AdminCareerManagement = () => {
         {/* TAB 3: CAREER DETAILS */}
         <TabPane tabId="3">
           <Button
-            className="btn-primary-custom mb-3 w-auto px-4"
-            onClick={() => toggleModal("detail")}
-            disabled={loading}>
-            + Add Career Detail
+            className="btn-primary-custom mb-3 px-4 py-2"
+            onClick={() => toggleModal("detail")}>
+            + Add Detail
           </Button>
           <Card className="card-shadow border-0">
             <Table hover responsive className="align-middle mb-0">
               <thead className="table-dark-custom">
                 <tr>
-                  <th>Image</th>
-                  <th>Banner Text</th>
-                  <th className="text-end">Actions</th>
+                  <th>IMAGE</th>
+                  <th>BANNER TEXT</th>
+                  <th className="text-end">ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
-                {/* TAB 3: CAREER DETAILS Table Row */}
                 {careerDetails.map((item) => (
                   <tr key={getItemId(item)}>
                     <td>
-                      {item.bannerImage ? (
-                        <img
-                          src={authService.getImgUrl(item.bannerImage)}
-                          width="50"
-                          height="40"
-                          className="rounded object-fit-cover border"
-                          alt="Banner"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src =
-                              "https://via.placeholder.com/50x40?text=Error";
-                          }}
-                        />
-                      ) : (
-                        <div
-                          className="rounded bg-secondary d-flex align-items-center justify-content-center text-white"
-                          style={{
-                            width: "50px",
-                            height: "40px",
-                            fontSize: "10px",
-                          }}>
-                          No Img
-                        </div>
-                      )}
+                      <img
+                        src={authService.getImgUrl(item.bannerImage)}
+                        width="60"
+                        className="rounded border"
+                        alt=""
+                      />
                     </td>
                     <td>{truncateText(item.bannerText)}</td>
                     <td className="text-end">
@@ -558,20 +491,17 @@ const AdminCareerManagement = () => {
         {/* TAB 4: JOB CATEGORIES */}
         <TabPane tabId="4">
           <Button
-            className="btn-primary-custom mb-3 w-auto px-4"
-            onClick={() => toggleModal("jobCat")}
-            disabled={loading}>
+            className="btn-primary-custom mb-3 px-4 py-2"
+            onClick={() => toggleModal("jobCat")}>
             + Add Job Category
           </Button>
           <Card className="card-shadow border-0">
             <Table hover responsive className="align-middle mb-0">
               <thead className="table-dark-custom">
                 <tr>
-                  <th style={{ width: "80px" }}>ID</th>
-                  <th>Job Category</th>
-                  <th className="text-end" style={{ width: "120px" }}>
-                    Actions
-                  </th>
+                  <th>ID</th>
+                  <th>JOB CATEGORY</th>
+                  <th className="text-end">ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
@@ -586,16 +516,14 @@ const AdminCareerManagement = () => {
                         size="sm"
                         color="white"
                         className="border me-1"
-                        onClick={() => toggleModal("jobCat", true, item)}
-                        disabled={loading}>
+                        onClick={() => toggleModal("jobCat", true, item)}>
                         ✏️
                       </Button>
                       <Button
                         size="sm"
                         color="white"
                         className="border text-danger"
-                        onClick={() => handleDelete("jobCat", getItemId(item))}
-                        disabled={loading}>
+                        onClick={() => handleDelete("jobCat", getItemId(item))}>
                         🗑️
                       </Button>
                     </td>
@@ -609,35 +537,28 @@ const AdminCareerManagement = () => {
         {/* TAB 5: ACTIVE JOBS */}
         <TabPane tabId="5">
           <Button
-            className="btn-primary-custom mb-3 w-auto px-4"
-            onClick={() => toggleModal("career")}
-            disabled={loading}>
-            + Post New Job
+            className="btn-primary-custom mb-3 px-4 py-2"
+            onClick={() => toggleModal("career")}>
+            + Post Job
           </Button>
           <Card className="card-shadow border-0">
             <Table hover responsive className="align-middle mb-0">
               <thead className="table-dark-custom">
                 <tr>
-                  <th>Job Title</th>
-                  <th>Code</th>
-                  <th>Location</th>
-                  <th>Type</th>
-                  <th className="text-end">Actions</th>
+                  <th>TITLE</th>
+                  <th>CODE</th>
+                  <th>LOCATION</th>
+                  <th className="text-end">ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {careers.map((item) => (
                   <tr key={getItemId(item)}>
-                    <td className="fw-bold">{truncateText(item.jobTitle)}</td>
+                    <td className="fw-bold">{item.jobTitle}</td>
                     <td>{item.jobCode}</td>
                     <td>
                       <span className="badge bg-info text-dark">
                         {item.location}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="badge bg-light text-dark border">
-                        {item.jobType}
                       </span>
                     </td>
                     <td className="text-end">
@@ -645,16 +566,14 @@ const AdminCareerManagement = () => {
                         size="sm"
                         color="white"
                         className="border me-1"
-                        onClick={() => toggleModal("career", true, item)}
-                        disabled={loading}>
+                        onClick={() => toggleModal("career", true, item)}>
                         ✏️
                       </Button>
                       <Button
                         size="sm"
                         color="white"
                         className="border text-danger"
-                        onClick={() => handleDelete("career", getItemId(item))}
-                        disabled={loading}>
+                        onClick={() => handleDelete("career", getItemId(item))}>
                         🗑️
                       </Button>
                     </td>
@@ -672,68 +591,39 @@ const AdminCareerManagement = () => {
         size="lg"
         centered>
         <ModalHeader className="border-0 text-blue fw-bold">
-          {modal.edit ? "Edit" : "Add"}{" "}
-          {modal.type === "lawCat"
-            ? "Law Category"
-            : modal.type === "jobCat"
-              ? "Job Category"
-              : modal.type === "detail"
-                ? "Career Detail"
-                : modal.type === "front"
-                  ? "Career Front"
-                  : "Career"}
+          {modal.edit ? "Edit" : "Add"} {modal.type}
         </ModalHeader>
         <ModalBody>
           <Form onSubmit={handleAction}>
-            {/* LAW CATEGORY FORM */}
-           
-{modal.type === "lawCat" && (
-  <Row>
-    <Col md={12}>
-      <FormGroup>
-        <Label>Select Law Category *</Label>
-        <Input
-          type="select"
-          value={lawCatForm.name || ""} 
-          onChange={(e) => setLawCatForm({ ...lawCatForm, name: e.target.value })}
-          required
-        >
-          <option value="">-- Select Category --</option>
-          <option value="Law Students">Law Students</option>
-          <option value="Attorneys">Attorneys</option>
-          <option value="Professional Staff">Professional Staff</option>
-        </Input>
-        <FormText color="muted">
-          Note: Backend only accepts these 3 specific categories.
-        </FormText>
-      </FormGroup>
-    </Col>
-  </Row>
-)}
-
-            {/* JOB CATEGORY FORM */}
-            {modal.type === "jobCat" && (
-              <Row>
-                <Col md={12}>
-                  <FormGroup>
-                    <Label>Job Category Name *</Label>
-                    <Input
-                      value={jobCatForm.jobCategory}
-                      onChange={(e) =>
-                        setJobCatForm({
-                          ...jobCatForm,
-                          jobCategory: e.target.value,
-                        })
-                      }
-                      required
-                      placeholder="Enter job category name"
-                    />
-                  </FormGroup>
-                </Col>
-              </Row>
+            {modal.type === "lawCat" && (
+              <FormGroup>
+                <Label>Category Name *</Label>
+                <Input
+                  type="select"
+                  value={lawCatForm.name}
+                  onChange={(e) => setLawCatForm({ name: e.target.value })}
+                  required>
+                  <option value="">-- Select --</option>
+                  <option value="Law Students">Law Students</option>
+                  <option value="Attorneys">Attorneys</option>
+                  <option value="Professional Staff">Professional Staff</option>
+                </Input>
+              </FormGroup>
             )}
 
-            {/* CAREER DETAIL FORM */}
+            {modal.type === "jobCat" && (
+              <FormGroup>
+                <Label>Job Category Name *</Label>
+                <Input
+                  value={jobCatForm.jobCategory}
+                  onChange={(e) =>
+                    setJobCatForm({ jobCategory: e.target.value })
+                  }
+                  required
+                />
+              </FormGroup>
+            )}
+
             {modal.type === "detail" && (
               <Row>
                 <Col md={12}>
@@ -748,7 +638,6 @@ const AdminCareerManagement = () => {
                         })
                       }
                       required
-                      placeholder="Enter banner text"
                     />
                   </FormGroup>
                 </Col>
@@ -770,7 +659,6 @@ const AdminCareerManagement = () => {
                     <Label>Banner Image</Label>
                     <Input
                       type="file"
-                      accept="image/*"
                       onChange={(e) =>
                         setDetailForm({
                           ...detailForm,
@@ -778,125 +666,51 @@ const AdminCareerManagement = () => {
                         })
                       }
                     />
-                    <FormText>
-                      Optional. Upload a new image to replace existing one.
-                    </FormText>
                   </FormGroup>
                 </Col>
               </Row>
             )}
 
-            {/* CAREER FRONT FORM */}
             {modal.type === "front" && (
               <Row>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>Category ID *</Label>
-                    <Input
-                      type="select"
-                      value={frontForm.categoryId}
-                      onChange={(e) =>
-                        setFrontForm({
-                          ...frontForm,
-                          categoryId: e.target.value,
-                        })
-                      }
-                      required>
-                      <option value="">Select Category</option>
-                      {lawCategories.map((cat) => (
-                        <option key={getItemId(cat)} value={getItemId(cat)}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </Input>
-                  </FormGroup>
-                </Col>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>Country ID *</Label>
-                    <Input
-                      type="select"
-                      value={frontForm.countryId}
-                      onChange={(e) =>
-                        setFrontForm({
-                          ...frontForm,
-                          countryId: e.target.value,
-                        })
-                      }
-                      required>
-                      <option value="">Select Country</option>
-                      {countries.map((country) => (
-                        <option
-                          key={getItemId(country)}
-                          value={getItemId(country)}>
-                          {country.name || country.countryName}
-                        </option>
-                      ))}
-                    </Input>
-                  </FormGroup>
-                </Col>
+                {activeSubTab !== "Banner" && (
+                  <Col md={12}>
+                    <FormGroup>
+                      <Label>Select Country *</Label>
+                      <Input
+                        type="select"
+                        value={frontForm.countryId}
+                        onChange={(e) =>
+                          setFrontForm({
+                            ...frontForm,
+                            countryId: e.target.value,
+                          })
+                        }
+                        required>
+                        <option value="">-- Select Country --</option>
+                        {countries.map((c) => (
+                          <option key={getItemId(c)} value={getItemId(c)}>
+                            {c.name || c.countryName}
+                          </option>
+                        ))}
+                      </Input>
+                    </FormGroup>
+                  </Col>
+                )}
                 <Col md={12}>
                   <FormGroup>
-                    <Label>Banner Text *</Label>
-                    <Input
+                    <Label>Content *</Label>
+                    <ReactQuill
+                      theme="snow"
                       value={frontForm.bannerText}
-                      onChange={(e) =>
-                        setFrontForm({
-                          ...frontForm,
-                          bannerText: e.target.value,
-                        })
+                      onChange={(v) =>
+                        setFrontForm({ ...frontForm, bannerText: v })
                       }
-                      required
-                      placeholder="Enter banner text"
+                      style={{ height: "150px", marginBottom: "50px" }}
                     />
                   </FormGroup>
                 </Col>
                 <Col md={12}>
-                  <FormGroup>
-                    <Label>First Text</Label>
-                    <Input
-                      value={frontForm.firstText}
-                      onChange={(e) =>
-                        setFrontForm({
-                          ...frontForm,
-                          firstText: e.target.value,
-                        })
-                      }
-                      placeholder="Enter first text"
-                    />
-                  </FormGroup>
-                </Col>
-                <Col md={12}>
-                  <FormGroup>
-                    <Label>Second Text</Label>
-                    <Input
-                      value={frontForm.secondText}
-                      onChange={(e) =>
-                        setFrontForm({
-                          ...frontForm,
-                          secondText: e.target.value,
-                        })
-                      }
-                      placeholder="Enter second text"
-                    />
-                  </FormGroup>
-                </Col>
-                <Col md={12}>
-                  <FormGroup>
-                    <Label>Third Text</Label>
-                    <Input
-                      value={frontForm.thirdText}
-                      onChange={(e) =>
-                        setFrontForm({
-                          ...frontForm,
-                          thirdText: e.target.value,
-                        })
-                      }
-                      placeholder="Enter third text"
-                    />
-                  </FormGroup>
-                </Col>
-                <Col md={6}>
                   <FormGroup>
                     <Label>Banner Image</Label>
                     <Input
@@ -909,61 +723,11 @@ const AdminCareerManagement = () => {
                         })
                       }
                     />
-                    <FormText>Optional. Upload a new banner image.</FormText>
-                  </FormGroup>
-                </Col>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>First Image</Label>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        setFrontForm({
-                          ...frontForm,
-                          firstImage: e.target.files[0],
-                        })
-                      }
-                    />
-                    <FormText>Optional. Upload a new first image.</FormText>
-                  </FormGroup>
-                </Col>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>Second Image</Label>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        setFrontForm({
-                          ...frontForm,
-                          secondImage: e.target.files[0],
-                        })
-                      }
-                    />
-                    <FormText>Optional. Upload a new second image.</FormText>
-                  </FormGroup>
-                </Col>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>Third Image</Label>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        setFrontForm({
-                          ...frontForm,
-                          thirdImage: e.target.files[0],
-                        })
-                      }
-                    />
-                    <FormText>Optional. Upload a new third image.</FormText>
                   </FormGroup>
                 </Col>
               </Row>
             )}
 
-            {/* CAREER FORM */}
             {modal.type === "career" && (
               <Row>
                 <Col md={6}>
@@ -978,7 +742,6 @@ const AdminCareerManagement = () => {
                         })
                       }
                       required
-                      placeholder="Enter job title"
                     />
                   </FormGroup>
                 </Col>
@@ -993,7 +756,6 @@ const AdminCareerManagement = () => {
                           jobCode: e.target.value,
                         })
                       }
-                      placeholder="Enter job code"
                     />
                   </FormGroup>
                 </Col>
@@ -1010,10 +772,10 @@ const AdminCareerManagement = () => {
                         })
                       }
                       required>
-                      <option value="">Select Job Category</option>
-                      {jobCategories.map((cat) => (
-                        <option key={getItemId(cat)} value={getItemId(cat)}>
-                          {cat.jobCategory || cat.name}
+                      <option value="">Select Category</option>
+                      {jobCategories.map((c) => (
+                        <option key={getItemId(c)} value={getItemId(c)}>
+                          {c.jobCategory || c.name}
                         </option>
                       ))}
                     </Input>
@@ -1021,7 +783,7 @@ const AdminCareerManagement = () => {
                 </Col>
                 <Col md={6}>
                   <FormGroup>
-                    <Label>Law Career Category *</Label>
+                    <Label>Law Category *</Label>
                     <Input
                       type="select"
                       value={careerForm.lawCareerCategoryId}
@@ -1033,127 +795,31 @@ const AdminCareerManagement = () => {
                       }
                       required>
                       <option value="">Select Law Category</option>
-                      {lawCategories.map((cat) => (
-                        <option key={getItemId(cat)} value={getItemId(cat)}>
-                          {cat.name}
+                      {lawCategories.map((c) => (
+                        <option key={getItemId(c)} value={getItemId(c)}>
+                          {c.name}
                         </option>
                       ))}
-                    </Input>
-                  </FormGroup>
-                </Col>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>Country *</Label>
-                    <Input
-                      type="select"
-                      value={careerForm.countryId}
-                      onChange={(e) =>
-                        setCareerForm({
-                          ...careerForm,
-                          countryId: e.target.value,
-                        })
-                      }
-                      required>
-                      <option value="">Select Country</option>
-                      {countries.map((country) => (
-                        <option
-                          key={getItemId(country)}
-                          value={getItemId(country)}>
-                          {country.name || country.countryName}
-                        </option>
-                      ))}
-                    </Input>
-                  </FormGroup>
-                </Col>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>City</Label>
-                    <Input
-                      type="select"
-                      value={careerForm.cityId}
-                      onChange={(e) =>
-                        setCareerForm({
-                          ...careerForm,
-                          cityId: e.target.value,
-                        })
-                      }>
-                      <option value="">Select City</option>
-                      {cities.map((city) => (
-                        <option key={getItemId(city)} value={getItemId(city)}>
-                          {city.name || city.cityName}
-                        </option>
-                      ))}
-                    </Input>
-                  </FormGroup>
-                </Col>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>Location</Label>
-                    <Input
-                      type="select"
-                      value={careerForm.location}
-                      onChange={(e) =>
-                        setCareerForm({
-                          ...careerForm,
-                          location: e.target.value,
-                        })
-                      }>
-                      <option value="Onsite">Onsite</option>
-                      <option value="Remote">Remote</option>
-                      <option value="Hybrid">Hybrid</option>
-                    </Input>
-                  </FormGroup>
-                </Col>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>Job Type</Label>
-                    <Input
-                      type="select"
-                      value={careerForm.jobType}
-                      onChange={(e) =>
-                        setCareerForm({
-                          ...careerForm,
-                          jobType: e.target.value,
-                        })
-                      }>
-                      <option value="FullTime">Full Time</option>
-                      <option value="PartTime">Part Time</option>
-                      <option value="Contract">Contract</option>
-                      <option value="Internship">Internship</option>
                     </Input>
                   </FormGroup>
                 </Col>
                 <Col md={12}>
                   <FormGroup>
-                    <Label>Address</Label>
-                    <Input
-                      value={careerForm.address}
-                      onChange={(e) =>
-                        setCareerForm({
-                          ...careerForm,
-                          address: e.target.value,
-                        })
+                    <Label>Description *</Label>
+                    <ReactQuill
+                      theme="snow"
+                      value={careerForm.textEditor}
+                      onChange={(v) =>
+                        setCareerForm({ ...careerForm, textEditor: v })
                       }
-                      placeholder="Enter address"
+                      style={{ height: "150px", marginBottom: "50px" }}
                     />
                   </FormGroup>
                 </Col>
-                <Col md={12}>
-                  <Label>Full Description *</Label>
-                  <ReactQuill
-                    theme="snow"
-                    value={careerForm.textEditor}
-                    onChange={(v) =>
-                      setCareerForm({ ...careerForm, textEditor: v })
-                    }
-                    style={{ height: "200px", marginBottom: "50px" }}
-                  />
-                </Col>
               </Row>
             )}
-
             <Button
-              className="btn-primary-custom w-100 mt-4 py-2"
+              className="btn-primary-custom w-100 mt-4 py-2 fw-bold"
               type="submit"
               disabled={loading}>
               {loading ? "Saving..." : "Save Changes"}
@@ -1163,16 +829,13 @@ const AdminCareerManagement = () => {
       </Modal>
 
       <style jsx global>{`
-        .custom-nav {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
         .custom-nav::-webkit-scrollbar {
           display: none;
         }
         .nav-link {
           color: black !important;
           white-space: nowrap;
+          cursor: pointer;
         }
         .nav-link.active {
           color: #c5a059 !important;
@@ -1185,7 +848,6 @@ const AdminCareerManagement = () => {
           color: white;
           border-radius: 4px;
           font-weight: 600;
-          font-size: 14px;
         }
         .text-blue {
           color: #003366;
@@ -1193,21 +855,15 @@ const AdminCareerManagement = () => {
         .text-gold {
           color: #c5a059;
         }
-        .table-dark-custom {
-          background-color: #f8f9fa;
-          border-bottom: 2px solid #dee2e6;
-        }
         .table-dark-custom th {
           font-weight: 700;
           color: #333;
           font-size: 13px;
           text-transform: uppercase;
+          background: #f8f9fa;
         }
         .card-shadow {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        .object-fit-cover {
-          object-fit: cover;
         }
       `}</style>
     </Container>

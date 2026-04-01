@@ -34,18 +34,14 @@ export const getAdminId = () => {
 
 export const getImgUrl = (path) => {
   if (!path || path === "null" || path === "undefined") return "";
+
+  if (/^(http|https|data:image)/.test(path)) return path;
+
   let cleanPath = path.toString().trim().replace(/\\/g, "/");
 
-  if (/^(http|https|data:image)/.test(cleanPath)) return cleanPath;
+  cleanPath = cleanPath.replace(/^\/+/, "");
 
-  // Remove leading slashes
-  while (cleanPath.startsWith("/")) cleanPath = cleanPath.substring(1);
-
-  const folders = ["uploads/", "public/", "assets/", "images/", "static/"];
-  const hasFolder = folders.some((folder) => cleanPath.startsWith(folder));
-
- 
-  if (hasFolder) {
+  if (cleanPath.startsWith("uploads/")) {
     return `${IMG_URL}/${cleanPath}`;
   }
 
@@ -311,6 +307,8 @@ export const updateAdminProfile = async (id, formData) => {
 export const getAllCapabilityCategories = async () => {
   try {
     const response = await API.get("/capability-categories/get-all");
+    console.log(" capability response",response.data);
+    
     return response.data; 
   } catch (error) {
     console.error("❌ Fetch Categories Error:", error);
@@ -2235,4 +2233,9 @@ export const deleteJobCategory = async (id) => {
 
 
 
-
+// Career Banner API Methods
+export const createCareerBanner = (formData) => API.post("/career-banner/create", formData);
+export const updateCareerBanner = (id, formData) => API.patch(`/career-banner/update/${id}`, formData);
+export const deleteCareerBanner = (id) => API.delete(`/career-banner/delete/${id}`);
+export const getCareerBannerById = (id) => API.get(`/career-banner/get-by-id/${id}`);
+export const getAllCareerBanners = () => API.get("/career-banner/get-all");
