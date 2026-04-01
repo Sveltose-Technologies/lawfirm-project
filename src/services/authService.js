@@ -2231,11 +2231,65 @@ export const deleteJobCategory = async (id) => {
   }
 };
 
-
-
 // Career Banner API Methods
 export const createCareerBanner = (formData) => API.post("/career-banner/create", formData);
-export const updateCareerBanner = (id, formData) => API.patch(`/career-banner/update/${id}`, formData);
+export const updateCareerBanner = (id, formData) => API.put(`/career-banner/update/${id}`, formData); // Changed to PUT
 export const deleteCareerBanner = (id) => API.delete(`/career-banner/delete/${id}`);
 export const getCareerBannerById = (id) => API.get(`/career-banner/get-by-id/${id}`);
 export const getAllCareerBanners = () => API.get("/career-banner/get-all");
+
+// Career Law API Methods
+export const createCareerLaw = async (formData) => {
+  try {
+    const res = await API.post("/career-law/create", formData);
+    console.log("✅ Create Career Law:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Create Career Law Error:", err);
+    throw err;
+  }
+};
+
+export const updateCareerLaw = async (id, formData) => {
+  try {
+    const res = await API.put(`/career-law/update/${id}`, formData); // Changed to PUT
+    console.log("✅ Update Career Law:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Update Career Law Error:", err);
+    throw err;
+  }
+};
+
+export const deleteCareerLaw = async (id) => {
+  try {
+    const res = await API.delete(`/career-law/delete/${id}`);
+    console.log("✅ Delete Career Law ID:", id);
+    return res;
+  } catch (err) {
+    console.error("❌ Delete Career Law Error:", err);
+    throw err;
+  }
+};
+
+export const getCareerLawById = async (id) => {
+  try {
+    const res = await API.get(`/career-law/get-by-id/${id}`);
+    console.log("✅ Get Career Law By ID:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Get Career Law By ID Error:", err);
+    throw err;
+  }
+};
+
+export const getAllCareerLaw = async () => {
+  try {
+    const res = await API.get("/career-law/get-all");
+    console.log("✅ Get All Career Law Data:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Get All Career Law Error:", err);
+    throw err;
+  }
+};
