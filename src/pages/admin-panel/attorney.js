@@ -728,14 +728,14 @@ const handleUpdateSubmit = async () => {
             </Col>
             <Col md={4}>
               <FormGroup>
-                <Label className="small fw-bold">Admission Date</Label>
+                <Label className="small fw-bold">Admission</Label>
                 <Input
-                  name="admission"
+                  name="text"
                   value={editData.admission || ""}
                   onChange={(e) =>
                     setEditData({ ...editData, admission: e.target.value })
                   }
-                  placeholder="YYYY-MM-DD"
+                  
                 />
               </FormGroup>
             </Col>

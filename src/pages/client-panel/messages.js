@@ -1,6 +1,11 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
-// Add these lines below:
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { Row, Col } from "reactstrap";
 import ClientLayout from "../../components/layout/ClientLayout";
 import {
@@ -13,14 +18,12 @@ import {
   getImgUrl,
 } from "../../services/authService";
 
-// ... rest of your code
 export default function Messages() {
   const [selectedChat, setSelectedChat] = useState(null);
   const [typedMessage, setTypedMessage] = useState("");
   const [chatList, setChatList] = useState([]);
   const [conversations, setConversations] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
-  const [adminId, setAdminId] = useState("");
   const scrollRef = useRef(null);
 
   const professionalGreen = "#083f36";
@@ -32,152 +35,146 @@ export default function Messages() {
     }
   }, [conversations, selectedChat]);
 
-  // 2. Fetch Contacts (Admin & Verified Attorneys)
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [adminRes, attorneysRes] = await Promise.all([
-          getAdminProfile(),
-          getAllAttorneys(),
-        ]);
+  // 2. Memoized Contact Fetching (Admin & Verified Attorneys)
+  const fetchContacts = useCallback(async () => {
+    try {
+      const [adminRes, attorneysRes] = await Promise.all([
+        getAdminProfile(),
+        getAllAttorneys(),
+      ]);
 
-        let combined = [];
+      let combined = [];
 
-        // Process Admin (Admins are usually always verified/active)
-        if (adminRes && adminRes.id) {
-          setAdminId(adminRes.id);
-          combined.push({
-            id: adminRes.id,
-            role: "Admin",
-            chatId: `admin-${adminRes.id}`,
-            name: adminRes.firstName || "Admin Office",
-            img: getImgUrl(adminRes.profileImage),
-          });
-        }
-
-        // Process Attorneys - ONLY VERIFIED
-        const verifiedAttorneys = (attorneysRes?.attorneys || [])
-          .filter((a) => a.status === "verified")
-          .map((a) => ({
-            id: a.id,
-            role: "Attorney",
-            chatId: `attorney-${a.id}`,
-            name: `${a.firstName} ${a.lastName || ""}`,
-            img: getImgUrl(a.profileImage),
-          }));
-
-        const fullList = [...combined, ...verifiedAttorneys];
-        setChatList(fullList);
-
-        // PERSISTENCE: Restore active chat on refresh
-        const savedChatId = localStorage.getItem("client_active_chat");
-        if (savedChatId) {
-          const found = fullList.find((c) => c.chatId === savedChatId);
-          if (found) setSelectedChat(found);
-        }
-      } catch (err) {
-        console.error("Fetch contacts error:", err);
+      if (adminRes && adminRes.id) {
+        combined.push({
+          id: adminRes.id,
+          role: "Admin",
+          chatId: `admin-${adminRes.id}`,
+          name: adminRes.firstName || "Admin Office",
+          img: getImgUrl(adminRes.profileImage),
+        });
       }
-    };
-    fetchData();
-  }, []);
 
-  // 3. Fetch History when Chat is selected
-  useEffect(() => {
-    const fetchHistory = async () => {
-      if (!selectedChat) return;
-
-      // Save to localStorage for refresh persistence
-      localStorage.setItem("client_active_chat", selectedChat.chatId);
-
-      const user = JSON.parse(localStorage.getItem("user")); // Logged-in Client
-      try {
-        let response;
-        if (selectedChat.role === "Admin") {
-          // Client <-> Admin History
-          response = await getUserMessageHistory(selectedChat.id, user.id);
-        } else {
-          // Client <-> Attorney History
-          response = await getClientAttorneyMessageHistory(
-            selectedChat.id,
-            user.id,
-          );
-        }
-
-        const formattedMessages = (response?.data || []).map((msg) => ({
-          id: msg.id,
-          text: msg.message,
-          // If senderType is 'client', it's "Me"
-          sender: msg.senderType === "client" ? "Me" : selectedChat.name,
-          time: new Date(msg.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+      const verifiedAttorneys = (attorneysRes?.attorneys || [])
+        .filter((a) => a.status === "verified")
+        .map((a) => ({
+          id: a.id,
+          role: "Attorney",
+          chatId: `attorney-${a.id}`,
+          name: `${a.firstName} ${a.lastName || ""}`,
+          img: getImgUrl(a.profileImage),
         }));
 
-        setConversations((prev) => ({
-          ...prev,
-          [selectedChat.chatId]: formattedMessages,
-        }));
-      } catch (error) {
-        console.error("History fetch error:", error);
+      const fullList = [...combined, ...verifiedAttorneys];
+      setChatList(fullList);
+
+      // Persistence: Restore active chat session
+      const savedChatId = localStorage.getItem("client_active_chat");
+      if (savedChatId && !selectedChat) {
+        const found = fullList.find((c) => c.chatId === savedChatId);
+        if (found) setSelectedChat(found);
       }
-    };
-    fetchHistory();
+    } catch (err) {
+      console.error("Fetch contacts error:", err);
+    }
   }, [selectedChat]);
 
-  // 4. Send Message
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!typedMessage.trim() || !selectedChat) return;
+  // 3. Memoized History Fetching (Runtime Data comparison)
+  const fetchHistory = useCallback(async () => {
+    if (!selectedChat) return;
+    localStorage.setItem("client_active_chat", selectedChat.chatId);
 
     const user = JSON.parse(localStorage.getItem("user"));
-    const msgText = typedMessage;
-    setTypedMessage("");
-
     try {
-      if (selectedChat.role === "Attorney") {
-        await attorneyClientMessage({
-          attorneyId: selectedChat.id,
-          clientId: user?.id,
-          senderType: "client",
-          message: msgText,
-        });
+      let response;
+      if (selectedChat.role === "Admin") {
+        response = await getUserMessageHistory(selectedChat.id, user.id);
       } else {
-        await adminClientMessage({
-          adminId: selectedChat.id,
-          clientId: user?.id,
-          senderType: "client",
-          message: msgText,
-        });
+        response = await getClientAttorneyMessageHistory(
+          selectedChat.id,
+          user.id,
+        );
       }
 
-      // Local UI update (Optimistic Update)
-      const newMessage = {
-        id: Date.now(),
-        text: msgText,
-        sender: "Me",
-        time: new Date().toLocaleTimeString([], {
+      const history = (response?.data || []).map((msg) => ({
+        id: msg.id || msg._id,
+        text: msg.message,
+        sender: msg.senderType === "client" ? "Me" : selectedChat.name,
+        time: new Date(msg.createdAt).toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
-      };
-
-      setConversations((prev) => ({
-        ...prev,
-        [selectedChat.chatId]: [
-          ...(prev[selectedChat.chatId] || []),
-          newMessage,
-        ],
       }));
-    } catch (err) {
-      console.error("Send error:", err);
-    }
-  };
 
-  const filteredChatList = chatList.filter((c) =>
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()),
+      // Compare to prevent jitter/flicker if no new messages
+      setConversations((prev) => {
+        if (
+          JSON.stringify(prev[selectedChat.chatId]) === JSON.stringify(history)
+        )
+          return prev;
+        return { ...prev, [selectedChat.chatId]: history };
+      });
+    } catch (error) {
+      console.error("History fetch error:", error);
+    }
+  }, [selectedChat]);
+
+  // 4. Runtime Polling Effects
+  useEffect(() => {
+    fetchContacts();
+  }, [fetchContacts]);
+
+  useEffect(() => {
+    if (!selectedChat) return;
+    fetchHistory(); // Initial fetch
+
+    const interval = setInterval(() => {
+      fetchHistory();
+    }, 3000); // Polling every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [selectedChat, fetchHistory]);
+
+  // 5. Memoized Message Sending
+  const handleSendMessage = useCallback(
+    async (e) => {
+      if (e) e.preventDefault();
+      if (!typedMessage.trim() || !selectedChat) return;
+
+      const user = JSON.parse(localStorage.getItem("user"));
+      const msgText = typedMessage;
+      setTypedMessage("");
+
+      try {
+        if (selectedChat.role === "Attorney") {
+          await attorneyClientMessage({
+            attorneyId: selectedChat.id,
+            clientId: user?.id,
+            senderType: "client",
+            message: msgText,
+          });
+        } else {
+          await adminClientMessage({
+            adminId: selectedChat.id,
+            clientId: user?.id,
+            senderType: "client",
+            message: msgText,
+          });
+        }
+        fetchHistory(); // Immediate refresh after sending
+      } catch (err) {
+        console.error("Send error:", err);
+      }
+    },
+    [typedMessage, selectedChat, fetchHistory],
   );
+
+  // 6. Optimized Search Filtering
+  const filteredChatList = useMemo(() => {
+    return chatList.filter((c) =>
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+  }, [chatList, searchTerm]);
 
   return (
     <ClientLayout>
