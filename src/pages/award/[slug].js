@@ -56,8 +56,7 @@ export default function AwardDetail() {
     );
 
   // Logic: Use peopleImage for the main left slot
-  const profileImg =
-    getImgUrl(award.peopleImage) || "/assets/images/default-user.png";
+  const profileImg = getImgUrl(award.peopleImage) || "";
 
   return (
     <div className="bg-light w-100 min-vh-100 pb-5">

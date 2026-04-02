@@ -310,7 +310,7 @@ const handleUpdateSubmit = async () => {
                     src={
                       u.profileImage
                         ? authService.getImgUrl(u.profileImage)
-                        : "/assets/images/placeholder.png"
+                        : "/assets/images/profile.png"
                     }
                     width="40"
                     height="40"

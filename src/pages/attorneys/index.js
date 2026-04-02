@@ -160,7 +160,7 @@ const createSlug = (text) => {
       <section
         className="universal-banner"
         style={{
-          backgroundImage: `url(${getImgUrl(bannerData?.bannerImage) || "/assets/images/attorney-banner.jpg"})`,
+          backgroundImage: `url(${getImgUrl(bannerData?.bannerImage) || ""})`,
         }}>
         <div className="banner-overlay"></div>
         <div className="container banner-content text-center">

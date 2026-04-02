@@ -3531,36 +3531,12 @@ header.style-5 .main-nav ul li.menu-item-has-children > i {
   position: absolute;
   left: 0; top: 0; right: 0; bottom: 0;
   
-  /* background-image: linear-gradient(rgba(32, 32, 32, 0.5), rgba(32, 32, 32, 0.5)), 
-                    var(--banner-bg, url("/assets/images/bg/banner1-bg.png")); */
 
   background-size: cover;
   background-repeat: no-repeat;
   z-index: -1;
   animation: zoom 12s linear infinite alternate;
 }
-/* 
-.banner-section::before {
-  content: '';
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-
-background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(32, 32, 32, 0.5)), to(rgba(32, 32, 32, 0.5))), url("/assets/images/bg/banner1-bg.png");
-
-background-image: linear-gradient(rgba(32, 32, 32, 0.5), rgba(32, 32, 32, 0.5)), url("/assets/images/bg/banner1-bg.png");
-
-background-size: cover;
-
-  background-repeat: no-repeat;
-  z-index: -1;
-  -webkit-animation: zoom 12s linear infinite alternate;
-          animation: zoom 12s linear infinite alternate;
-} */
 
 @-webkit-keyframes zoom {
   0% {
@@ -4472,11 +4448,11 @@ background-size: cover;
   }
 }
 
+/* Locate this specific block and update it */
 .banner-section3 .bann31-single .banner3-lawyer-img::before {
-  content: url("../images/bg/banner1-bg.png");
   position: absolute;
   right: -25px;
-  top: -28px;
+  top: -42px; /* Adjusted to fit */
   z-index: -1;
 }
 
@@ -5764,8 +5740,8 @@ background-size: cover;
 15. Info-section
 =======================================*/
 .info-section {
-  background: -webkit-gradient(linear, left top, left bottom, from(rgba(41, 43, 49, 0.9)), to(rgba(41, 43, 49, 0.9))), url("../images/bg/banner1-bg.png");
-  background: linear-gradient(rgba(41, 43, 49, 0.9), rgba(41, 43, 49, 0.9)), url("../images/bg/banner1-bg.png");
+  background: -webkit-gradient(linear, left top, left bottom, from(rgba(41, 43, 49, 0.9)), to(rgba(41, 43, 49, 0.9)));
+  background: linear-gradient(rgba(41, 43, 49, 0.9), rgba(41, 43, 49, 0.9));
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -7155,7 +7131,7 @@ background-size: cover;
 }
 
 .contact-section2 {
-  background: linear-gradient(277.42deg, #292B31 4.86%, rgba(41, 43, 49, 0.85) 100%), url("../images/bg/banner1-bg.png");
+  background: linear-gradient(277.42deg, #292B31 4.86%, rgba(41, 43, 49, 0.85) 100%);
   background-size: cover;
   background-repeat: no-repeat;
   padding: 90px 0px;
@@ -7740,8 +7716,8 @@ select .option.focus, .nice-select .option.selected.focus {
 }
 
 .contact-image-area {
-  background: -webkit-gradient(linear, left top, left bottom, from(rgba(41, 43, 49, 0.85)), to(rgba(41, 43, 49, 0.85))), url(../images/bg/banner1-bg.png);
-  background: linear-gradient(rgba(41, 43, 49, 0.85), rgba(41, 43, 49, 0.85)), url(../images/bg/banner1-bg.png);
+  background: -webkit-gradient(linear, left top, left bottom, from(rgba(41, 43, 49, 0.85)), to(rgba(41, 43, 49, 0.85)));
+  background: linear-gradient(rgba(41, 43, 49, 0.85), rgba(41, 43, 49, 0.85));
   background-size: cover;
   background-repeat: no-repeat;
   position: relative;
@@ -9107,7 +9083,6 @@ h3.comment-title {
  21. Footer-section
 =======================================*/
 .footer-section {
-  background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(41, 43, 49, 0.6)), to(rgba(41, 43, 49, 0.6))), url("../images/bg/footer1-bg.png");
   background-image: linear-gradient(rgba(41, 43, 49, 0.6), rgba(41, 43, 49, 0.6)), url("../images/bg/footer1-bg.png");
   background-size: cover;
   background-repeat: no-repeat;
@@ -9149,8 +9124,8 @@ h3.comment-title {
   display: flex;
   -webkit-box-orient: horizontal;
   -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
 }
 
 .footer-section .footer-about .footer-social i {
@@ -9760,7 +9735,6 @@ h3.comment-title {
 }
 
 .progress-item:after {
-  /* content: url("../images/icons/winner-badge.svg"); */
   position: absolute;
   left: 50%;
   top: 65%;
@@ -10181,15 +10155,7 @@ h3.comment-title {
   position: absolute;
 }
 
-/*=======================================
- 23.  Breadcrumb-section
-=======================================*/
-.breadcrumb-section {
-  background: linear-gradient(275.93deg, rgba(32, 32, 32, 0.8) 25.55%, rgba(32, 32, 32, 0.8) 95.49%), url("../images/bg/banner1-bg.png");
-  background-size: cover;
-  background-repeat: no-repeat;
-  padding: 12.5rem 0px;
-}
+
 
 .breadcrumb-title {
   font-size: 3.125rem;
@@ -10229,7 +10195,6 @@ h3.comment-title {
 }
 
 .breadcrumb-item + .breadcrumb-item::after {
-  /* content: url("../images/icons/dotted-arrow.svg"); */
   position: absolute;
   top: -2px;
   left: 0;

@@ -1,6 +1,5 @@
 import API from "./api";
 
-
 // export const IMG_URL = "https://api.blustor.net";
 
 export const IMG_URL = "https://nrislaw.rxchartsquare.com";
@@ -8,7 +7,7 @@ export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 // ================= HELPER FUNCTIONS =================
 
 const formatError = (error) => {
-  console.error("Format Error Input:", error.response); 
+  console.error("Format Error Input:", error.response);
   if (typeof error === "string") return error;
 
   if (error.response?.data?.message) return error.response.data.message;
@@ -307,9 +306,9 @@ export const updateAdminProfile = async (id, formData) => {
 export const getAllCapabilityCategories = async () => {
   try {
     const response = await API.get("/capability-categories/get-all");
-    console.log(" capability response",response.data);
-    
-    return response.data; 
+    console.log(" capability response", response.data);
+
+    return response.data;
   } catch (error) {
     console.error("❌ Fetch Categories Error:", error);
     return { success: false, data: [] };
@@ -2232,11 +2231,60 @@ export const deleteJobCategory = async (id) => {
 };
 
 // Career Banner API Methods
-export const createCareerBanner = (formData) => API.post("/career-banner/create", formData);
-export const updateCareerBanner = (id, formData) => API.put(`/career-banner/update/${id}`, formData); // Changed to PUT
-export const deleteCareerBanner = (id) => API.delete(`/career-banner/delete/${id}`);
-export const getCareerBannerById = (id) => API.get(`/career-banner/get-by-id/${id}`);
-export const getAllCareerBanners = () => API.get("/career-banner/get-all");
+export const createCareerBanner = async (formData) => {
+  try {
+    const res = await API.post("/career-banner/create", formData);
+    console.log("✅ Create Career Banner:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Create Career Banner Error:", err);
+    throw err;
+  }
+};
+
+export const updateCareerBanner = async (id, formData) => {
+  try {
+    const res = await API.put(`/career-banner/update/${id}`, formData);
+    console.log("✅ Update Career Banner:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Update Career Banner Error:", err);
+    throw err;
+  }
+};
+
+export const deleteCareerBanner = async (id) => {
+  try {
+    const res = await API.delete(`/career-banner/delete/${id}`);
+    console.log("✅ Delete Career Banner ID:", id);
+    return res;
+  } catch (err) {
+    console.error("❌ Delete Career Banner Error:", err);
+    throw err;
+  }
+};
+
+export const getCareerBannerById = async (id) => {
+  try {
+    const res = await API.get(`/career-banner/get-by-id/${id}`);
+    console.log("✅ Get Career Banner By ID:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Get Career Banner By ID Error:", err);
+    throw err;
+  }
+};
+
+export const getAllCareerBanners = async () => {
+  try {
+    const res = await API.get("/career-banner/get-all");
+    console.log("✅ Get All Career Banner Data:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Get All Career Banner Error:", err);
+    throw err;
+  }
+};
 
 // Career Law API Methods
 export const createCareerLaw = async (formData) => {
@@ -2290,6 +2338,116 @@ export const getAllCareerLaw = async () => {
     return res;
   } catch (err) {
     console.error("❌ Get All Career Law Error:", err);
+    throw err;
+  }
+};
+
+export const createCareerAttorney = async (formData) => {
+  try {
+    const res = await API.post("/career-attorney/create", formData);
+    console.log("✅ Create Career Attorney:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Create Career Attorney Error:", err);
+    throw err;
+  }
+};
+
+export const updateCareerAttorney = async (id, formData) => {
+  try {
+    const res = await API.put(`/career-attorney/update/${id}`, formData);
+    console.log("✅ Update Career Attorney:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Update Career Attorney Error:", err);
+    throw err;
+  }
+};
+
+export const deleteCareerAttorney = async (id) => {
+  try {
+    const res = await API.delete(`/career-attorney/delete/${id}`);
+    console.log("✅ Delete Career Attorney ID:", id);
+    return res;
+  } catch (err) {
+    console.error("❌ Delete Career Attorney Error:", err);
+    throw err;
+  }
+};
+
+export const getCareerAttorneyById = async (id) => {
+  try {
+    const res = await API.get(`/career-attorney/get-by-id/${id}`);
+    console.log("✅ Get Career Attorney By ID:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Get Career Attorney By ID Error:", err);
+    throw err;
+  }
+};
+
+export const getAllCareerAttorneys = async () => {
+  try {
+    const res = await API.get("/career-attorney/get-all");
+    console.log("✅ Get All Career Attorney Data:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Get All Career Attorney Error:", err);
+    throw err;
+  }
+};
+
+export const createCareerProfessional = async (formData) => {
+  try {
+    const res = await API.post("/career-professional/create", formData);
+    console.log("✅ Create Career Professional:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Create Career Professional Error:", err);
+    throw err;
+  }
+};
+
+export const updateCareerProfessional = async (id, formData) => {
+  try {
+    const res = await API.put(`/career-professional/update/${id}`, formData);
+    console.log("✅ Update Career Professional:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Update Career Professional Error:", err);
+    throw err;
+  }
+};
+
+export const deleteCareerProfessional = async (id) => {
+  try {
+    const res = await API.delete(`/career-professional/delete/${id}`);
+    console.log("✅ Delete Career Professional ID:", id);
+    return res;
+  } catch (err) {
+    console.error("❌ Delete Career Professional Error:", err);
+    throw err;
+  }
+};
+
+export const getCareerProfessionalById = async (id) => {
+  try {
+    const res = await API.get(`/career-professional/get-by-id/${id}`);
+    console.log("✅ Get Career Professional By ID:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Get Career Professional By ID Error:", err);
+    throw err;
+  }
+};
+
+export const getAllCareerProfessionals = async () => {
+  try {
+    const res = await API.get("/career-professional/get-all");
+    console.log("✅ Get All Career Professional Data:", res.data);
+    return res;
+  } catch (err) {
+    console.error("❌ Get All Career Professional Error:", err);
     throw err;
   }
 };

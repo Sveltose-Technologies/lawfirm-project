@@ -32,7 +32,7 @@ export default function Promoters() {
   // Helper function ka use karein banner ke liye
   const bannerImg = promoters[0]?.bannerImage
     ? getImgUrl(promoters[0].bannerImage)
-    : "/assets/images/promoter-banner.png";
+    : "";
 
   return (
     <div className="bg-light-gray min-vh-100">

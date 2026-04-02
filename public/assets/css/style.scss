@@ -3856,7 +3856,7 @@ header.style-5 {
         position: relative;
         display: inline-block;
         &::before{
-            content: url('../images/icons/check.svg');
+            content: '';
             position: absolute;
             left: 0;
             top: 1px;
@@ -4321,7 +4321,7 @@ header.style-5 {
 15. Info-section
 =======================================*/
 .info-section{
-    background: linear-gradient(rgba(#292B31,0.9),rgba(#292B31,0.9)),url('../images/bg/banner1-bg.png');
+    background: linear-gradient(rgba(#292B31, 0.9), rgba(#292B31, 0.9));
     @include img-adjust();
     background-attachment: fixed;
     padding: 90px 10% 90px 12%;
@@ -5443,7 +5443,7 @@ header.style-5 {
     overflow: hidden;
 }
 .contact-section2{
-    background: linear-gradient(277.42deg, #292B31 4.86%, rgba(41, 43, 49, 0.85) 100%), url('../images/bg/banner1-bg.png');
+    background: linear-gradient(277.42deg, #292B31 4.86%, rgba(41, 43, 49, 0.85) 100%);
     @include img-adjust();
     padding: 90px 0px;
 }
@@ -5916,7 +5916,7 @@ select .option.focus, .nice-select .option.selected.focus {
     }
 }
 .contact-image-area{
-    background: linear-gradient(rgba(41, 43, 49, 0.85),rgba(41, 43, 49, 0.85)),url(../images/bg/banner1-bg.png);
+    background: linear-gradient(rgba(41, 43, 49, 0.85), rgba(41, 43, 49, 0.85));
     @include img-adjust();
     position: relative;
     min-height: 490px;
@@ -6953,7 +6953,7 @@ h3.comment-title{
             margin-bottom: 0px;
         }
         &::before{
-            content: url('../images/icons/graduation-icon.svg');
+            content: '';
             position: absolute;
             left: -50px;
             top: 10px;
@@ -7010,7 +7010,6 @@ h3.comment-title{
 .error-section{
     position: relative;
     z-index: 1;
-    background: url('../images/bg/banner1-bg.png');
     @include img-adjust();
     .section-bg-left{
         position: absolute;
@@ -7649,7 +7648,7 @@ h3.comment-title{
         margin-right: 0;
     }
     &:after{
-        content: url('../images/icons/winner-badge.svg');
+        content: '';
         position: absolute;
         left: 50%;
         top: 65%;
@@ -7965,7 +7964,7 @@ h3.comment-title{
  23.  Breadcrumb-section
 =======================================*/
 .breadcrumb-section{
-    background: linear-gradient(275.93deg, rgba(32, 32, 32, 0.8) 25.55%, rgba(32, 32, 32, 0.8) 95.49%), url('../images/bg/banner1-bg.png');
+    background: linear-gradient(275.93deg, rgba(32, 32, 32, 0.8) 25.55%, rgba(32, 32, 32, 0.8) 95.49%);
     @include img-adjust();
     padding: 12.5rem 0px;
 }
@@ -7999,7 +7998,6 @@ h3.comment-title{
     content: unset;
 }
 .breadcrumb-item+.breadcrumb-item::after {
-    content: url('../images/icons/dotted-arrow.svg');
     position: absolute;
     top: -2px;
     left: 0;

@@ -207,7 +207,7 @@ export default function Messages() {
                   }`}
                   onClick={() => setSelectedChat(chat)}>
                   <img
-                    src={chat.img || "/assets/images/default-avatar.png"}
+                    src={chat.img}
                     width="45"
                     height="45"
                     className="rounded-circle border"
@@ -233,9 +233,7 @@ export default function Messages() {
                 {/* Header */}
                 <div className="p-3 border-bottom d-flex align-items-center gap-3 bg-white">
                   <img
-                    src={
-                      selectedChat.img || "/assets/images/default-avatar.png"
-                    }
+                    src={selectedChat.img || ""}
                     width="40"
                     height="40"
                     className="rounded-circle border"

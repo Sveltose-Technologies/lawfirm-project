@@ -152,7 +152,7 @@ const Messages = () => {
                 className="p-3 border-0 border-bottom chat-item d-flex align-items-center gap-3"
                 style={{ cursor: "pointer" }}
               >
-                <img src={chat.img || "/assets/images/profilepic.png"} width="45" height="45" className="rounded-circle border" alt="" />
+                <img src={chat.img} width="45" height="45" className="rounded-circle border" alt="" />
                 <div className="flex-grow-1">
                   <div className="fw-bold text-dark small">{chat.name}</div>
                   <div className="text-muted" style={{ fontSize: "11px" }}>{chat.role}</div>

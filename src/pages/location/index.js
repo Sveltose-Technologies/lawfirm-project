@@ -204,9 +204,13 @@ function Locations() {
       <style jsx>{`
         .location-banner {
           min-height: 400px;
-          background: url("/assets/images/banner-img3.png") center/cover
-            no-repeat;
+          /* These 3 lines fix the multiple image issue */
+          background-size: cover !important;
+          background-repeat: no-repeat !important;
+
           position: relative;
+          width: 100%;
+          display: flex;
         }
         .overlay {
           position: absolute;

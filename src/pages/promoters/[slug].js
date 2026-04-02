@@ -49,9 +49,7 @@ export default function PromoterDetail() {
     );
 
   // getImgUrl handle karega absolute vs relative paths
-  const bannerImg = person.bannerImage
-    ? getImgUrl(person.bannerImage)
-    : "/assets/images/promoter-banner.png";
+  const bannerImg = person.bannerImage ? getImgUrl(person.bannerImage) : "";
 
   return (
     <div className="bg-white min-vh-100">

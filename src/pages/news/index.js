@@ -129,38 +129,7 @@ function NewsIndex() {
         <title>News | Core Law</title>
       </Head>
 
-      {/* HERO SECTION */}
-      {/* <section */}
-      {/* className="universal-banner d-flex align-items-center justify-content-center text-center position-relative"
-        style={{
-          height: "450px",
-          marginTop: "-80px",
-          backgroundImage: bannerImg
-            ? `url(${bannerImg})`
-            : url("/assets/images/bg/banner1-bg.png"),
-          // Change: Use white if no image, otherwise use your dark variable
-          backgroundColor: bannerImg ? bannerImg : "#ddd",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}>
-        {/* Change: Only show overlay if an image exists */}
-      {/* {bannerImg && <div className="banner-overlay"></div>} */}
-
-      {/* <div className="banner-content container pt-5 mt-5">
-          <h1
-            className="display-3 fw-bold mb-3 font-serif"
-            style={{ color: bannerImg ? "#ffffff" : "#002147" }} // Dark blue if white bg
-          >
-            News
-          </h1>
-          <p
-            className="lead opacity-75"
-            style={{ color: bannerImg ? "#ffffff" : "#6c757d" }} // Gray if white bg
-          >
-            Insights & Updates from Core Law
-          </p>
-        </div> */}
-      {/* </section> */}
+  
       <section
         className="universal-banner d-flex align-items-center justify-content-center text-center position-relative"
         style={{
