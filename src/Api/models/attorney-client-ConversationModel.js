@@ -29,6 +29,17 @@ const AttorneyClientConversation = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: false,
     },
+
+    image : {
+      type: DataTypes.STRING, 
+      allowNull: true,
+    },
+    
+    attachment: {
+      type: DataTypes.STRING, 
+      allowNull: true,
+    },
+
   },
   {
     tableName: "attorney_client_conversations",

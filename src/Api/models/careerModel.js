@@ -59,6 +59,22 @@ const Career = sequelize.define(
       type: DataTypes.TEXT("long"),
       allowNull: false,
     },
+
+    skills:{
+         type: DataTypes.TEXT("long"),
+      allowNull: false,
+    },
+
+    education:{
+         type: DataTypes.TEXT("long"),
+      allowNull: false,
+    },
+
+    technology:{
+          type: DataTypes.TEXT("long"),
+      allowNull: false,
+    }
+
   },
   {
     tableName: "careers",

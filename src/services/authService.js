@@ -5,7 +5,6 @@ export const IMG_URL = "https://api.blustor.net";
 
 
 
-
 // ================= HELPER FUNCTIONS =================
 
 const formatError = (error) => {

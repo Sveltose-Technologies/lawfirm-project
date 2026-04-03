@@ -21,7 +21,7 @@ const PrivacyPolicy = sequelize.define(
     },
 
     content: {
-      type: DataTypes.TEXT("long"), // text editor HTML
+      type: DataTypes.TEXT("long"), 
       allowNull: false,
     },
   },

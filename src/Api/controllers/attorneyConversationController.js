@@ -18,11 +18,21 @@ exports.createAttorneyConversation = async (req, res) => {
       });
     }
 
+     const image = req.files?.image
+      ? `/uploads/${req.files.image[0].filename}`
+      : null;
+
+    const attachment = req.files?.attachment
+      ? `/uploads/${req.files.attachment[0].filename}`
+      : null;
+
     const chat = await AttorneyConversation.create({
       adminId,
       attorneyId,
       senderType,
       message,
+      image,
+      attachment,
     });
 
     res.status(201).json({
@@ -148,21 +158,54 @@ exports.getConversationById = async (req, res) => {
   }
 };
 
-// // get conversation by clientId
-// exports.getConversationByClientId = async (req, res) => {
+exports.getAllConversations = async (req, res) => {
+  try {
+       const chats = await AttorneyConversation.findAll({
+      order: [["createdAt", "ASC"]],
+    });
+
+    const grouped = {};
+
+    chats.forEach((chat) => {
+      const key = `${chat.adminId}_${chat.attorneyId}`;
+
+      if (!grouped[key]) {
+        grouped[key] = {
+          adminId: chat.adminId,
+          attorneyId: chat.attorneyId,
+          messages: [],
+        };
+      }
+
+      grouped[key].messages.push({
+        id: chat._id,
+        senderType: chat.senderType,
+        message: chat.message,
+        image: chat.image,
+        attachment: chat.attachment,
+        createdAt: chat.createdAt,
+      });
+    });
+
+    res.status(200).json({
+      status: true,
+      total: Object.keys(grouped).length,
+      data: Object.values(grouped),
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// exports.getAllConversations = async (req, res) => {
 //   try {
-//     const { clientId } = req.params;
-
-//     if (!clientId) {
-//       return res.status(400).json({
-//         status: false,
-//         message: "clientId is required",
-//       });
-//     }
-
-//     const chats = await ClientConversation.findAll({
-//       where: { clientId },
-//       order: [["createdAt", "ASC"]],
+//     const chats = await AttorneyConversation.findAll({
+//       order: [["createdAt", "DESC"]],
 //     });
 
 //     res.status(200).json({
@@ -179,24 +222,3 @@ exports.getConversationById = async (req, res) => {
 //     });
 //   }
 // };
-
-exports.getAllConversations = async (req, res) => {
-  try {
-    const chats = await AttorneyConversation.findAll({
-      order: [["createdAt", "DESC"]],
-    });
-
-    res.status(200).json({
-      status: true,
-      total: chats.length,
-      data: chats,
-    });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      status: false,
-      message: "Server error",
-    });
-  }
-};

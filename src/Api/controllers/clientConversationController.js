@@ -18,10 +18,20 @@ exports.createClientConversation = async (req, res) => {
       });
     }
 
+    const image = req.files?.image
+      ? `/uploads/${req.files.image[0].filename}`
+      : null;
+
+    const attachment = req.files?.attachment
+      ? `/uploads/${req.files.attachment[0].filename}`
+      : null;
+
     const conversation = await ClientConversation.create({
       adminId,
       clientId,
       senderType,
+      image,
+      attachment,
       message,
     });
 
@@ -57,9 +67,11 @@ exports.getAllConversations = async (req, res) => {
       }
 
       grouped[key].messages.push({
-        id: chat.id,
+        id: chat._id,
         senderType: chat.senderType,
         message: chat.message,
+        image: chat.image,
+        attachment: chat.attachment,
         createdAt: chat.createdAt,
       });
     });
@@ -72,10 +84,12 @@ exports.getAllConversations = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ status: false, message: "Internal server error" });
+    res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
   }
 };
-
 exports.getConversationBetweenUsers = async (req, res) => {
   try {
     const { adminId, clientId } = req.params;

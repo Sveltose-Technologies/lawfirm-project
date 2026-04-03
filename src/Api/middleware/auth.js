@@ -38,7 +38,7 @@ exports.adminOnly  = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 🔥 Ensure admin token
+    //  Ensure admin token
     if (decoded.type !== "admin") {
       return res.status(403).json({ message: "Admin access only" });
     }

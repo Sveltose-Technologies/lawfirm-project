@@ -1,8 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/clientConversationController");
+const upload = require("../middleware/upload");
 
-router.post("/send", controller.createClientConversation);
+const cpUpload = upload.fields([
+  { name: "image", maxCount: 1 },
+  { name: "attachment", maxCount: 1 },
+]);
+
+router.post("/send" ,cpUpload, controller.createClientConversation);
 
 // important
 router.get("/get/:adminId/:clientId", controller.getConversationBetweenUsers);

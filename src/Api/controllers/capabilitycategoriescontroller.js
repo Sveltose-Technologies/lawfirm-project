@@ -1,6 +1,5 @@
 const Category = require("../models/capabilitiescategoriesModel");
 
-
 /* ================= CREATE (ADMIN) ================= */
 exports.createCategory = async (req, res) => {
   try {
@@ -16,7 +15,7 @@ exports.createCategory = async (req, res) => {
     // ✅ FIX HERE
     const adminId = req.user ? req.user.id : req.body.adminId;
 
-const bannerImage = req.file ? `/uploads/${req.file.filename}` : null;
+    const bannerImage = req.file ? `/uploads/${req.file.filename}` : null;
     const category = await Category.create({
       adminId,
       categoryName,
@@ -75,12 +74,12 @@ exports.updateCategory = async (req, res) => {
     }
 
     await category.update({
-  categoryName: req.body.categoryName || category.categoryName,
-  description: req.body.description || category.description,
-  bannerImage: req.file
-    ? `/uploads/${req.file.filename}`
-    : category.bannerImage,
-});
+      categoryName: req.body.categoryName || category.categoryName,
+      description: req.body.description || category.description,
+      bannerImage: req.file
+        ? `/uploads/${req.file.filename}`
+        : category.bannerImage,
+    });
 
     res.status(200).json({
       success: true,

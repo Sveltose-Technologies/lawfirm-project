@@ -4,22 +4,40 @@ const colors = require("colors");
 const sequelize = require("./configer/dbconfig")
 const cors = require("cors");
 const path = require("path");
+// const http = require("http")
+// const {Server} = require("socket.io")
 
 const app = express()
 
+// const server = http.createServer(Server)
+
 const PORT = process.env.PORT || 6000;
+
+// const io = new Server(server)
 
 /* SAFE body parser */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+
+
 app.use("/uploads", express.static(path.resolve("/home/nodejs.blustor.net/htdocs/uploads")));
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://blustor.net", 
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
 
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
+
+// require("./services/socket") (io)
 
 app.use("/casecategories", require("./routes/casecategorieRoute"))
 app.use("/capability-categories", require("./routes/capabilitycategoriesRoutes"))

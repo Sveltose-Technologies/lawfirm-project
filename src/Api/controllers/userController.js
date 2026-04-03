@@ -33,7 +33,14 @@ exports.signUpuser = async (req, res) => {
             countryId,
             cityId
         });
-        res.status(201).json({ message: "User created successfully", user });
+        res.status(201).json({ message: "User created successfully",   
+             fullName: user.fullName,
+             email: user.email,
+             phoneNo: user.phoneNo,
+            roleId: user.roleId,
+            countryId: user.countryId,
+            cityId: user.cityId,
+            token: generateToken(user.id) });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -44,7 +51,13 @@ exports.loginUser = async (req, res) => {
       
          const { email, password } = req.body;
 
-        const user = await User.findOne({ where: { email } });
+         const user = await User.findOne({
+      where: { email },
+      include: {
+        model: Role,
+        include: Permission,
+      },
+    });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }   

@@ -1,6 +1,5 @@
 const Capability = require("../models/capability.model");
 
-
 // ================= CREATE =================
 exports.createCapability = async (req, res) => {
   try {
@@ -33,7 +32,6 @@ exports.createCapability = async (req, res) => {
   }
 };
 
-
 // ================= GET ALL =================
 exports.getAllCapabilities = async (req, res) => {
   try {
@@ -53,7 +51,6 @@ exports.getAllCapabilities = async (req, res) => {
     });
   }
 };
-
 
 // ================= GET BY ID =================
 exports.getCapabilityById = async (req, res) => {
@@ -79,7 +76,6 @@ exports.getCapabilityById = async (req, res) => {
   }
 };
 
-
 // ================= UPDATE =================
 exports.updateCapability = async (req, res) => {
   try {
@@ -92,9 +88,9 @@ exports.updateCapability = async (req, res) => {
       });
     }
 
- const bannerImage = req.file
-  ? `/uploads/${req.file.filename}`
-  : capability.bannerImage;
+    const bannerImage = req.file
+      ? `/uploads/${req.file.filename}`
+      : capability.bannerImage;
 
     await capability.update({
       bannerImage,
@@ -113,7 +109,6 @@ exports.updateCapability = async (req, res) => {
     });
   }
 };
-
 
 // ================= DELETE =================
 exports.deleteCapability = async (req, res) => {

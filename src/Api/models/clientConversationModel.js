@@ -24,11 +24,21 @@ const clientConversation = sequelize.define(
       type: DataTypes.ENUM("admin", "client"),
       allowNull: false,
     },
+      message: {
+  type: DataTypes.TEXT,
+  allowNull: true, 
+},
 
-    message: {
-      type: DataTypes.TEXT,
-      allowNull: false,
+    image: {
+      type: DataTypes.STRING, 
+      allowNull: true,
     },
+
+    attachment: {
+      type: DataTypes.STRING, 
+      allowNull: true,
+    },
+
   },
   {
     tableName: "client_conversations",

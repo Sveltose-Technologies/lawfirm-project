@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Apr 02, 2026 at 02:18 PM
+-- Generation Time: Apr 03, 2026 at 03:25 PM
 -- Server version: 8.0.44-0ubuntu0.22.04.2
 -- PHP Version: 8.1.33
 
@@ -154,21 +154,26 @@ CREATE TABLE `attorney_client_conversations` (
   `senderType` enum('attorney','client') NOT NULL,
   `message` text NOT NULL,
   `createdAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `image` varchar(255) DEFAULT NULL,
+  `attachment` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `attorney_client_conversations`
 --
 
-INSERT INTO `attorney_client_conversations` (`id`, `attorneyId`, `clientId`, `senderType`, `message`, `createdAt`, `updatedAt`) VALUES
-(6, 1, 12, 'client', 'hey Shubham', '2026-03-30 11:35:40', '2026-03-30 11:35:40'),
-(7, 10, 12, 'attorney', 'hey', '2026-03-30 12:31:12', '2026-03-30 12:31:12'),
-(8, 1, 12, 'attorney', 'hii', '2026-03-31 05:09:48', '2026-03-31 05:09:48'),
-(9, 1, 12, 'attorney', 'hii', '2026-03-31 05:10:00', '2026-03-31 05:10:00'),
-(10, 1, 14, 'client', 'hii', '2026-03-31 05:23:27', '2026-03-31 05:23:27'),
-(11, 10, 12, 'attorney', 'hiii', '2026-03-31 06:41:58', '2026-03-31 06:41:58'),
-(12, 10, 12, 'attorney', 'hii', '2026-03-31 06:45:55', '2026-03-31 06:45:55');
+INSERT INTO `attorney_client_conversations` (`id`, `attorneyId`, `clientId`, `senderType`, `message`, `createdAt`, `updatedAt`, `image`, `attachment`) VALUES
+(11, 10, 12, 'attorney', 'hiii', '2026-03-31 06:41:58', '2026-03-31 06:41:58', NULL, NULL),
+(12, 10, 12, 'attorney', 'hii', '2026-03-31 06:45:55', '2026-03-31 06:45:55', NULL, NULL),
+(13, 10, 14, 'client', 'hey ritu raj ', '2026-04-02 12:42:17', '2026-04-02 12:42:17', NULL, NULL),
+(14, 10, 14, 'client', 'are you alive', '2026-04-02 12:42:29', '2026-04-02 12:42:29', NULL, NULL),
+(15, 10, 14, 'attorney', 'Hello Davil', '2026-04-02 12:42:30', '2026-04-02 12:42:30', NULL, NULL),
+(16, 10, 14, 'client', '?', '2026-04-02 12:42:32', '2026-04-02 12:42:32', NULL, NULL),
+(17, 10, 14, 'attorney', 'How are you?', '2026-04-02 12:42:47', '2026-04-02 12:42:47', NULL, NULL),
+(18, 10, 14, 'client', 'i am very fine', '2026-04-02 12:43:01', '2026-04-02 12:43:01', NULL, NULL),
+(19, 10, 12, 'client', 'clinet attroney message', '2026-04-03 08:46:14', '2026-04-03 08:46:14', '/uploads/1775205974241-169101951.jpg', '/uploads/1775205974241-777123166.jpg'),
+(20, 10, 12, 'attorney', 'clinet attroney message', '2026-04-03 08:46:58', '2026-04-03 08:46:58', '/uploads/1775206018572-374732751.jpg', '/uploads/1775206018572-809641986.jpg');
 
 -- --------------------------------------------------------
 
@@ -183,24 +188,27 @@ CREATE TABLE `attorney_conversations` (
   `senderType` enum('admin','attorney') NOT NULL,
   `message` text NOT NULL,
   `createdAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `image` varchar(255) DEFAULT NULL,
+  `attachment` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `attorney_conversations`
 --
 
-INSERT INTO `attorney_conversations` (`id`, `adminId`, `attorneyId`, `senderType`, `message`, `createdAt`, `updatedAt`) VALUES
-(9, 1, 1, 'attorney', 'heloo', '2026-03-30 12:19:44', '2026-03-30 12:19:44'),
-(10, 1, 1, 'attorney', 'hey', '2026-03-30 12:20:00', '2026-03-30 12:20:00'),
-(14, 1, 10, 'attorney', 'hey admin', '2026-03-30 12:25:32', '2026-03-30 12:25:32'),
-(15, 1, 10, 'attorney', 'hey', '2026-03-30 12:37:40', '2026-03-30 12:37:40'),
-(16, 1, 10, 'admin', 'hii', '2026-03-31 05:07:12', '2026-03-31 05:07:12'),
-(17, 1, 10, 'admin', 'hii', '2026-03-31 05:43:10', '2026-03-31 05:43:10'),
-(18, 1, 10, 'attorney', 'hey admin is that you ', '2026-04-02 11:55:43', '2026-04-02 11:55:43'),
-(19, 1, 10, 'admin', 'yes, I am Admin.', '2026-04-02 11:56:07', '2026-04-02 11:56:07'),
-(20, 1, 10, 'attorney', 'are available', '2026-04-02 11:56:12', '2026-04-02 11:56:12'),
-(21, 1, 10, 'admin', 'yes and you', '2026-04-02 11:56:22', '2026-04-02 11:56:22');
+INSERT INTO `attorney_conversations` (`id`, `adminId`, `attorneyId`, `senderType`, `message`, `createdAt`, `updatedAt`, `image`, `attachment`) VALUES
+(9, 1, 1, 'attorney', 'heloo', '2026-03-30 12:19:44', '2026-03-30 12:19:44', NULL, NULL),
+(10, 1, 1, 'attorney', 'hey', '2026-03-30 12:20:00', '2026-03-30 12:20:00', NULL, NULL),
+(14, 1, 10, 'attorney', 'hey admin', '2026-03-30 12:25:32', '2026-03-30 12:25:32', NULL, NULL),
+(15, 1, 10, 'attorney', 'hey', '2026-03-30 12:37:40', '2026-03-30 12:37:40', NULL, NULL),
+(16, 1, 10, 'admin', 'hii', '2026-03-31 05:07:12', '2026-03-31 05:07:12', NULL, NULL),
+(17, 1, 10, 'admin', 'hii', '2026-03-31 05:43:10', '2026-03-31 05:43:10', NULL, NULL),
+(18, 1, 10, 'attorney', 'hey admin is that you ', '2026-04-02 11:55:43', '2026-04-02 11:55:43', NULL, NULL),
+(19, 1, 10, 'admin', 'yes, I am Admin.', '2026-04-02 11:56:07', '2026-04-02 11:56:07', NULL, NULL),
+(20, 1, 10, 'attorney', 'are available', '2026-04-02 11:56:12', '2026-04-02 11:56:12', NULL, NULL),
+(21, 1, 10, 'admin', 'yes and you', '2026-04-02 11:56:22', '2026-04-02 11:56:22', NULL, NULL),
+(22, 1, 10, 'attorney', 'hello admin', '2026-04-03 07:45:36', '2026-04-03 07:45:36', '/uploads/1775202336533-807102417.jpg', '/uploads/1775202336533-168284375.jpg');
 
 -- --------------------------------------------------------
 
@@ -307,7 +315,8 @@ CREATE TABLE `capability_categories` (
 --
 
 INSERT INTO `capability_categories` (`id`, `adminId`, `categoryName`, `bannerImage`, `description`, `createdAt`, `updatedAt`) VALUES
-(13, 1, 'Banking & Financial Services', '/uploads/1774957858478-696238686.jfif', '<p>Greenberg Traurig\'s Banking &amp; Finance Practice has wide-ranging experience representing clients in various finance and financial regulatory matters, including:</p><ul><li>Acquisition Finance</li><li>Asset Based Finance</li><li>Aircraft &amp; Equipment Finance</li><li>Borrower-Side Representation</li><li>Cross-Border Finance</li><li>Export Credit Finance</li><li>Financial Regulatory &amp; Compliance</li><li>Investment Grade Lending</li><li>Lender-Side Representation</li><li>Mezzanine Lending</li><li>Middle Market Lending</li><li>Multilateral Development Bank Finance</li><li>Project &amp; Infrastructure Finance</li><li>Restructuring &amp; Workouts</li><li>Securitizations</li><li>Structured Finance &amp; Derivatives</li><li>Syndicated Lending</li></ul><p><br></p>', '2026-03-31 17:20:58', '2026-03-31 17:20:58');
+(13, 1, 'Banking & Financial Services', '/uploads/1774957858478-696238686.jfif', '<p>Greenberg Traurig\'s Banking &amp; Finance Practice has wide-ranging experience representing clients in various finance and financial regulatory matters, including:</p><ul><li>Acquisition Finance</li><li>Asset Based Finance</li><li>Aircraft &amp; Equipment Finance</li><li>Borrower-Side Representation</li><li>Cross-Border Finance</li><li>Export Credit Finance</li><li>Financial Regulatory &amp; Compliance</li><li>Investment Grade Lending</li><li>Lender-Side Representation</li><li>Mezzanine Lending</li><li>Middle Market Lending</li><li>Multilateral Development Bank Finance</li><li>Project &amp; Infrastructure Finance</li><li>Restructuring &amp; Workouts</li><li>Securitizations</li><li>Structured Finance &amp; Derivatives</li><li>Syndicated Lending</li></ul><p><br></p>', '2026-03-31 17:20:58', '2026-03-31 17:20:58'),
+(15, 1, 'Blockchain & Digital Assets', '/uploads/1775132517033-383522136.jpg', '<p>Greenberg Traurig\'s global Blockchain &amp; Digital Assets Group comprises more than 100 attorneys across multiple legal disciplines in key financial hubs around the world, providing a centralized approach to blockchain and digital asset matters. We leverage our diverse experience to advise clients on a wide array of matters ranging from token structuring, fund formation, investment strategies, financial regulation and registration, international tax planning and structuring, stable coins and asset-backed digital assets, infrastructure applications, technology licensing and development, mining, securities compliance, cryptocurrency exchanges and trading, and blockchain-as-a-service. As new products and services emerge in this rapidly developing industry, such as non-fungible tokens, or NFTs, staking, and other innovations, our team is able to react quickly and provide clients with best practices and the latest regulatory guidance and interpretation.</p><p>Our multidisciplinary approach enables the team to readily anticipate, recognize, and address the legal challenges that our clients may face with respect to blockchain and digital asset development or utilization. Our dedicated response team consists of experienced attorneys with diverse backgrounds in securities, commodities and broker-dealer regulations, entity and fund formation, financing, exchange formation, federal and state financial services regulation, technology and intellectual property licensing, privacy concerns, cybersecurity issues, and taxation. We also utilize resources from our robust Government Law &amp; Policy Practice, which regularly advises governments and municipalities on evolving or model regulatory standards and other pertinent matters relating to blockchain and digital assets.</p><h3>Advising on Blockchain and Smart Contract Technology Implementations</h3><p>As blockchain applications and smart contracts introduce automation to entirely new functions, our attorneys advise clients on appropriate standards and protocols for the deployment of blockchain applications and smart contract coding to ensure that clients can meet the demands of regulators, law enforcement, and any trier of fact or law. As blockchain technology continues to grow and evolve, so do uncertainties about obligations surrounding the potential scope of and protocols for (i) regulator and auditor access to blockchain and smart contracts data, (ii) the reporting, authentication, and certification of controls, and (iii) retention, production, and authentication of records relating to disputes. We are actively engaged in assessing and considering emerging data privacy and security obligations relating to client data and end user data on the blockchain, and in assisting client legal and regulatory preparations and negotiations relating to these matters.</p><h3>Cryptocurrency and Digital Assets (including NFTs)</h3><p>As cryptocurrencies and other digital assets, including NFTs, have gained market acceptance in recent years as a fundraising vehicle for our clients, a critical part of a blockchain platform, or for consumptive use, our team carefully evaluates each opportunity in terms of the business and financing requirements of the client, as well as the emergent risks and costs associated with securities and other regulatory compliance obligations, market volatility, and other factors. The market for cryptocurrencies and other digital assets is in constant evolution; our team is committed to assisting clients with maximizing their opportunities in any environment and helping to develop legally compliant structures. Our team stays abreast of existing laws, recent enforcement actions and decisions, rulings, and orders, and keeps track of legal trends, upcoming bills, and technical developments, helping clients to anticipate and prepare for potential compliance requirements and legal and regulatory changes.&nbsp;With a global team of attorneys skilled in compliance, securities and commodities laws, guidance and enforcement, financing, data privacy, cybersecurity technology, intellectual property protection, regulatory and government law, licensing, and commercialization, we are adept at developing innovative legal and financing strategies.</p>', '2026-04-02 17:51:57', '2026-04-02 17:51:57');
 
 -- --------------------------------------------------------
 
@@ -331,7 +340,8 @@ CREATE TABLE `capability_subcategories` (
 --
 
 INSERT INTO `capability_subcategories` (`id`, `adminId`, `categoryId`, `subcategoryName`, `bannerImage`, `description`, `createdAt`, `updatedAt`) VALUES
-(14, 1, 13, 'Business Aviation', '/uploads/1774957890676-671082780.jfif', '<p><span style=\"color: rgb(0, 0, 0);\">Greenberg Traurig’s Business Aviation Group represents airlines, leasing companies, financial institutions, corporations, and other aviation-related businesses on a variety of finance, leasing, commercial, and related corporate matters. Our team is skilled in advising both domestic and foreign airlines, lessors, and lenders on aircraft, engines, and parts financings, purchases and sales of aircraft and aircraft portfolios, equipment leasing matters, as well as airline investments and other aviation-related commercial and operational matters. We capitalize on our global resources by working closely with our restructuring, tax, antitrust, governmental affairs, intellectual property,&nbsp;environmental, and labor &amp; employment colleagues to develop multifaceted strategies meeting our clients’ aviation needs.</span></p>', '2026-03-31 17:21:30', '2026-03-31 17:21:30');
+(14, 1, 13, 'Business Aviation', '/uploads/1774957890676-671082780.jfif', '<p><span style=\"color: rgb(0, 0, 0);\">Greenberg Traurig’s Business Aviation Group represents airlines, leasing companies, financial institutions, corporations, and other aviation-related businesses on a variety of finance, leasing, commercial, and related corporate matters. Our team is skilled in advising both domestic and foreign airlines, lessors, and lenders on aircraft, engines, and parts financings, purchases and sales of aircraft and aircraft portfolios, equipment leasing matters, as well as airline investments and other aviation-related commercial and operational matters. We capitalize on our global resources by working closely with our restructuring, tax, antitrust, governmental affairs, intellectual property,&nbsp;environmental, and labor &amp; employment colleagues to develop multifaceted strategies meeting our clients’ aviation needs.</span></p>', '2026-03-31 17:21:30', '2026-03-31 17:21:30'),
+(15, 1, 15, 'Cryptocurrency Enforcement', '/uploads/1775132569849-304707449.jpg', '<p>Greenberg Traurig’s Cryptocurrency Enforcement Team comprises dedicated former government officials and experienced white collar defense attorneys with the industry-specific knowledge and skills to help clients navigate today’s complex and evolving cryptocurrency enforcement landscape.</p><p>With cryptocurrencies and other digital assets continuing to gain market acceptance and market share, scrutiny from regulators and law enforcement is on the rise. The Securities and Exchange Commission (SEC), Commodity Futures Trading Commission (CFTC), and Department of Justice (DOJ) all have announced an increased focus on regulation and enforcement in this space. For example, in October 2021, DOJ announced the creation of the National Cryptocurrency Enforcement Team (NCET) to spearhead complex investigations and prosecutions of criminal misuse of cryptocurrency and to recover illicit proceeds laundered through cryptocurrency.</p><p>Our team consists of former federal prosecutors and high-ranking officials from the DOJ and SEC, including from the DOJ’s Criminal Division’s Money Laundering and Asset Recovery Section (MLARS), National Security Division, and the Southern and Eastern Districts of New York. We guide clients through the enforcement landscape, including internal investigations, representation in government investigations, and defense of civil and criminal cases involving alleged fraud, market manipulation, Bank Secrecy Act violations, violations of securities and commodities laws, and sanctions violations.</p><p>Our representative engagements include the following:</p><ul><li>Represent cryptocurrency exchanges, decentralized finance (DeFi) platforms, other digital asset providers, and individuals facing regulatory and enforcement inquiry.</li><li>Represent clients before the DOJ, SEC, CFTC, state attorneys general, and other regulators in investigations, enforcement actions, and related complex litigation.</li><li>Defend clients subject to federal and state criminal prosecution and/or civil enforcement alleging fraud, market manipulation, insider trading, and related claims in the cryptocurrency space.</li><li>Defend clients in Bank Secrecy Act, anti-money laundering, and sanctions investigations and prosecutions.&nbsp;Regularly counsel clients concerning such compliance issues to avoid enforcement exposure.</li><li>Advise clients on securities laws and related legal and regulatory assessments for fungible and non-fungible tokens in concert with the firm’s securities team and financial regulatory compliance group.</li><li>Represent clients subject to hacking, ransomware, and other critical cyber-related issues in the blockchain space.</li></ul><p><br></p>', '2026-04-02 17:52:49', '2026-04-02 17:52:49');
 
 -- --------------------------------------------------------
 
@@ -352,8 +362,7 @@ CREATE TABLE `careerbanner` (
 --
 
 INSERT INTO `careerbanner` (`id`, `bannerImage`, `content`, `createdAt`, `updatedAt`) VALUES
-(1, '/uploads/1775043229423-628647304.jpg', 'text', '2026-04-01 11:33:49', '2026-04-01 11:33:49'),
-(2, '/uploads/1775125283573-865934801.jpg', '<p>jnhj</p>', '2026-04-02 10:21:23', '2026-04-02 10:21:23');
+(2, '/uploads/1775218454655-384682046.jfif', '<h2>Career</h2>', '2026-04-02 10:21:23', '2026-04-03 12:14:14');
 
 -- --------------------------------------------------------
 
@@ -376,8 +385,7 @@ CREATE TABLE `careerlaw` (
 --
 
 INSERT INTO `careerlaw` (`id`, `image`, `categoryid`, `countryId`, `content`, `createdAt`, `updatedAt`) VALUES
-(1, '/uploads/1775125317370-164162057.jpg', '1', '\"5\"', '<p>this is law</p>', '2026-04-01 12:23:45', '2026-04-02 10:21:57'),
-(9, '/uploads/1775125296422-134130471.jfif', '1', '\"5\"', '<p>fgh</p>', '2026-04-02 10:21:36', '2026-04-02 10:21:36');
+(1, '/uploads/1775202791615-161712037.jpg', '1', '\"5\"', 'With our broad geographic and practice platform, law students will find wide-ranging professional opportunities as they start their legal careers at Greenberg Traurig. We use creativity to educate – and ultimately empower – our new attorneys. In addition to our mentoring programs, we provide our new associates with high-level training in client management, business development, collaboration, and cultural skills. Our success hinges on our ability to develop a class of lawyers who can adapt to our clients’ emerging needs, and through entrepreneurship and rewarding initiative we provide our incoming attorneys with the resources necessary to meet that goal.', '2026-04-01 12:23:45', '2026-04-03 07:53:11');
 
 -- --------------------------------------------------------
 
@@ -398,15 +406,21 @@ CREATE TABLE `careers` (
   `jobType` enum('FullTime','PartTime') NOT NULL,
   `textEditor` longtext NOT NULL,
   `createdAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `skills` longtext NOT NULL,
+  `education` longtext NOT NULL,
+  `technology` longtext NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `careers`
 --
 
-INSERT INTO `careers` (`id`, `jobTitle`, `jobCode`, `jobCategoryId`, `lawCareerCategoryId`, `countryId`, `cityId`, `address`, `location`, `jobType`, `textEditor`, `createdAt`, `updatedAt`) VALUES
-(2, 'Junior Legal Associate', 'JR202600400', '[4]', 2, 5, 9, 'Sector 62, Noida, Uttar Pradesh', 'Hybrid', 'PartTime', '<p>We are looking for a motivated Junior Legal Associate to assist with legal research, drafting documents, and supporting senior attorneys.</p><ul><li>Research legal cases</li><li>Draft contracts</li><li>Assist in court filings</li></ul>', '2026-03-31 07:25:50', '2026-03-31 07:25:50');
+INSERT INTO `careers` (`id`, `jobTitle`, `jobCode`, `jobCategoryId`, `lawCareerCategoryId`, `countryId`, `cityId`, `address`, `location`, `jobType`, `textEditor`, `createdAt`, `updatedAt`, `skills`, `education`, `technology`) VALUES
+(2, 'Junior Legal Associate', 'JR202600400', '[4]', 2, 5, 9, 'Sector 62, Noida, Uttar Pradesh', 'Hybrid', 'PartTime', '<p>We are looking for a motivated Junior Legal Associate to assist with legal research, drafting documents, and supporting senior attorneys.</p><ul><li>Research legal cases</li><li>Draft contracts</li><li>Assist in court filings</li></ul>', '2026-03-31 07:25:50', '2026-03-31 07:25:50', '', '', ''),
+(5, 'Junior Legal Associate', 'JR202600401', '[4]', 2, 5, 9, 'Sector 62, Noida', 'Hybrid', 'PartTime', '<p>Legal work</p>', '2026-04-03 06:06:42', '2026-04-03 06:06:42', 'Legal research', 'LLB', 'MS Word'),
+(6, 'Junior Legal Associate', 'JR2026004', '[4]', 2, 5, 9, 'Sector 62, Noida, Uttar Pradesh', 'Hybrid', 'PartTime', '<p>We are looking for a motivated Junior Legal Associate to assist with legal research, drafting documents, and supporting senior attorneys.</p><ul><li>Research legal cases</li><li>Draft contracts</li><li>Assist in court filings</li></ul>', '2026-04-03 06:09:09', '2026-04-03 06:09:09', 'Legal research, Contract drafting, Litigation, Communication, Analytical thinking', 'Bachelor of Laws (LLB), Master of Laws (LLM)', 'MS Word, MS Excel, Legal research tools, Case management software'),
+(8, 'Junior Legal Associate', 'JR2026006', '[4]', 2, 5, 9, 'Sector 62, Noida, Uttar Pradesh', 'Hybrid', 'PartTime', '<p>We are looking for a motivated Junior Legal Associate to assist with legal research, drafting documents, and supporting senior attorneys.</p><ul><li>Research legal cases</li><li>Draft contracts</li><li>Assist in court filings</li></ul>', '2026-04-03 06:14:13', '2026-04-03 06:14:13', 'Legal research, Contract drafting, Litigation, Communication, Analytical thinking', 'Bachelor of Laws (LLB), Master of Laws (LLM)', 'MS Word, MS Excel, Legal research tools, Case management software');
 
 -- --------------------------------------------------------
 
@@ -429,7 +443,7 @@ CREATE TABLE `career_attorney` (
 --
 
 INSERT INTO `career_attorney` (`id`, `image`, `categoryid`, `countryId`, `content`, `createdAt`, `updatedAt`) VALUES
-(1, '/uploads/1775125335879-944342834.jpg', 2, '\"5\"', '<p>this is career attoney</p>', '2026-04-02 06:25:09', '2026-04-02 10:22:15');
+(1, '/uploads/1775207393332-594181654.jpg', 2, '\"5\"', 'With our broad geographic and practice platform, law students will find wide-ranging professional opportunities as they start their legal careers at Greenberg Traurig. We use creativity to educate – and ultimately empower – our new attorneys. In addition to our mentoring programs, we provide our new associates with high-level training in client management, business development, collaboration, and cultural skills. Our success hinges on our ability to develop a class of lawyers who can adapt to our clients’ emerging needs, and through entrepreneurship and rewarding initiative we provide our incoming attorneys with the resources necessary to meet that goal.', '2026-04-02 06:25:09', '2026-04-03 09:09:53');
 
 -- --------------------------------------------------------
 
@@ -451,8 +465,7 @@ CREATE TABLE `career_details` (
 --
 
 INSERT INTO `career_details` (`id`, `bannerImage`, `bannerText`, `description`, `createdAt`, `updatedAt`) VALUES
-(4, '/uploads/1774942701921-87012356.jpg', 'banner text', 'description ', '2026-03-31 13:08:21', '2026-03-31 13:08:21'),
-(11, '/uploads/1775124260816-77232530.jfif', 'sa', '<p>asdx</p>', '2026-04-02 15:34:20', '2026-04-02 15:34:20');
+(11, '/uploads/1775215610311-748571221.jpg', '', '<h1>Shanghai Law Interns</h1><p>GT Shanghai offers long-term and short-term internships to students from top law schools. Interns receive assignments that provide them with a taste of the work handled by international law firms in China. Job Responsibilities include assisting lawyers with legal research, contract translation and document review.</p><h4>Requirements:</h4><ul><li>Graduate student majoring in law (second year student preferred)</li><li>Available for at least three days a week</li><li>Excellent drafting and oral communication skills in both English and Chinese</li></ul><p>If you are an outstanding student contemplating a future career in law, we would like to hear from you. Please contact us by&nbsp;<a href=\"mailto:ShanghaiRecruiting@gtlaw.com?subject=Recruiting%20Inquiry%20from%20gtlaw.com\" rel=\"noopener noreferrer\" target=\"_blank\" style=\"color: rgb(149, 110, 10); background-color: transparent;\"><strong>email</strong></a>&nbsp;in Chinese or English if you have any questions or wish to apply. We look forward to hearing from you.</p><h1>&nbsp;</h1><h1>Equal Opportunity</h1><p>Greenberg Traurig is an Equal Opportunity Employer. The firm has an ongoing commitment to the creation of a workplace free of discrimination and harassment. We recruit, hire, train and promote qualified individuals based on merit without regard to race, color, creed, sex, religion, ancestry, sexual orientation, gender identity or expression, national origin, age, disability, veteran status, or any other protected characteristic under applicable law.</p>', '2026-04-02 15:34:20', '2026-04-03 16:56:50');
 
 -- --------------------------------------------------------
 
@@ -504,7 +517,7 @@ CREATE TABLE `career_professional` (
 --
 
 INSERT INTO `career_professional` (`id`, `image`, `categoryId`, `countryId`, `content`, `createdAt`, `updatedAt`) VALUES
-(2, '/uploads/1775125344126-523563423.jfif', 4, '\"5\"', '<p>this is professional Staf</p>', '2026-04-02 08:38:01', '2026-04-02 10:22:24');
+(2, '/uploads/1775207428416-551030440.jpg', 4, '\"5\"', 'With our broad geographic and practice platform, law students will find wide-ranging professional opportunities as they start their legal careers at Greenberg Traurig. We use creativity to educate – and ultimately empower – our new attorneys. In addition to our mentoring programs, we provide our new associates with high-level training in client management, business development, collaboration, and cultural skills. Our success hinges on our ability to develop a class of lawyers who can adapt to our clients’ emerging needs, and through entrepreneurship and rewarding initiative we provide our incoming attorneys with the resources necessary to meet that goal.', '2026-04-02 08:38:01', '2026-04-03 09:10:28');
 
 -- --------------------------------------------------------
 
@@ -622,45 +635,42 @@ CREATE TABLE `client_conversations` (
   `senderType` enum('admin','client') NOT NULL,
   `message` text NOT NULL,
   `createdAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `image` varchar(255) DEFAULT NULL,
+  `attachment` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `client_conversations`
 --
 
-INSERT INTO `client_conversations` (`id`, `adminId`, `clientId`, `senderType`, `message`, `createdAt`, `updatedAt`) VALUES
-(13, 1, 12, 'admin', 'ok kumar ', '2026-03-30 07:13:04', '2026-03-30 07:13:04'),
-(14, 1, 12, 'admin', 'how are you ', '2026-03-30 07:14:11', '2026-03-30 07:14:11'),
-(15, 1, 12, 'admin', 'take care', '2026-03-30 07:14:30', '2026-03-30 07:14:30'),
-(16, 1, 12, 'admin', 'are you here ', '2026-03-30 07:18:24', '2026-03-30 07:18:24'),
-(19, 1, 12, 'admin', 'hii', '2026-03-30 10:24:32', '2026-03-30 10:24:32'),
-(20, 1, 12, 'admin', 'How are you', '2026-03-30 10:24:51', '2026-03-30 10:24:51'),
-(22, 1, 12, 'client', 'hay admin are you alive', '2026-03-30 10:28:03', '2026-03-30 10:28:03'),
-(24, 1, 12, 'client', 'admin?', '2026-03-30 10:30:01', '2026-03-30 10:30:01'),
-(25, 1, 12, 'client', 'ok', '2026-03-30 10:49:31', '2026-03-30 10:49:31'),
-(26, 1, 12, 'client', 'its fine', '2026-03-30 10:55:11', '2026-03-30 10:55:11'),
-(27, 1, 14, 'client', 'HII', '2026-03-31 05:14:34', '2026-03-31 05:14:34'),
-(28, 1, 14, 'client', 'HELLO ', '2026-03-31 05:14:51', '2026-03-31 05:14:51'),
-(29, 1, 14, 'client', 'hiii', '2026-03-31 05:17:58', '2026-03-31 05:17:58'),
-(30, 1, 14, 'client', 'hiii', '2026-03-31 05:25:38', '2026-03-31 05:25:38'),
-(31, 1, 14, 'client', 'hiii', '2026-03-31 05:25:51', '2026-03-31 05:25:51'),
-(32, 1, 14, 'client', 'hiii', '2026-03-31 05:28:32', '2026-03-31 05:28:32'),
-(33, 1, 14, 'client', 'hii', '2026-03-31 05:35:10', '2026-03-31 05:35:10'),
-(34, 1, 14, 'client', 'hii', '2026-03-31 05:36:24', '2026-03-31 05:36:24'),
-(35, 1, 12, 'client', 'its fine ', '2026-03-31 05:39:18', '2026-03-31 05:39:18'),
-(36, 1, 14, 'client', 'hii', '2026-03-31 05:39:30', '2026-03-31 05:39:30'),
-(37, 1, 14, 'client', 'hii', '2026-03-31 05:40:11', '2026-03-31 05:40:11'),
-(38, 1, 14, 'admin', 'hii', '2026-03-31 05:43:23', '2026-03-31 05:43:23'),
-(39, 1, 12, 'admin', 'hiii', '2026-03-31 06:07:55', '2026-03-31 06:07:55'),
-(40, 1, 14, 'client', 'hii', '2026-03-31 06:19:08', '2026-03-31 06:19:08'),
-(41, 1, 14, 'client', 'hey shubhangi how are you ', '2026-04-02 11:33:06', '2026-04-02 11:33:06'),
-(42, 1, 14, 'admin', 'I am good and you?', '2026-04-02 11:33:42', '2026-04-02 11:33:42'),
-(43, 1, 14, 'client', 'lets move to the attorney ', '2026-04-02 11:33:56', '2026-04-02 11:33:56'),
-(44, 1, 14, 'admin', 'Okay', '2026-04-02 11:34:27', '2026-04-02 11:34:27'),
-(45, 1, 14, 'admin', 'hii', '2026-04-02 11:41:13', '2026-04-02 11:41:13'),
-(46, 1, 14, 'client', 'all done?', '2026-04-02 11:42:09', '2026-04-02 11:42:09'),
-(47, 1, 14, 'admin', 'Hello sir', '2026-04-02 11:54:17', '2026-04-02 11:54:17');
+INSERT INTO `client_conversations` (`id`, `adminId`, `clientId`, `senderType`, `message`, `createdAt`, `updatedAt`, `image`, `attachment`) VALUES
+(13, 1, 12, 'admin', 'ok kumar ', '2026-03-30 07:13:04', '2026-03-30 07:13:04', NULL, NULL),
+(14, 1, 12, 'admin', 'how are you ', '2026-03-30 07:14:11', '2026-03-30 07:14:11', NULL, NULL),
+(15, 1, 12, 'admin', 'take care', '2026-03-30 07:14:30', '2026-03-30 07:14:30', NULL, NULL),
+(16, 1, 12, 'admin', 'are you here ', '2026-03-30 07:18:24', '2026-03-30 07:18:24', NULL, NULL),
+(19, 1, 12, 'admin', 'hii', '2026-03-30 10:24:32', '2026-03-30 10:24:32', NULL, NULL),
+(20, 1, 12, 'admin', 'How are you', '2026-03-30 10:24:51', '2026-03-30 10:24:51', NULL, NULL),
+(22, 1, 12, 'client', 'hay admin are you alive', '2026-03-30 10:28:03', '2026-03-30 10:28:03', NULL, NULL),
+(24, 1, 12, 'client', 'admin?', '2026-03-30 10:30:01', '2026-03-30 10:30:01', NULL, NULL),
+(25, 1, 12, 'client', 'ok', '2026-03-30 10:49:31', '2026-03-30 10:49:31', NULL, NULL),
+(26, 1, 12, 'client', 'its fine', '2026-03-30 10:55:11', '2026-03-30 10:55:11', NULL, NULL),
+(27, 1, 14, 'client', 'HII', '2026-03-31 05:14:34', '2026-03-31 05:14:34', NULL, NULL),
+(35, 1, 12, 'client', 'its fine ', '2026-03-31 05:39:18', '2026-03-31 05:39:18', NULL, NULL),
+(36, 1, 14, 'client', 'hii', '2026-03-31 05:39:30', '2026-03-31 05:39:30', NULL, NULL),
+(37, 1, 14, 'client', 'hii', '2026-03-31 05:40:11', '2026-03-31 05:40:11', NULL, NULL),
+(38, 1, 14, 'admin', 'hii', '2026-03-31 05:43:23', '2026-03-31 05:43:23', NULL, NULL),
+(39, 1, 12, 'admin', 'hiii', '2026-03-31 06:07:55', '2026-03-31 06:07:55', NULL, NULL),
+(40, 1, 14, 'client', 'hii', '2026-03-31 06:19:08', '2026-03-31 06:19:08', NULL, NULL),
+(41, 1, 14, 'client', 'hey shubhangi how are you ', '2026-04-02 11:33:06', '2026-04-02 11:33:06', NULL, NULL),
+(42, 1, 14, 'admin', 'I am good and you?', '2026-04-02 11:33:42', '2026-04-02 11:33:42', NULL, NULL),
+(43, 1, 14, 'client', 'lets move to the attorney ', '2026-04-02 11:33:56', '2026-04-02 11:33:56', NULL, NULL),
+(44, 1, 14, 'admin', 'Okay', '2026-04-02 11:34:27', '2026-04-02 11:34:27', NULL, NULL),
+(45, 1, 14, 'admin', 'hii', '2026-04-02 11:41:13', '2026-04-02 11:41:13', NULL, NULL),
+(46, 1, 14, 'client', 'all done?', '2026-04-02 11:42:09', '2026-04-02 11:42:09', NULL, NULL),
+(47, 1, 14, 'admin', 'Hello sir', '2026-04-02 11:54:17', '2026-04-02 11:54:17', NULL, NULL),
+(48, 1, 14, 'client', 'hey ', '2026-04-02 12:29:16', '2026-04-02 12:29:16', NULL, NULL),
+(49, 1, 12, 'client', 'hii', '2026-04-03 06:55:09', '2026-04-03 06:55:09', '/uploads/1775199309256-845706635.jpg', '/uploads/1775199309257-139274346.pdf');
 
 -- --------------------------------------------------------
 
@@ -1124,8 +1134,8 @@ CREATE TABLE `news` (
 
 INSERT INTO `news` (`id`, `bannerImage`, `title`, `adminId`, `attorneyId`, `capabilityCategoryId`, `countryId`, `cityId`, `date`, `year`, `textEditor`, `socialLinks`, `newsImage`, `createdAt`, `updatedAt`) VALUES
 (3, 'https://res.cloudinary.com/dz7vmlvqn/image/upload/v1773145590/attorney_files/nvyy5msr5l1bfociezqh.jpg', 'US-Israel vs Iran War Live Updates', 1, '\"[22,21]\"', '\"[10]\"', '\"[3]\"', '\"[1]\"', '2026-03-07', 2026, '<p><strong>US-Israel-Iran War Live Updates:</strong>&nbsp;As tensions escalated between the United States, Israel and Iran, the conflict entered its eighth day. with Israel launching a new wave of strikes and explosions reported at one of Tehran’s main commercial airports, where eyewitnesses said planes were burning on the tarmac.</p><p>The confrontation, which began on February 28 with a strike in Tehran, has expanded beyond aerial attacks to include naval activity in the Indian Ocean and drone strikes across the Gulf. US President&nbsp;<a href=\"https://indianexpress.com/about/donald-trump/\" rel=\"noopener noreferrer\" target=\"_blank\" style=\"color: rgb(0, 98, 152); background-color: initial;\">Donald Trump</a>&nbsp;said there would be “no deal” with Iran except “unconditional surrender”, adding that after any capitulation the country should choose a new leader acceptable to his administration.</p>', '\"{\\\"linkedin\\\":\\\"https://www.linkedin.com/uas/login-submit\\\",\\\"twitter\\\":\\\"https://x.com/\\\",\\\"facebook\\\":\\\"https://www.facebook.com/\\\"}\"', 'https://res.cloudinary.com/dz7vmlvqn/image/upload/v1773145590/attorney_files/fksxzzdsodlfly9cnzwt.jpg', '2026-03-07 11:56:02', '2026-03-27 13:27:35'),
-(4, 'https://res.cloudinary.com/dz7vmlvqn/image/upload/v1773145738/attorney_files/gr4ocxwsfusnayaeyqpg.jpg', 'ICC T20 World Cup final', 1, '\"[21,10]\"', '\"[10]\"', '\"[3]\"', '\"[1]\"', '2026-03-07', 2026, '<p>Taking a cue from its past two setbacks where the Indian team lost two big-ticket games in a World Cup at Ahmedabad, the Indian team will be offered a mixed-soil pitch at the Narendra Modi Stadium for their ICC T20 World Cup final game against New Zealand.</p>', '\"{\\\"linkedin\\\":\\\"https://www.linkedin.com/company/login\\\",\\\"twitter\\\":\\\"https://x.com/\\\",\\\"facebook\\\":\\\"https://www.facebook.com/\\\"}\"', NULL, '2026-03-07 12:15:16', '2026-04-01 11:28:15'),
-(5, 'https://res.cloudinary.com/dz7vmlvqn/image/upload/v1773146151/attorney_files/vndqwvx5trjbsdhv1tti.jpg', 'New magnetic discovery inside Sun', 1, '\"[21,10,1]\"', '\"[9]\"', '\"[3]\"', '\"[2]\"', '2026-03-05', 2026, '<p>Scientists have possibly detected new evidence of subtle movements of magnetism deep inside the Sun, which may help them better predict solar storms and space weather.</p><p>The new study was conducted by a team of researchers from the <a href=\"https://www.financialexpress.com/auto/new-cars/tata/\" rel=\"noopener noreferrer\" target=\"_blank\">Tata</a> Institute of Fundamental Research (TIFR) in <a href=\"https://indianexpress.com/section/cities/mumbai/\" rel=\"noopener noreferrer\" target=\"_blank\">Mumbai</a> and New York University, Abu Dhabi, and was originally published in Nature Astronomy.</p><h2><strong>Inside the Sun</strong></h2><p>Scientists used a method called helioseismology to detect the movements inside the Sun. This method is used to study the solar surface to understand the movements inside the Sun, the same way earthquakes are used to study the movements inside the Earth.</p><p>They analysed more than a decade of solar observations collected by the Solar Dynamics Observatory, a satellite operated by NASA. In particular, they used measurements from the satellite’s Helioseismic and Magnetic Imager (HMI)– an instrument designed to track oscillations and magnetic activity across the Sun’s surface.</p>', '\"{\\\"linkedin\\\":\\\"https://www.linkedin.com/uas/login-submit\\\",\\\"twitter\\\":\\\"https://x.com/\\\",\\\"facebook\\\":\\\"https://www.facebook.com/\\\"}\"', 'https://res.cloudinary.com/dz7vmlvqn/image/upload/v1773145832/attorney_files/bhg7gnl51dxtm32oetmk.jpg', '2026-03-07 13:12:34', '2026-04-01 11:28:03');
+(4, '/uploads/1775220537707-620096035.jpg', 'ICC T20 World Cup final', 1, '\"[21,10]\"', '\"[10]\"', '\"[3,5]\"', '\"[1]\"', '2026-03-07', 2026, '<p>Taking a cue from its past two setbacks where the Indian team lost two big-ticket games in a World Cup at Ahmedabad, the Indian team will be offered a mixed-soil pitch at the Narendra Modi Stadium for their ICC T20 World Cup final game against New Zealand.</p>', '\"{\\\"linkedin\\\":\\\"https://www.linkedin.com/company/login\\\",\\\"twitter\\\":\\\"https://x.com/\\\",\\\"facebook\\\":\\\"https://www.facebook.com/\\\"}\"', NULL, '2026-03-07 12:15:16', '2026-04-03 18:18:57'),
+(5, 'https://res.cloudinary.com/dz7vmlvqn/image/upload/v1773146151/attorney_files/vndqwvx5trjbsdhv1tti.jpg', 'New magnetic discovery inside Sun', 1, '\"[21,10,1]\"', '\"[9]\"', '\"[3,5]\"', '\"[2]\"', '2026-03-05', 2026, '<p>Scientists have possibly detected new evidence of subtle movements of magnetism deep inside the Sun, which may help them better predict solar storms and space weather.</p><p>The new study was conducted by a team of researchers from the <a href=\"https://www.financialexpress.com/auto/new-cars/tata/\" rel=\"noopener noreferrer\" target=\"_blank\">Tata</a> Institute of Fundamental Research (TIFR) in <a href=\"https://indianexpress.com/section/cities/mumbai/\" rel=\"noopener noreferrer\" target=\"_blank\">Mumbai</a> and New York University, Abu Dhabi, and was originally published in Nature Astronomy.</p><h2><strong>Inside the Sun</strong></h2><p>Scientists used a method called helioseismology to detect the movements inside the Sun. This method is used to study the solar surface to understand the movements inside the Sun, the same way earthquakes are used to study the movements inside the Earth.</p><p>They analysed more than a decade of solar observations collected by the Solar Dynamics Observatory, a satellite operated by NASA. In particular, they used measurements from the satellite’s Helioseismic and Magnetic Imager (HMI)– an instrument designed to track oscillations and magnetic activity across the Sun’s surface.</p>', '\"{\\\"linkedin\\\":\\\"https://www.linkedin.com/uas/login-submit\\\",\\\"twitter\\\":\\\"https://x.com/\\\",\\\"facebook\\\":\\\"https://www.facebook.com/\\\"}\"', '/uploads/1775218928004-735624538.jpg', '2026-03-07 13:12:34', '2026-04-03 17:52:08');
 
 -- --------------------------------------------------------
 
@@ -1732,13 +1742,13 @@ ALTER TABLE `attorney`
 -- AUTO_INCREMENT for table `attorney_client_conversations`
 --
 ALTER TABLE `attorney_client_conversations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `attorney_conversations`
 --
 ALTER TABLE `attorney_conversations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `awards`
@@ -1768,13 +1778,13 @@ ALTER TABLE `capabilities`
 -- AUTO_INCREMENT for table `capability_categories`
 --
 ALTER TABLE `capability_categories`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `capability_subcategories`
 --
 ALTER TABLE `capability_subcategories`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `careerbanner`
@@ -1792,7 +1802,7 @@ ALTER TABLE `careerlaw`
 -- AUTO_INCREMENT for table `careers`
 --
 ALTER TABLE `careers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `career_attorney`
@@ -1846,7 +1856,7 @@ ALTER TABLE `client`
 -- AUTO_INCREMENT for table `client_conversations`
 --
 ALTER TABLE `client_conversations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `cms_category`

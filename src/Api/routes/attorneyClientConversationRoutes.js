@@ -1,9 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/attorneyClientConversationController");
+const upload = require("../middleware/upload");
+
+const cpUpload = upload.fields([
+  { name: "image", maxCount: 1 },
+  { name: "attachment", maxCount: 1 },
+]); 
+
 
 // create message
-router.post("/send", controller.createMessage);
+router.post("/send", cpUpload, controller.createMessage);
 
 // get by client
 router.get("/client/:clientId", controller.getByClientId);
