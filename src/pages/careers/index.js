@@ -1,234 +1,400 @@
-import React from 'react';
-import Head from 'next/head';
-import Link from 'next/link';
+// "use client";
+// import React, { useState, useEffect } from "react";
+// import Head from "next/head";
+// import { useRouter } from "next/router";
+// import * as authService from "../../services/authService";
+
+// const Careers = () => {
+//   const router = useRouter();
+//   const [banner, setBanner] = useState(null);
+//   const [lawStudent, setLawStudent] = useState(null);
+//   const [attorney, setAttorney] = useState(null);
+//   const [professional, setProfessional] = useState(null);
+//   const [countries, setCountries] = useState([]);
+//   const [lawCategories, setLawCategories] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//   // Helper to create URL-friendly name
+//   const createSlug = (text) =>
+//     text
+//       ?.toLowerCase()
+//       .trim()
+//       .replace(/\s+/g, "-")
+//       .replace(/[^\w-]+/g, "");
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       try {
+//         const [ban, law, att, pro, coun, cats] = await Promise.allSettled([
+//           authService.getAllCareerBanners(),
+//           authService.getAllCareerLaw(),
+//           authService.getAllCareerAttorneys(),
+//           authService.getAllCareerProfessionals(),
+//           authService.getAllCountries(),
+//           authService.getAllLawCareerCategories(),
+//         ]);
+
+//         const extractLatest = (res) => {
+//           if (res.status === "fulfilled") {
+//             const data =
+//               res.value?.data?.data || res.value?.data || res.value || [];
+//             return Array.isArray(data) ? data[data.length - 1] : null;
+//           }
+//           return null;
+//         };
+
+//         const extractAll = (res) => {
+//           if (res.status === "fulfilled") {
+//             const data =
+//               res.value?.data?.data || res.value?.data || res.value || [];
+//             return Array.isArray(data) ? data : [];
+//           }
+//           return [];
+//         };
+
+//         setBanner(extractLatest(ban));
+//         setLawStudent(extractLatest(law));
+//         setAttorney(extractLatest(att));
+//         setProfessional(extractLatest(pro));
+//         setCountries(extractAll(coun));
+//         setLawCategories(extractAll(cats));
+//       } catch (error) {
+//         console.error("Error fetching data", error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchData();
+//   }, []);
+
+//   const getDynamicTitle = (item, defaultName) => {
+//     const categoryId = item?.categoryid || item?.categoryId;
+//     const category = lawCategories.find((c) => (c.id || c._id) == categoryId);
+//     return category ? category.name : defaultName;
+//   };
+
+// const renderSection = (
+//   item,
+//   defaultTitle,
+//   bgColor,
+//   textColor,
+//   isReverse = false,
+// ) => {
+//   if (!item) return null;
+
+//   // This gets the Category Name (e.g., "Law Students", "Attorneys")
+//   const sectionCategory = getDynamicTitle(item, defaultTitle);
+
+//   return (
+//     <section className={`${bgColor} ${textColor} border-bottom`}>
+//       <div
+//         className={`row g-0 align-items-center ${isReverse ? "flex-row-reverse" : ""}`}>
+//         <div className="col-lg-6 p-4 p-md-5">
+//           <h2 className="display-6 mb-3 fw-bold">{sectionCategory}</h2>
+//           <div
+//             className="mb-4 opacity-75"
+//             dangerouslySetInnerHTML={{ __html: item.content }}
+//           />
+//           <div className="d-flex flex-wrap gap-2">
+//             {countries.map((c) => (
+//               <button
+//                 key={c.id || c._id}
+//                 className={`btn btn-sm px-3 py-2 rounded-0 fw-bold text-uppercase ${textColor === "text-white" ? "btn-outline-light" : "btn-outline-dark"}`}
+//                 onClick={() => {
+//                   const countrySlug = createSlug(c.countryName || c.name);
+//                   // We pass the category name in the query string: ?category=Law Students
+//                   router.push(
+//                     `/careers/${countrySlug}?category=${sectionCategory}`,
+//                   );
+//                 }}>
+//                 {c.countryName || c.name}
+//               </button>
+//             ))}
+//           </div>
+//         </div>
+//         <div className="col-lg-6">
+//           <img
+//             src={authService.getImgUrl(item.image || item.bannerImage)}
+//             className="w-100 object-fit-cover"
+//             style={{ height: "400px" }}
+//             alt=""
+//           />
+//         </div>
+//       </div>
+//     </section>
+//   );
+// };
+
+//   if (loading) return <div className="text-center p-5 fw-bold">Loading...</div>;
+
+//   return (
+//     <div className="container-fluid p-0">
+//       <Head>
+//         <title>Careers | Lawstick</title>
+//       </Head>
+//       {banner && (
+//         <section
+//           className="bg-dark text-white text-center py-5 d-flex align-items-center justify-content-center"
+//           style={{
+//             backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${authService.getImgUrl(banner.bannerImage || banner.image)})`,
+//             backgroundSize: "cover",
+//             minHeight: "60vh",
+//           }}>
+//           <div className="container px-4">
+//             <div
+//               className="display-4 fw-bold mb-4"
+//               dangerouslySetInnerHTML={{ __html: banner.content }}
+//             />
+//             <button
+//               className="btn btn-outline-light px-5 py-3 rounded-0 fw-bold border-2"
+//               onClick={() => router.push("/careers/openings")}>
+//               VIEW OPENINGS AND APPLY
+//             </button>
+//           </div>
+//         </section>
+//       )}
+//       {renderSection(lawStudent, "Law Students", "bg-warning", "text-white")}
+//       {renderSection(attorney, "Attorneys", "bg-white", "text-dark", true)}
+//       {renderSection(
+//         professional,
+//         "Professional Staff",
+//         "bg-info",
+//         "text-white",
+//       )}
+//     </div>
+//   );
+// };
+
+// export default Careers;
+
+"use client";
+import React, { useState, useEffect } from "react";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import * as authService from "../../services/authService";
 
 const Careers = () => {
-  // Theme Colors
-  const colors = {
-    navy: '#002855',
-    gold: '#cfa144',
-    lightBlue: '#5fbce3',
-    textDark: '#333',
-    white: '#ffffff'
+  const router = useRouter();
+  const [banner, setBanner] = useState(null);
+  const [lawStudent, setLawStudent] = useState(null);
+  const [attorney, setAttorney] = useState(null);
+  const [professional, setProfessional] = useState(null);
+  const [countries, setCountries] = useState([]);
+  const [lawCategories, setLawCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const createSlug = (text) =>
+    text
+      ?.toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w-]+/g, "");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ban, law, att, pro, coun, cats] = await Promise.allSettled([
+          authService.getAllCareerBanners(),
+          authService.getAllCareerLaw(),
+          authService.getAllCareerAttorneys(),
+          authService.getAllCareerProfessionals(),
+          authService.getAllCountries(),
+          authService.getAllLawCareerCategories(),
+        ]);
+
+        const extractLatest = (res) => {
+          if (res.status === "fulfilled") {
+            const data =
+              res.value?.data?.data || res.value?.data || res.value || [];
+            return Array.isArray(data) ? data[data.length - 1] : null;
+          }
+          return null;
+        };
+
+        const extractAll = (res) => {
+          if (res.status === "fulfilled") {
+            const data =
+              res.value?.data?.data || res.value?.data || res.value || [];
+            return Array.isArray(data) ? data : [];
+          }
+          return [];
+        };
+
+        setBanner(extractLatest(ban));
+        setLawStudent(extractLatest(law));
+        setAttorney(extractLatest(att));
+        setProfessional(extractLatest(pro));
+        setCountries(extractAll(coun));
+        setLawCategories(extractAll(cats));
+      } catch (error) {
+        console.error("Error fetching data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const getDynamicTitle = (item, defaultName) => {
+    const categoryId = item?.categoryid || item?.categoryId;
+    const category = lawCategories.find((c) => (c.id || c._id) == categoryId);
+    return category ? category.name : defaultName;
   };
 
+  const renderSection = (
+    item,
+    defaultTitle,
+    bgColor,
+    textColor,
+    isReverse = false,
+  ) => {
+    if (!item) return null;
+    const sectionCategory = getDynamicTitle(item, defaultTitle);
+    const isWhiteSection = textColor === "text-white";
+
+    return (
+      <section
+        className={`${bgColor} border-bottom overflow-hidden ${isWhiteSection ? "force-white-all" : ""}`}>
+        <div
+          className={`row g-0 align-items-center ${isReverse ? "flex-row-reverse" : ""}`}>
+          <div className="col-lg-6 p-4 p-md-5">
+            {/* Reduced Header Font Size */}
+            <h2
+              className={`mb-3 fw-bold font-serif section-title ${textColor}`}>
+              {sectionCategory}
+            </h2>
+
+            {/* Reduced Content Font Size */}
+            <div className={`mb-4 content-body ${textColor}`}>
+              <div dangerouslySetInnerHTML={{ __html: item.content }} />
+            </div>
+
+            {/* Buttons */}
+            <div className="d-flex flex-wrap gap-2">
+              {countries.map((c) => (
+                <button
+                  key={c.id || c._id}
+                  className={`btn btn-sm px-3 py-2 rounded-0 fw-bold text-uppercase border-2 ${
+                    isWhiteSection ? "btn-outline-light" : "btn-outline-dark"
+                  }`}
+                  style={{ fontSize: "11px", letterSpacing: "1px" }}
+                  onClick={() => {
+                    const countrySlug = createSlug(c.countryName || c.name);
+                    router.push(
+                      `/careers/${countrySlug}?category=${sectionCategory}`,
+                    );
+                  }}>
+                  {c.countryName || c.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="col-lg-6">
+            <img
+              src={authService.getImgUrl(item.image || item.bannerImage)}
+              className="w-100 object-fit-cover shadow-sm"
+              style={{ height: "400px", minHeight: "300px" }}
+              alt={sectionCategory}
+            />
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  if (loading) return <div className="text-center p-5">Loading...</div>;
+
   return (
-    <>
+    <div className="container-fluid p-0">
       <Head>
-        <title>Careers | Impact. Opportunity. Culture. Growth.</title>
+        <title>Careers | Lawstick</title>
       </Head>
 
-      <div className="careers-page">
-        
-        {/* --- HERO SECTION --- */}
-        <section className="hero-section">
-          <div className="container text-center">
-            <h1 className="display-3 fw-bold font-serif mb-3">Careers</h1>
-            <p className="lead mb-5 ls-1">Impact. Opportunity. Culture. Growth.</p>
-            <Link href="/careers/openings">
-              <a className="btn-dark-lg">VIEW OPENINGS AND APPLY</a>
-            </Link>
+      {banner && (
+        <section
+          className="bg-dark text-white text-center py-5 d-flex align-items-center justify-content-center"
+          style={{
+            backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${authService.getImgUrl(banner.bannerImage || banner.image)})`,
+            backgroundSize: "cover",
+            minHeight: "55vh",
+          }}>
+          <div className="container px-4">
+            <div
+              className="h2 fw-bold mb-4 font-serif"
+              dangerouslySetInnerHTML={{ __html: banner.content }}
+            />
+            <button
+              className="btn btn-outline-light px-4 py-2 rounded-0 fw-bold border-2"
+              onClick={() => router.push("/careers/openings")}>
+              VIEW OPENINGS AND APPLY
+            </button>
           </div>
         </section>
+      )}
 
-        {/* --- LAW STUDENTS SECTION (Gold Background) --- */}
-        <section className="career-row">
-          <div className="container-fluid p-0">
-            <div className="row g-0">
-              <div className="col-lg-6 bg-gold d-flex align-items-center position-relative">
-                <div className="content-box">
-                  <h2 className="section-title">Law Students</h2>
-                  <p className="section-text">
-                    With our broad geographic and practice platform, law students will find wide-ranging professional 
-                    opportunities as they start their legal careers at Core Law. We use creativity to educate – and 
-                    ultimately empower – our new attorneys. In addition to our mentoring programs, we provide our 
-                    new associates with high-level training in client management, business development, collaboration, 
-                    and cultural skills.
-                  </p>
-                  <div className="button-group">
-                    <button className="btn-outline-white">ASIA</button>
-                    <button className="btn-outline-white">EUROPE</button>
-                    <button className="btn-outline-white">LATIN AMERICA</button>
-                    <button className="btn-outline-white mt-2">UNITED STATES</button>
-                  </div>
-                </div>
-                <div className="arrow-right" style={{ borderLeftColor: colors.gold }}></div>
-              </div>
-              <div className="col-lg-6">
-                <div className="image-box" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800")' }}></div>
-              </div>
-            </div>
-          </div>
-        </section>
+      {/* Law Students (Yellow Background - Pure White Text) */}
+      {renderSection(lawStudent, "Law Students", "bg-warning", "text-white")}
 
-        {/* --- ATTORNEYS SECTION (White Background) --- */}
-        <section className="career-row flex-row-reverse">
-          <div className="container-fluid p-0">
-            <div className="row g-0 flex-row-reverse">
-              <div className="col-lg-6 bg-white d-flex align-items-center position-relative">
-                <div className="content-box text-dark">
-                  <h2 className="section-title text-gold">Attorneys</h2>
-                  <p className="section-text">
-                    Our global platform provides our experienced attorneys with unique professional opportunities as 
-                    they grow their legal careers. Core Law values and promotes inclusion and empowers attorneys 
-                    at all levels to shape their own paths to success. With sound financial management and a culture 
-                    of entrepreneurship and collaboration, our attorneys are positioned to deliver both the quality 
-                    and value that our clients seek, today and in the future.
-                  </p>
-                  <div className="button-group">
-                    <button className="btn-outline-dark">ASIA</button>
-                    <button className="btn-outline-dark">EUROPE</button>
-                    <button className="btn-outline-dark">LATIN AMERICA</button>
-                    <button className="btn-outline-dark mt-2">UNITED STATES</button>
-                  </div>
-                </div>
-                <div className="arrow-left"></div>
-              </div>
-              <div className="col-lg-6">
-                <div className="image-box" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800")' }}></div>
-              </div>
-            </div>
-          </div>
-        </section>
+      {/* Attorneys (White Background - Dark Text) */}
+      {renderSection(attorney, "Attorneys", "bg-white", "text-dark", true)}
 
-        {/* --- PROFESSIONAL STAFF SECTION (Light Blue Background) --- */}
-        <section className="career-row">
-          <div className="container-fluid p-0">
-            <div className="row g-0">
-              <div className="col-lg-6 bg-blue d-flex align-items-center position-relative">
-                <div className="content-box">
-                  <h2 className="section-title">Professional Staff</h2>
-                  <p className="section-text">
-                    We offer a supportive, stimulating environment that encourages the qualities we value most: 
-                    collaboration, professionalism, determination, inclusion, and trust. We believe in promoting both 
-                    professional and personal growth, along with pride of ownership, for every Core Law employee.
-                    <br /><br />
-                    <i>*Images on this page are not Core Law employees.</i>
-                  </p>
-                  <div className="button-group">
-                    <button className="btn-outline-white">EUROPE</button>
-                    <button className="btn-outline-white">UNITED STATES</button>
-                  </div>
-                </div>
-                <div className="arrow-right" style={{ borderLeftColor: colors.lightBlue }}></div>
-              </div>
-              <div className="col-lg-6">
-                <div className="image-box" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800")' }}></div>
-              </div>
-            </div>
-          </div>
-        </section>
+      {/* Professionals (Blue Background - Pure White Text) */}
+      {renderSection(
+        professional,
+        "Professional Staff",
+        "bg-info",
+        "text-white",
+      )}
 
-    
+      <style jsx global>{`
+        @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap");
 
-      </div>
-
-      <style jsx>{`
-        .font-serif { font-family: 'Playfair Display', serif; }
-        .ls-1 { letter-spacing: 1px; }
-        
-        /* Hero Section */
-        .hero-section {
-          background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1500');
-          background-size: cover;
-          background-position: center;
-          padding: 150px 0;
-          color: white;
-        }
-        .btn-dark-lg {
-          background: #000;
-          color: #fff;
-          padding: 15px 30px;
-          text-decoration: none;
-          font-weight: bold;
-          font-size: 0.9rem;
-          letter-spacing: 1px;
-          transition: 0.3s;
-        }
-        .btn-dark-lg:hover { background: ${colors.gold}; }
-
-        /* Row Layouts */
-        .career-row { min-height: 500px; }
-        .bg-gold { background-color: ${colors.gold}; color: white; }
-        .bg-white { background-color: ${colors.white}; color: ${colors.navy}; }
-        .bg-blue { background-color: ${colors.lightBlue}; color: white; }
-        
-        .content-box { padding: 10% 15%; }
-        .section-title { font-family: serif; font-size: 2.5rem; margin-bottom: 20px; }
-        .section-text { line-height: 1.6; font-size: 1rem; margin-bottom: 30px; }
-        
-        .image-box {
-          height: 100%;
-          min-height: 500px;
-          background-size: cover;
-          background-position: center;
+        .font-serif {
+          font-family: "Playfair Display", serif;
         }
 
-        /* Buttons Style */
-        .button-group { display: flex; flex-wrap: wrap; gap: 10px; }
-        .btn-outline-white {
-          background: transparent;
-          border: 1.5px solid white;
-          color: white;
-          padding: 8px 15px;
-          font-weight: bold;
-          font-size: 0.8rem;
-          transition: 0.3s;
-        }
-        .btn-outline-white:hover { background: white; color: ${colors.gold}; }
-        
-        .btn-outline-dark {
-          background: transparent;
-          border: 1.5px solid ${colors.gold};
-          color: #000;
-          padding: 8px 15px;
-          font-weight: bold;
-          font-size: 0.8rem;
-          transition: 0.3s;
-        }
-        .btn-outline-dark:hover { background: ${colors.gold}; color: white; }
-
-        /* Arrows Logic */
-        .arrow-right {
-          position: absolute;
-          right: -20px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 0; height: 0;
-          border-top: 20px solid transparent;
-          border-bottom: 20px solid transparent;
-          border-left: 20px solid white;
-          z-index: 10;
-        }
-        .arrow-left {
-          position: absolute;
-          left: -20px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 0; height: 0;
-          border-top: 20px solid transparent;
-          border-bottom: 20px solid transparent;
-          border-right: 20px solid white;
-          z-index: 10;
+        /* Reduced Heading Font Size */
+        .section-title {
+          font-size: 30px !important; /* Title smaller */
         }
 
-        /* Locations List */
-        .locations-list { background: #000; color: #888; }
-        .location-text { 
-          color: ${colors.gold}; 
-          max-width: 900px; 
-          margin: 0 auto; 
-          line-height: 2;
-          font-size: 0.9rem;
+        /* Reduced Content Font Size */
+        .content-body,
+        .content-body p,
+        .content-body span,
+        .content-body div {
+          font-size: 14.5px !important; /* Description smaller */
+          line-height: 1.6 !important;
         }
-        .disclaimer { font-size: 0.75rem; color: #555; }
 
-        @media (max-width: 991px) {
-          .content-box { padding: 40px 20px; }
-          .arrow-right, .arrow-left { display: none; }
+        /* FORCE WHITE COLOR for Law Students and Professional Staff */
+        .force-white-all .section-title,
+        .force-white-all .content-body,
+        .force-white-all .content-body p,
+        .force-white-all .content-body span,
+        .force-white-all .content-body div {
+          color: #ffffff !important;
+        }
+
+        .bg-warning {
+          background-color: #f7b700 !important;
+        }
+
+        .bg-info {
+          background-color: #0077b5 !important;
+        }
+
+        .btn-outline-light {
+          border-color: #ffffff !important;
+          color: #ffffff !important;
+        }
+        .btn-outline-light:hover {
+          background-color: #ffffff !important;
+          color: #000000 !important;
         }
       `}</style>
-    </>
+    </div>
   );
 };
 
