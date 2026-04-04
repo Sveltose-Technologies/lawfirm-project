@@ -294,7 +294,7 @@ export default function AttorneyHeader({ onToggleSidebar }) {
                 src={
                   logoUrl
                     ? authService.getImgUrl(logoUrl)
-                    : "/assets/images/brand-logo.png"
+                    : ''
                 }
                 alt="Logo"
                 style={{ maxHeight: "45px", width: "auto" }}
@@ -305,6 +305,13 @@ export default function AttorneyHeader({ onToggleSidebar }) {
         <Nav
           className="ms-auto align-items-center flex-row gap-2 gap-md-3"
           navbar>
+          {/* Message Icon Added Here */}
+          <Link href="/attorney-panel/messages">
+            <a className="text-dark fs-4 pt-1 d-none d-md-block">
+              <i className="bi bi-chat-dots"></i>
+            </a>
+          </Link>
+
           <UncontrolledDropdown nav inNavbar>
             <DropdownToggle
               nav

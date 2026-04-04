@@ -1,9 +1,9 @@
 import API from "./api";
 
-export const IMG_URL = "https://api.blustor.net";
+// export const IMG_URL = "https://api.blustor.net";
 
 
-
+export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
 // ================= HELPER FUNCTIONS =================
 
@@ -1861,16 +1861,21 @@ export const getAllServices = () => API.get(`/services/get-all`);
 // 1. CLIENT-CONVERSATION APIs (Admin <-> Client)
 // ============================================================
 
+// Update Admin-Client Message
 export const adminClientMessage = async (data) => {
   console.log("🚀 [Admin-Client] Sending Message:", data);
-  const res = await API.post("/client-conversation/send", data);
-  console.log("✅ [Admin-Client] Send Success:", res.data);
+  const res = await API.post("/client-conversation/send", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return res.data;
 };
-
 export const getAllAdminClientConversations = async () => {
   console.log("🚀 [Admin-Client] Fetching All...");
-  const res = await API.get("/client-conversation/get-all");
+  const res = await API.get("/client-conversation/get-all",{
+     headers: { "Content-Type": "multipart/form-data" }
+  }
+  );
+
   console.log("✅ [Admin-Client] All Data:", res.data);
   return res.data;
 };
@@ -1919,11 +1924,11 @@ export const deleteAdminClientMessage = async (id) => {
 
 export const adminAttorneyMessage = async (data) => {
   console.log("🚀 [Admin-Attorney] Sending Message:", data);
-  const res = await API.post("/attorney-conversation/send", data);
-  console.log("✅ [Admin-Attorney] Send Success:", res.data);
+  const res = await API.post("/attorney-conversation/send", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return res.data;
 };
-
 export const getAllAdminAttorneyConversations = async () => {
   console.log("🚀 [Admin-Attorney] Fetching All...");
   const res = await API.get("/attorney-conversation/get-all");

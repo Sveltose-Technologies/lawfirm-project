@@ -153,7 +153,7 @@ export default function EditProfile() {
                 name="email"
                 className="form-control"
                 value={formData.email}
-                disabled
+                
               />
             </div>
             <div className="col-md-3">

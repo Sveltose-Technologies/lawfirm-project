@@ -132,7 +132,7 @@ export default function ClientHeader({ onToggleSidebar }) {
                   src={
                     logoUrl
                       ? getImgUrl(logoUrl)
-                      : "/assets/images/brand-logo.png"
+                      : ''
                   }
                   alt="Logo"
                   style={{

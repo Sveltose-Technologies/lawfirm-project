@@ -152,7 +152,7 @@ const Clients = () => {
         "zipCode",
         "countryCode",
         "dob",
-        "password",
+    
         "status",
         "termsAccepted",
       ];
@@ -470,17 +470,7 @@ const Clients = () => {
                 />
               </FormGroup>
             </Col>
-            <Col xs={12} sm={6} md={3}>
-              <FormGroup>
-                <Label className="small fw-bold">Password</Label>
-                <Input
-                  type="password"
-                  name="password"
-                  placeholder="Change password"
-                  onChange={handleInputChange}
-                />
-              </FormGroup>
-            </Col>
+          
 
             <Col xs={12} className="border-bottom pb-1 mt-3">
               <h6 className="fw-bold text-dark mb-0">2. Location Details</h6>

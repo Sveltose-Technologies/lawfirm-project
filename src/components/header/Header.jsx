@@ -157,7 +157,7 @@ function Header() {
             <a className="navbar-brand">
               <img
                 src={
-                  logoUrl ? getImgUrl(logoUrl) : "/assets/images/brand-logo.png"
+                  logoUrl ? getImgUrl(logoUrl) : ''
                 }
                 alt="Logo"
                 style={{ width: "160px", height: "50px", objectFit: "contain" }}
@@ -224,7 +224,7 @@ function Header() {
                   <li>
                     <Link href="/promoters">
                       <a className={`dropdown-item ${isActive("/promoters")}`}>
-                        {t("nav.professionals")}
+                        {t("nav.promoters")}
                       </a>
                     </Link>
                   </li>

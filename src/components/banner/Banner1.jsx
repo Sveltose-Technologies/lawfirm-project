@@ -121,7 +121,9 @@ function Banner1() {
       <div
         className="banner-section"
         style={{
-          backgroundImage: heroData?.image ? `url("${heroData.image}")` : "",
+          backgroundImage: heroData?.image
+            ? `url("${getImgUrl(heroData.image)}")`
+            : "",
         }}>
         <div className="container banner-content px-3">
           <div className="row justify-content-center m-0">
@@ -231,7 +233,7 @@ function Banner1() {
                   src={
                     homeContent?.[sec.img]
                       ? getImgUrl(homeContent[sec.img])
-                      : ''
+                      : ""
                   }
                   className="w-100 h-100 object-fit-cover"
                   style={{ minHeight: "420px" }}
