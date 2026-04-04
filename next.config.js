@@ -8,8 +8,8 @@ const nextConfig = {
 
   images: {
     unoptimized: false,
-    // domains: ["api.blustor.net/"],
-    domains: ["nrislaw.rxchartsquare.com/"],
+    domains: ["api.blustor.net/"],
+    
   },
 
   eslint: { ignoreDuringBuilds: true },

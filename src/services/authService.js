@@ -1,9 +1,8 @@
 import API from "./api";
 
-// export const IMG_URL = "https://api.blustor.net";
+export const IMG_URL = "https://api.blustor.net";
 
 
-export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
 // ================= HELPER FUNCTIONS =================
 
