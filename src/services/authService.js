@@ -1,8 +1,8 @@
 import API from "./api";
 
-export const IMG_URL = "https://api.blustor.net";
+// export const IMG_URL = "https://api.blustor.net";
 
-
+export const IMG_URL = "https://nrislaw.rxchartsquare.com";
 
 // ================= HELPER FUNCTIONS =================
 
@@ -944,6 +944,7 @@ export const getAllCareers = async () => {
   try {
     const response = await API.get("/career/get-all");
     // API returns { count, jobs: [...] } or similar structure
+     console.log("✅ Countries fetched successfully:", response.data);
     const data =
       response.data?.jobs || response.data?.data || response.data || [];
     return { success: true, data: Array.isArray(data) ? data : [] };
@@ -953,26 +954,36 @@ export const getAllCareers = async () => {
   }
 };
 
-export const createCareer = async (formData) => {
+// ================= CAREERS APIs =================
+
+export const createCareer = async (payload) => {
   try {
-    const res = await API.post("/career/create", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    // 🚀 Check payload in console
+    console.log("🚀 [AuthService] Sending CREATE Career (JSON):", payload);
+
+    // FIX: Removed 'multipart/form-data' headers because we are sending JSON object
+    const res = await API.post("/career/create", payload); 
+    
+    console.log("✅ [AuthService] Career Created Success:", res.data);
     return { success: true, data: res.data };
   } catch (error) {
-    // Return specific error message from server if available
+    console.error("❌ [AuthService] CREATE Career Error:", error.response?.data || error.message);
     const msg = error.response?.data?.message || "Internal Server Error";
     return { success: false, message: msg };
   }
 };
 
-export const updateCareer = async (id, formData) => {
+export const updateCareer = async (id, payload) => {
   try {
-    const res = await API.put(`/career/update/${id}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    console.log(`🚀 [AuthService] Sending UPDATE Career ID: ${id} (JSON):`, payload);
+
+    // FIX: Removed 'multipart/form-data' headers
+    const res = await API.put(`/career/update/${id}`, payload); 
+
+    console.log("✅ [AuthService] Career Updated Success:", res.data);
     return { success: true, data: res.data };
   } catch (error) {
+    console.error("❌ [AuthService] UPDATE Career Error:", error.response?.data || error.message);
     return {
       success: false,
       message: error.response?.data?.message || "Update failed",
@@ -2185,6 +2196,20 @@ export const deleteCareerDetail = async (id) => {
   }
 };
 
+// Career Get By ID
+export const getCareerById = async (id) => {
+  try {
+    console.log(`🚀 [Career] Fetching Career ID: ${id}...`);
+    // Dhyaan dein: URL wahi hona chahiye jo aapke Backend API mein hai
+    const response = await API.get(`/career/get-by-id/${id}`); 
+    console.log("✅ [Career] Career Fetched:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ [Career] getCareerById Error:", error);
+    throw error;
+  }
+};
+
 // Job Category
 export const getAllJobCategories = async () => {
   try {
@@ -2456,3 +2481,4 @@ export const getAllCareerProfessionals = async () => {
     throw err;
   }
 };
+

@@ -473,7 +473,7 @@ const AdminCareerManagement = () => {
                 <tr>
                   <th>S.NO</th>
                   <th>IMAGE</th>
-                 
+
                   <th>BANNER TEXT</th>
                   <th className="text-end">ACTIONS</th>
                 </tr>
@@ -491,7 +491,7 @@ const AdminCareerManagement = () => {
                         alt=""
                       />
                     </td>
-                 
+
                     <td>{truncateWords(item.bannerText, 5)}</td>
                     <td className="text-end">
                       <Button
@@ -651,7 +651,7 @@ const AdminCareerManagement = () => {
               <Row>
                 <Col md={6}>
                   <FormGroup>
-                    <Label>Job Title *</Label>
+                    <Label className="fw-bold">Job Title *</Label>
                     <Input
                       value={careerForm.jobTitle}
                       onChange={(e) =>
@@ -660,14 +660,13 @@ const AdminCareerManagement = () => {
                           jobTitle: e.target.value,
                         })
                       }
-                   
-                   
+                      required
                     />
                   </FormGroup>
                 </Col>
                 <Col md={6}>
                   <FormGroup>
-                    <Label>Job Code *</Label>
+                    <Label className="fw-bold">Job Code *</Label>
                     <Input
                       value={careerForm.jobCode}
                       onChange={(e) =>
@@ -676,14 +675,26 @@ const AdminCareerManagement = () => {
                           jobCode: e.target.value,
                         })
                       }
-                     
-                     
                     />
                   </FormGroup>
                 </Col>
                 <Col md={6}>
                   <FormGroup>
-                    <Label>Job Category *</Label>
+                    <Label className="fw-bold">Address</Label>
+                    <Input
+                      value={careerForm.address}
+                      onChange={(e) =>
+                        setCareerForm({
+                          ...careerForm,
+                          address: e.target.value,
+                        })
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md={6}>
+                  <FormGroup>
+                    <Label className="fw-bold">Job Category *</Label>
                     <Input
                       type="select"
                       value={careerForm.jobCategoryId}
@@ -694,7 +705,7 @@ const AdminCareerManagement = () => {
                         })
                       }
                       required>
-                      <option value="">Select</option>
+                      <option value="">Select Category</option>
                       {jobCategories.map((c) => (
                         <option key={getItemId(c)} value={getItemId(c)}>
                           {c.jobCategory || c.name}
@@ -705,7 +716,7 @@ const AdminCareerManagement = () => {
                 </Col>
                 <Col md={6}>
                   <FormGroup>
-                    <Label>Law Category *</Label>
+                    <Label className="fw-bold">Law Category *</Label>
                     <Input
                       type="select"
                       value={careerForm.lawCareerCategoryId}
@@ -716,7 +727,7 @@ const AdminCareerManagement = () => {
                         })
                       }
                       required>
-                      <option value="">Select</option>
+                      <option value="">Select Law Category</option>
                       {lawCategories.map((c) => (
                         <option key={getItemId(c)} value={getItemId(c)}>
                           {c.name}
@@ -725,23 +736,21 @@ const AdminCareerManagement = () => {
                     </Input>
                   </FormGroup>
                 </Col>
-                {/* Country Dropdown */}
-                <Col md={6}>
+                <Col md={4}>
                   <FormGroup>
                     <Label className="fw-bold">Country *</Label>
                     <Input
                       type="select"
                       value={careerForm.countryId}
-                      onChange={(e) => {
-                        // When country changes, update countryId and RESET cityId to empty
+                      onChange={(e) =>
                         setCareerForm({
                           ...careerForm,
                           countryId: e.target.value,
                           cityId: "",
-                        });
-                      }}
-                      >
-                      <option value="">-- Select Country --</option>
+                        })
+                      }
+                      required>
+                      <option value="">Select Country</option>
                       {countries.map((c) => (
                         <option key={getItemId(c)} value={getItemId(c)}>
                           {c.countryName}
@@ -750,9 +759,7 @@ const AdminCareerManagement = () => {
                     </Input>
                   </FormGroup>
                 </Col>
-
-                {/* Filtered City Dropdown */}
-                <Col md={6}>
+                <Col md={4}>
                   <FormGroup>
                     <Label className="fw-bold">City *</Label>
                     <Input
@@ -761,16 +768,9 @@ const AdminCareerManagement = () => {
                       onChange={(e) =>
                         setCareerForm({ ...careerForm, cityId: e.target.value })
                       }
-                      
-                      disabled={!careerForm.countryId} // Disable if no country is selected
-                    >
-                      <option value="">
-                        {!careerForm.countryId
-                          ? "Select Country First"
-                          : "-- Select City --"}
-                      </option>
-
-                      {/* FILTER LOGIC: Only show cities where countryId matches selection */}
+                      required
+                      disabled={!careerForm.countryId}>
+                      <option value="">Select City</option>
                       {cities
                         .filter(
                           (city) =>
@@ -785,23 +785,9 @@ const AdminCareerManagement = () => {
                     </Input>
                   </FormGroup>
                 </Col>
-                <Col md={12}>
+                <Col md={4}>
                   <FormGroup>
-                    <Label>Address</Label>
-                    <Input
-                      value={careerForm.address}
-                      onChange={(e) =>
-                        setCareerForm({
-                          ...careerForm,
-                          address: e.target.value,
-                        })
-                      }
-                    />
-                  </FormGroup>
-                </Col>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>Location Mode</Label>
+                    <Label className="fw-bold">Location Mode</Label>
                     <Input
                       type="select"
                       value={careerForm.location}
@@ -817,72 +803,72 @@ const AdminCareerManagement = () => {
                     </Input>
                   </FormGroup>
                 </Col>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>Job Type</Label>
-                    <Input
-                      type="select"
-                      value={careerForm.jobType}
-                      onChange={(e) =>
-                        setCareerForm({
-                          ...careerForm,
-                          jobType: e.target.value,
-                        })
-                      }>
-                      <option value="FullTime">FullTime</option>
-                      <option value="PartTime">PartTime</option>
-                    </Input>
-                  </FormGroup>
-                </Col>
-                <Col md={4}>
-                  <FormGroup>
-                    <Label>Skills</Label>
-                    <Input
-                      value={careerForm.skills}
-                      onChange={(e) =>
-                        setCareerForm({ ...careerForm, skills: e.target.value })
-                      }
-                    />
-                  </FormGroup>
-                </Col>
-                <Col md={4}>
-                  <FormGroup>
-                    <Label>Education</Label>
-                    <Input
-                      value={careerForm.education}
-                      onChange={(e) =>
-                        setCareerForm({
-                          ...careerForm,
-                          education: e.target.value,
-                        })
-                      }
-                    />
-                  </FormGroup>
-                </Col>
-                <Col md={4}>
-                  <FormGroup>
-                    <Label>Technology</Label>
-                    <Input
-                      value={careerForm.technology}
-                      onChange={(e) =>
-                        setCareerForm({
-                          ...careerForm,
-                          technology: e.target.value,
-                        })
-                      }
-                    />
-                  </FormGroup>
-                </Col>
+                {/* 1. Job Description */}
                 <Col md={12}>
                   <FormGroup>
-                    <Label>Description *</Label>
+                    <Label className="fw-bold">Description *</Label>
                     <ReactQuill
                       theme="snow"
-                      value={careerForm.textEditor}
-                      onChange={(v) =>
-                        setCareerForm({ ...careerForm, textEditor: v })
-                      }
+                      value={careerForm.textEditor || ""}
+                      onChange={(v) => {
+                        if (v !== careerForm.textEditor) {
+                          setCareerForm({ ...careerForm, textEditor: v });
+                        }
+                      }}
                       style={{ height: "150px", marginBottom: "50px" }}
+                    />
+                  </FormGroup>
+                </Col>
+
+                {/* 2. Skills & Competencies */}
+                <Col md={12}>
+                  <FormGroup>
+                    <Label className="fw-bold">Skills & Competencies</Label>
+                    <ReactQuill
+                      theme="snow"
+                      value={careerForm.skills || ""}
+                      onChange={(v) => {
+                        if (v !== careerForm.skills) {
+                          setCareerForm({ ...careerForm, skills: v });
+                        }
+                      }}
+                      style={{ height: "120px", marginBottom: "50px" }}
+                    />
+                  </FormGroup>
+                </Col>
+
+                {/* 3. Education */}
+                <Col md={12}>
+                  <FormGroup>
+                    <Label className="fw-bold">
+                      Education & Prior Experience
+                    </Label>
+                    <ReactQuill
+                      theme="snow"
+                      value={careerForm.education || ""}
+                      onChange={(v) => {
+                        if (v !== careerForm.education) {
+                          setCareerForm({ ...careerForm, education: v });
+                        }
+                      }}
+                      style={{ height: "120px", marginBottom: "50px" }}
+                    />
+                  </FormGroup>
+                </Col>
+
+                {/* 4. Technology */}
+                <Col md={12}>
+                  <FormGroup>
+                    <Label className="fw-bold">Technology Requirements</Label>
+                    <ReactQuill
+                      theme="snow"
+                      value={careerForm.technology || ""}
+                      onChange={(v) => {
+                        if (v !== careerForm.technology) {
+                          setCareerForm({ ...careerForm, technology: v });
+                        }
+                      }}
+                      style={{ height: "100px", marginBottom: "50px" }}
                     />
                   </FormGroup>
                 </Col>
@@ -902,8 +888,7 @@ const AdminCareerManagement = () => {
                             ...frontForm,
                             categoryId: e.target.value,
                           })
-                        }
-                        >
+                        }>
                         <option value="">Select Category</option>
                         {lawCategories.map((c) => (
                           <option key={getItemId(c)} value={getItemId(c)}>
@@ -926,8 +911,7 @@ const AdminCareerManagement = () => {
                             ...frontForm,
                             countryId: e.target.value,
                           })
-                        }
-                      >
+                        }>
                         <option value="">Select Country</option>
                         {countries.map((c) => (
                           <option key={getItemId(c)} value={getItemId(c)}>
@@ -976,7 +960,6 @@ const AdminCareerManagement = () => {
             )}
             {modal.type === "detail" && (
               <Row>
-                
                 <Col md={6}>
                   <FormGroup>
                     <Label>Banner Text *</Label>
@@ -988,7 +971,6 @@ const AdminCareerManagement = () => {
                           bannerText: e.target.value,
                         })
                       }
-                      
                     />
                   </FormGroup>
                 </Col>
@@ -1039,7 +1021,6 @@ const AdminCareerManagement = () => {
                   onChange={(e) =>
                     setJobCatForm({ jobCategory: e.target.value })
                   }
-               
                 />
               </FormGroup>
             )}
