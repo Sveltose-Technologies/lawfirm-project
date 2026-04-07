@@ -2,16 +2,17 @@
 // import React, { useState, useEffect } from "react";
 // import Head from "next/head";
 // import Link from "next/link";
+// import { useRouter } from "next/router";
 // import * as authService from "../../../services/authService";
 
 // export default function CareerOpenings() {
+//   const router = useRouter();
 //   const [jobs, setJobs] = useState([]);
 //   const [filteredJobs, setFilteredJobs] = useState([]);
 //   const [cities, setCities] = useState([]);
 //   const [jobCategories, setJobCategories] = useState([]);
 //   const [loading, setLoading] = useState(true);
 
-//   // Filter States
 //   const [searchQuery, setSearchQuery] = useState("");
 //   const [selCity, setSelCity] = useState("");
 //   const [selType, setSelType] = useState("");
@@ -26,7 +27,6 @@
 //           authService.getAllLocationCities(),
 //           authService.getAllJobCategories(),
 //         ]);
-
 //         if (careerRes && careerRes.success) {
 //           setJobs(careerRes.data);
 //           setFilteredJobs(careerRes.data);
@@ -63,70 +63,45 @@
 //   };
 
 //   if (loading)
-//     return <div className="text-center py-5 fw-bold">Loading Careers...</div>;
+//     return <div className="text-center py-5 fw-bold">Loading...</div>;
 
 //   return (
 //     <>
 //       <Head>
-//         <title>Careers | GreenbergTraurig</title>
+//         <title>Career Openings | Lawstick</title>
 //       </Head>
-
-//       {/* --- HEADER --- */}
-//       <nav className="bg-white border-bottom py-2 px-4 d-flex justify-content-between align-items-center">
-//         <img
-//           src="https://www.gtlaw.com/-/media/images/gt-logo-blue.svg"
-//           alt="GT Logo"
-//           style={{ height: "35px" }}
-//         />
-//         <div className="d-flex gap-4 align-items-center small fw-bold text-uppercase">
-//           <Link href="/" className="text-dark text-decoration-none">
-//             Home
-//           </Link>
-//           <Link
-//             href="#"
-//             className="text-dark text-decoration-none border-bottom border-dark border-2">
-//             Search for Jobs
-//           </Link>
-//           <Link href="#" className="text-dark text-decoration-none">
-//             Join Our Talent Community
-//           </Link>
-//         </div>
-//       </nav>
-
-//       {/* --- HERO BANNER --- */}
 //       <div
-//         className="position-relative"
-//         style={{ height: "140px", background: "#000" }}>
+//         className="position-relative w-100"
+//         style={{
+//           height: "180px",
+//           marginTop: "83px",
+//           background: "#000",
+//           overflow: "hidden",
+//           display: "block",
+//         }}>
 //         <img
-//           src="https://www.gtlaw.com/-/media/images/backgrounds/biglaw-redefined-strip.jpg"
-//           className="w-100 h-100 object-fit-cover opacity-75"
+//           src="https://plus.unsplash.com/premium_photo-1695449439526-9cebdbfa1a2c?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW50ZXJuYXRpb25hbCUyMGxhd3xlbnwwfHwwfHx8MA%3D%3D"
+//           className="w-100 h-100"
+//           style={{ objectFit: "cover", objectPosition: "center" }}
 //           alt="Banner"
 //         />
-//         <div className="position-absolute top-50 start-50 translate-middle text-white text-center w-100">
-//           <h2
-//             className="fw-bold tracking-widest text-uppercase m-0"
-//             style={{ letterSpacing: "6px" }}>
-//             BIGLAW REDEFINED.
-//           </h2>
-//         </div>
 //       </div>
 
-//       {/* --- SEARCH AREA --- */}
 //       <div className="container-fluid bg-light py-4 border-bottom shadow-sm">
 //         <div className="container" style={{ maxWidth: "1100px" }}>
 //           <div className="row g-2">
 //             <div className="col-md-9">
 //               <input
 //                 type="text"
-//                 className="form-control py-2 shadow-none"
-//                 placeholder="Search for jobs..."
+//                 className="form-control"
+//                 placeholder="Search..."
 //                 value={searchQuery}
 //                 onChange={(e) => setSearchQuery(e.target.value)}
 //               />
 //             </div>
 //             <div className="col-md-3">
 //               <button
-//                 className="btn btn-warning w-100 fw-bold py-2 shadow-sm"
+//                 className="btn btn-warning w-100 fw-bold"
 //                 style={{ backgroundColor: "#cfa144", border: "none" }}
 //                 onClick={handleSearch}>
 //                 Search
@@ -134,10 +109,10 @@
 //             </div>
 //             <div className="col-md-4">
 //               <select
-//                 className="form-select small"
+//                 className="form-select"
 //                 value={selCity}
 //                 onChange={(e) => setSelCity(e.target.value)}>
-//                 <option value="">Distance or Location</option>
+//                 <option value="">Locations</option>
 //                 {cities.map((c) => (
 //                   <option key={c.id} value={c.id}>
 //                     {c.cityName}
@@ -147,7 +122,7 @@
 //             </div>
 //             <div className="col-md-4">
 //               <select
-//                 className="form-select small"
+//                 className="form-select"
 //                 value={selType}
 //                 onChange={(e) => setSelType(e.target.value)}>
 //                 <option value="">Remote Type</option>
@@ -158,10 +133,10 @@
 //             </div>
 //             <div className="col-md-4">
 //               <select
-//                 className="form-select small"
+//                 className="form-select"
 //                 value={selJobCat}
 //                 onChange={(e) => setSelJobCat(e.target.value)}>
-//                 <option value="">Job Category</option>
+//                 <option value="">Categories</option>
 //                 {jobCategories.map((cat) => (
 //                   <option key={cat.id} value={cat.id}>
 //                     {cat.jobCategory}
@@ -173,49 +148,36 @@
 //         </div>
 //       </div>
 
-//       {/* --- CONTENT --- */}
 //       <div className="container mt-4 pb-5" style={{ maxWidth: "1100px" }}>
 //         <div className="row">
 //           <div className="col-lg-8 border-end pe-lg-5">
 //             <p className="small text-uppercase fw-bold text-muted mb-4">
 //               {filteredJobs.length} JOBS FOUND
 //             </p>
-
 //             {filteredJobs.length > 0 ? (
 //               filteredJobs.map((job) => {
+//                 // FIXED: Defining jobSlug inside the map
 //                 const jobSlug = job.jobTitle
 //                   ?.toLowerCase()
 //                   .trim()
 //                   .replace(/\s+/g, "-")
 //                   .replace(/[^\w-]+/g, "");
 //                 return (
-//                   <div key={job.id} className="py-3 border-bottom">
-//                     <h6 className="fw-bold mb-1">
+//                   <div key={job.id} className="job-item py-3 border-bottom">
+//                     <h6 className="fw-bold mb-1" style={{ color: "#225a9b" }}>
+//                       {/* FIXED: Wrapped in <span> to avoid multiple children error */}
 //                       <Link
 //                         href={`/careers/openings/${jobSlug}?id=${job.id}`}
-//                         className="text-decoration-none"
-//                         style={{ color: "#225a9b" }}>
+//                         className="text-decoration-none">
 //                         <span>{job.jobTitle}</span>
 //                       </Link>
 //                     </h6>
-//                     <div className="d-flex flex-wrap gap-3 small text-muted mt-2 align-items-center">
-//                       <span>
-//                         <i className="bi bi-geo-alt me-1"></i> {job.address}
-//                       </span>
-//                       <span>
-//                         <i className="bi bi-briefcase me-1"></i> {job.jobType}
-//                       </span>
-//                       <span
-//                         className="badge border text-dark fw-normal"
-//                         style={{ fontSize: "11px", background: "#f8f9fa" }}>
-//                         {job.location}
-//                       </span>
+//                     <div className="d-flex flex-wrap gap-3 small text-muted mt-2">
+//                       <span>{job.address}</span> | <span>{job.jobType}</span> |{" "}
+//                       <span>{job.location}</span>
 //                     </div>
-//                     <div className="d-flex flex-wrap gap-3 small text-muted mt-1">
-//                       <span>
-//                         <i className="bi bi-clock me-1"></i> Posted 3 Days Ago
-//                       </span>
-//                       <span className="text-uppercase">{job.jobCode}</span>
+//                     <div className="small text-muted mt-1 text-uppercase">
+//                       {job.jobCode}
 //                     </div>
 //                   </div>
 //                 );
@@ -224,53 +186,19 @@
 //               <p className="text-muted py-5 text-center">No jobs found.</p>
 //             )}
 //           </div>
-
-//           {/* SIDEBAR */}
 //           <div className="col-lg-4 ps-lg-4">
-//             <div className="mb-5">
-//               <h6 className="fw-bold sidebar-title">About Us</h6>
-//               <p className="small fw-bold mb-1">
-//                 Global scale with street smarts
-//               </p>
-//               <p className="small text-muted" style={{ fontSize: "13px" }}>
-//                 With 51 locations worldwide, we provide scale...
-//               </p>
-//               <Link
-//                 href="#"
-//                 className="small text-primary text-decoration-none fw-bold">
-//                 <span>
-//                   Read More <i className="bi bi-chevron-down"></i>
-//                 </span>
-//               </Link>
-//             </div>
-//             <div className="mb-5">
-//               <h6 className="fw-bold sidebar-title">Firm History</h6>
-//               <img
-//                 src="https://www.gtlaw.com/-/media/images/backgrounds/firm-history-sidebar.jpg"
-//                 className="w-100 rounded mb-2"
-//                 alt="History"
-//               />
-//               <Link
-//                 href="#"
-//                 className="small text-primary text-decoration-none fw-bold">
-//                 Learn More
-//               </Link>
-//             </div>
+//             <h6 className="fw-bold border-bottom pb-2">About Us</h6>
+//             <p className="small text-muted">
+//               With 51 locations, Greenberg Traurig's global network provides the
+//               platform...
+//             </p>
 //           </div>
 //         </div>
 //       </div>
-
-//       <style jsx>{`
-//         .sidebar-title {
-//           font-size: 14px;
-//           border-bottom: 1px solid #eee;
-//           padding-bottom: 5px;
-//           margin-bottom: 12px;
-//         }
-//       `}</style>
 //     </>
 //   );
 // }
+
 "use client";
 import React, { useState, useEffect } from "react";
 import Head from "next/head";
@@ -343,43 +271,21 @@ export default function CareerOpenings() {
       <Head>
         <title>Career Openings | Lawstick</title>
       </Head>
-
-      <nav className="bg-white border-bottom py-2 px-4 d-flex justify-content-between align-items-center">
-        <img
-          src="https://www.gtlaw.com/-/media/images/gt-logo-blue.svg"
-          alt="Logo"
-          style={{ height: "35px" }}
-        />
-        <div className="d-flex gap-4 align-items-center small fw-bold text-uppercase">
-          <Link href="/" className="text-dark text-decoration-none">
-            Home
-          </Link>
-          <Link
-            href="#"
-            className="text-dark text-decoration-none border-bottom border-dark border-2">
-            Search for Jobs
-          </Link>
-          <Link href="#" className="text-dark text-decoration-none">
-            Join Our Talent Community
-          </Link>
-        </div>
-      </nav>
-
       <div
-        className="position-relative"
-        style={{ height: "140px", background: "#000" }}>
+        className="position-relative w-100"
+        style={{
+          height: "180px",
+          marginTop: "83px",
+          background: "#000",
+          overflow: "hidden",
+          display: "block",
+        }}>
         <img
-          src="https://www.gtlaw.com/-/media/images/backgrounds/biglaw-redefined-strip.jpg"
-          className="w-100 h-100 object-fit-cover opacity-75"
+          src="https://plus.unsplash.com/premium_photo-1695449439526-9cebdbfa1a2c?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW50ZXJuYXRpb25hbCUyMGxhd3xlbnwwfHwwfHx8MA%3D%3D"
+          className="w-100 h-100"
+          style={{ objectFit: "cover", objectPosition: "center" }}
           alt="Banner"
         />
-        <div className="position-absolute top-50 start-50 translate-middle text-white text-center w-100">
-          <h2
-            className="fw-bold tracking-widest text-uppercase m-0"
-            style={{ letterSpacing: "6px" }}>
-            BIGLAW REDEFINED.
-          </h2>
-        </div>
       </div>
 
       <div className="container-fluid bg-light py-4 border-bottom shadow-sm">
@@ -450,36 +356,75 @@ export default function CareerOpenings() {
               {filteredJobs.length} JOBS FOUND
             </p>
             {filteredJobs.length > 0 ? (
-              filteredJobs.map((job) => {
-                // FIXED: Defining jobSlug inside the map
-                const jobSlug = job.jobTitle
-                  ?.toLowerCase()
-                  .trim()
-                  .replace(/\s+/g, "-")
-                  .replace(/[^\w-]+/g, "");
-                return (
-                  <div key={job.id} className="job-item py-3 border-bottom">
-                    <h6 className="fw-bold mb-1" style={{ color: "#225a9b" }}>
-                      {/* FIXED: Wrapped in <span> to avoid multiple children error */}
-                      <Link
-                        href={`/careers/openings/${jobSlug}?id=${job.id}`}
-                        className="text-decoration-none">
-                        <span>{job.jobTitle}</span>
-                      </Link>
-                    </h6>
-                    <div className="d-flex flex-wrap gap-3 small text-muted mt-2">
-                      <span>{job.address}</span> | <span>{job.jobType}</span> |{" "}
-                      <span>{job.location}</span>
-                    </div>
-                    <div className="small text-muted mt-1 text-uppercase">
-                      {job.jobCode}
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="text-muted py-5 text-center">No jobs found.</p>
-            )}
+  filteredJobs.map((job) => {
+    // 1. Calendar Day Logic
+    const createdDate = new Date(job.createdAt);
+    const today = new Date();
+    createdDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    const diffInMs = today.getTime() - createdDate.getTime();
+    const daysAgo = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    let postText = "";
+    if (daysAgo <= 0) {
+      postText = "Posted Today";
+    } else if (daysAgo >= 30) {
+      postText = "Posted 30+ Days Ago";
+    } else {
+      postText = `Posted ${daysAgo} ${daysAgo === 1 ? "Day" : "Days"} Ago`;
+    }
+
+    const jobSlug = job.jobTitle
+      ?.toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w-]+/g, "");
+
+    return (
+      <div key={job.id} className="job-item py-3 border-bottom">
+        {/* Added cursor pointer to the h6 container as well */}
+        <h6 className="fw-bold mb-1" style={{ color: "#225a9b", cursor: "pointer" }}>
+          <Link
+            href={`/careers/openings/${jobSlug}?id=${job.id}`}
+            className="text-decoration-none"
+            style={{ color: "inherit", cursor: "pointer" }}
+          >
+            {/* Added pointer directly to the span text */}
+            <span style={{ cursor: "pointer" }}>{job.jobTitle}</span>
+          </Link>
+        </h6>
+        
+        <div className="d-flex flex-wrap gap-3 small text-muted mt-2 align-items-center">
+          <span>
+            <i className="bi bi-geo-alt me-1"></i> {job.address}
+          </span>
+          <span>
+            <i className="bi bi-briefcase me-1"></i> {job.jobType}
+          </span>
+          <span
+            className="badge border text-dark fw-normal"
+            style={{ fontSize: "11px", background: "#f8f9fa" }}
+          >
+            {job.location}
+          </span>
+        </div>
+        
+        <div className="d-flex flex-wrap gap-3 small text-muted mt-1 align-items-center">
+          <span>
+            <i className="bi bi-clock me-1"></i> {postText}
+          </span>
+          <span className="text-uppercase fw-bold" style={{ fontSize: "10px" }}>
+            {job.jobCode}
+          </span>
+        </div>
+      </div>
+    );
+  })
+) : (
+  <p className="text-muted py-5 text-center">No jobs found.</p>
+)}
+          
           </div>
           <div className="col-lg-4 ps-lg-4">
             <h6 className="fw-bold border-bottom pb-2">About Us</h6>
