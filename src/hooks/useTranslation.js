@@ -1,10 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import i18n from "../i18n";
 
-/**
- * Custom hook to replace react-i18next useTranslation
- * Provides t() function for translations and i18n object for language switching
- */
+
 export function useTranslation() {
   const [language, setLanguage] = useState(i18n.language || "en");
   const [, forceUpdate] = useState();
