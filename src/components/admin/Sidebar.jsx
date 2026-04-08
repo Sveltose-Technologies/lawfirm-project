@@ -16,11 +16,15 @@ const navigation = [
     icon: "bi bi-person-workspace",
   },
   { title: "Services", href: "/admin-panel/services", icon: "bi bi-gear" },
-  { title: "Users", href: "/admin-panelusers", icon: "bi bi-person-circle" },
-  { title: "Roles", href: "/roles", icon: "bi bi-ui-checks" },
+  {
+    title: "Users",
+    href: "/admin-panel/user-role",
+    icon: "bi bi-person-circle",
+  },
+  { title: "Roles", href: "/admin-panel/roles", icon: "bi bi-ui-checks" },
   {
     title: "Role Permission",
-    href: "/role-permission",
+    href: "/admin-panel/role-permission",
     icon: "bi bi-shield-lock",
   },
   { header: "CASE MANAGEMENT" },

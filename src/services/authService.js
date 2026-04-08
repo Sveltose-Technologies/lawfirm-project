@@ -2482,3 +2482,224 @@ export const getAllCareerProfessionals = async () => {
   }
 };
 
+// --- ROLE API ---
+
+export const createRole = async (roleData) => {
+  try {
+    const res = await API.post("/role/create", roleData); // roleData: { roleName }
+    return res.data;
+  } catch (err) {
+    console.error("❌ Create Role Error:", err);
+    throw err;
+  }
+};
+
+export const getAllRoles = async () => {
+  try {
+    const res = await API.get("/role/get-all");
+    return res.data;
+  } catch (err) {
+    console.error("❌ Get All Roles Error:", err);
+    throw err;
+  }
+};
+
+export const updateRole = async (id, roleData) => {
+  try {
+    const res = await API.put(`/role/update/${id}`, roleData);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Update Role Error:", err);
+    throw err;
+  }
+};
+
+export const deleteRole = async (id) => {
+  try {
+    const res = await API.delete(`/role/delete/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Delete Role Error:", err);
+    throw err;
+  }
+};
+
+export const getRoleById = async (id) => {
+  try {
+    const res = await API.get(`/role/get-by-id/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Get Role By ID Error:", err);
+    throw err;
+  }
+};
+
+// --- USER API ---
+
+export const createUser = async (userData) => {
+  try {
+    // userData: { fullName, email, password, confirmPassword, phoneNo, roleId, countryId, cityId }
+    const res = await API.post("/user/create", userData);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Create User Error:", err);
+    throw err;
+  }
+};
+
+export const getRoleUser = async () => {
+  try {
+    const res = await API.get("/user/get-all");
+    return res.data;
+  } catch (err) {
+    console.error("❌ Get All Users Error:", err);
+    throw err;
+  }
+};
+
+export const updateUser = async (id, userData) => {
+  try {
+    const res = await API.put(`/user/update/${id}`, userData);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Update User Error:", err);
+    throw err;
+  }
+};
+
+export const deleteUser = async (id) => {
+  try {
+    const res = await API.delete(`/user/delete/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Delete User Error:", err);
+    throw err;
+  }
+};
+
+export const getUserById = async (id) => {
+  try {
+    const res = await API.get(`/user/get-by-id/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Get User By ID Error:", err);
+    throw err;
+  }
+};
+
+
+
+// --- PERMISSION API ---
+
+export const createPermission = async (permissionData) => {
+  try {
+    const res = await API.post("/permission/create", permissionData); // { name }
+    return res.data;
+  } catch (err) {
+    console.error("❌ Create Permission Error:", err);
+    throw err;
+  }
+};
+
+export const createMultiplePermissions = async (permissionsArray) => {
+  try {
+    const res = await API.post("/permission/create-multiple", permissionsArray);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Create Multiple Permissions Error:", err);
+    throw err;
+  }
+};
+
+export const getAllPermissions = async () => {
+  try {
+    const res = await API.get("/permission/get-all");
+    return res.data;
+  } catch (err) {
+    console.error("❌ Get All Permissions Error:", err);
+    throw err;
+  }
+};
+
+export const updatePermission = async (id, permissionData) => {
+  try {
+    const res = await API.put(`/permission/update/${id}`, permissionData);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Update Permission Error:", err);
+    throw err;
+  }
+};
+
+export const deletePermission = async (id) => {
+  try {
+    const res = await API.delete(`/permission/delete/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Delete Permission Error:", err);
+    throw err;
+  }
+};
+
+export const getPermissionById = async (id) => {
+  try {
+    const res = await API.get(`/permission/get-by-id/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Get Permission By ID Error:", err);
+    throw err;
+  }
+}; 
+
+
+// --- ROLE-PERMISSION API ---
+
+export const createRolePermission = async (data) => {
+  try {
+    const res = await API.post("/role-permission/create", data); // { roleId, permissionId }
+    return res.data;
+  } catch (err) {
+    console.error("❌ Create Role-Permission Error:", err);
+    throw err;
+  }
+};
+
+export const getAllRolePermissions = async () => {
+  try {
+    const res = await API.get("/role-permission/get-all");
+    return res.data;
+  } catch (err) {
+    console.error("❌ Get All Role-Permissions Error:", err);
+    throw err;
+  }
+};
+
+export const updateRolePermission = async (id, data) => {
+  try {
+    const res = await API.put(`/role-permission/update/${id}`, data);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Update Role-Permission Error:", err);
+    throw err;
+  }
+};
+
+export const deleteRolePermission = async (id) => {
+  try {
+    const res = await API.delete(`/role-permission/delete/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Delete Role-Permission Error:", err);
+    throw err;
+  }
+};
+
+export const getRolePermissionById = async (id) => {
+  try {
+    const res = await API.get(`/role-permission/get-by-id/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Get Role-Permission By ID Error:", err);
+    throw err;
+  }
+};
