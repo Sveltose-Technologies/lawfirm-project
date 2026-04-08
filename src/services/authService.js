@@ -32,19 +32,40 @@ export const getAdminId = () => {
 };
 
 export const getImgUrl = (path) => {
-  if (!path || path === "null" || path === "undefined") return "";
-
-  if (/^(http|https|data:image)/.test(path)) return path;
-
-  let cleanPath = path.toString().trim().replace(/\\/g, "/");
-
-  cleanPath = cleanPath.replace(/^\/+/, "");
-
-  if (cleanPath.startsWith("uploads/")) {
-    return `${IMG_URL}/${cleanPath}`;
+  // 1. Handle null, undefined, or empty values
+  if (!path || path === "null" || path === "undefined") {
+    return "";
   }
 
-  return `${IMG_URL}/uploads/${cleanPath}`;
+  // 2. Return immediately if it is an absolute URL (http/https) or a Data URI
+  if (/^(http|https|data:image|blob:)/i.test(path)) {
+    return path;
+  }
+
+  // 3. Clean and standardize the path string
+  let cleanPath = path
+    .toString()
+    .trim()
+    .replace(/\\/g, "/") // Convert all backslashes to forward slashes (Windows fix)
+    .replace(/^\/+/, "") // Remove all leading slashes to prevent "domain.com//path"
+    .replace(/\/+$/, ""); // Remove trailing slashes
+
+  if (!cleanPath) return "";
+
+  // 4. Check if the "uploads/" prefix is already present (Case Insensitive)
+  const uploadsSegment = "uploads/";
+  const alreadyHasUploads = cleanPath.toLowerCase().startsWith(uploadsSegment);
+
+  // 5. Construct the final relative path
+  const finalRelativePath = alreadyHasUploads
+    ? cleanPath
+    : `${uploadsSegment}${cleanPath}`;
+
+  // 6. Ensure the Base URL does not end with a slash before joining
+  const base = (IMG_URL || "").replace(/\/+$/, "");
+
+  // 7. Return the absolute path combined with the base URL
+  return `${base}/${finalRelativePath}`;
 };
 
 export const getCurrentUser = () => {

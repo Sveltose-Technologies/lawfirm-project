@@ -5,9 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import {
   getAllNews,
-  getAllCapabilitySubCategories,
   getAllLocationCities,
-  IMG_URL,
+  getImgUrl,
   getAllCapabilityCategories,
 } from "../../services/authService";
 
@@ -32,9 +31,9 @@ function NewsIndex() {
   const getNewsImg = (path) => {
     if (!path)
       return "https://via.placeholder.com/1200x600?text=Core+Law+Updates";
-    if (path.startsWith("http")) return path;
-    const cleanPath = path.replace(/^uploads\//, "");
-    return `${IMG_URL}/uploads/${cleanPath}`;
+
+    // Using the robust getImgUrl method to handle any path format
+    return getImgUrl(path);
   };
 
   const createSlug = (text) => {
@@ -52,7 +51,6 @@ function NewsIndex() {
       try {
         const [newsRes, capRes, locRes] = await Promise.all([
           getAllNews(),
-          // getAllCapabilitySubCategories(),
           getAllCapabilityCategories(),
           getAllLocationCities(),
         ]);
@@ -72,7 +70,6 @@ function NewsIndex() {
     fetchAllData();
   }, []);
 
-  // SAFE PARSER
   const safeParseIds = (value) => {
     try {
       if (!value) return [];
@@ -85,7 +82,6 @@ function NewsIndex() {
     }
   };
 
-  // FILTER LOGIC
   const filteredNews = newsList.filter((item) => {
     const titleMatch = (item.title || "")
       .toLowerCase()
@@ -118,6 +114,7 @@ function NewsIndex() {
   const handleViewMore = () => {
     setVisibleCount((prev) => prev + 3);
   };
+
   const bannerImg =
     newsList.length > 0
       ? getNewsImg(newsList[0].bannerImage || newsList[0].newsImage)
@@ -129,39 +126,50 @@ function NewsIndex() {
         <title>News | Core Law</title>
       </Head>
 
-  
       <section
         className="universal-banner d-flex align-items-center justify-content-center text-center position-relative"
         style={{
           height: "450px",
           marginTop: "-80px",
-          // Fix: Both paths must be wrapped in `url("")` strings
-          backgroundImage: bannerImg
-            ? `url(${bannerImg})`
-            :"",
+          backgroundImage: bannerImg ? `url("${bannerImg}")` : "none",
           backgroundColor: bannerImg ? "transparent" : "#ffffff",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}>
-        {/* Show overlay for both API image and default image since both are images */}
         <div className="banner-overlay"></div>
-
         <div
           className="banner-content container pt-5 mt-5"
           style={{ zIndex: 1 }}>
           <h1 className="display-3 fw-bold mb-3 font-serif text-white">News</h1>
-          <p className="lead text-white opacity-75">
+          <p className="lead text-white opacity-75 mb-4">
             Insights & Updates from Core Law
           </p>
+
+          {/* Added Media Contacts Button */}
+          <Link href="/media-contacts">
+            <a
+              className="btn text-uppercase fw-bold px-4 py-3"
+              style={{
+                backgroundColor: "white",
+                color: "black",
+                borderRadius: "0",
+                fontSize: "0.85rem",
+                letterSpacing: "1px",
+                border: "none",
+                transition: "0.3s",
+              }}
+            >
+              Media Contacts
+            </a>
+          </Link>
         </div>
       </section>
 
-      {/* FILTER BAR */}
       <section
         className="py-4 shadow-sm"
         style={{
-          backgroundColor: "var(--dark-navy)",
-          borderTop: "4px solid var(--primary-gold)",
+          backgroundColor: "#1a1a1a",
+          borderTop: "4px solid #c5a059",
         }}>
         <div className="container">
           <div className="row align-items-center g-3">
@@ -190,12 +198,14 @@ function NewsIndex() {
                   className={`btn btn-link text-decoration-none text-uppercase fw-bold px-3 ${
                     activeFilterTab === tab ? "text-gold" : "text-white"
                   }`}
-                  style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>
+                  style={{
+                    fontSize: "0.85rem",
+                    letterSpacing: "1px",
+                    color: activeFilterTab === tab ? "#c5a059" : "white",
+                  }}>
                   {tab}{" "}
                   <i
-                    className={`bi bi-chevron-${
-                      activeFilterTab === tab ? "up" : "down"
-                    } ms-1`}></i>
+                    className={`bi bi-chevron-${activeFilterTab === tab ? "up" : "down"} ms-1`}></i>
                 </button>
               ))}
             </div>
@@ -255,7 +265,6 @@ function NewsIndex() {
         </div>
       </section>
 
-      {/* RECENT NEWS */}
       <section className="py-5">
         <div className="container py-4">
           <h2
@@ -266,7 +275,9 @@ function NewsIndex() {
 
           {loading ? (
             <div className="text-center py-5">
-              <div className="spinner-border text-gold"></div>
+              <div
+                className="spinner-border"
+                style={{ color: "#c5a059" }}></div>
             </div>
           ) : displayedNews.length > 0 ? (
             <div className="news-stack">
@@ -281,9 +292,8 @@ function NewsIndex() {
                     <span
                       className="text-white fw-bold"
                       style={{ fontSize: "0.75rem" }}>
-                      {item.date} {item.year}
+                      {new Date(item.date).toLocaleDateString()}
                     </span>
-
                     <span
                       className="text-white fw-bold text-uppercase"
                       style={{ fontSize: "0.75rem" }}>
@@ -294,10 +304,11 @@ function NewsIndex() {
                   <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                     <Link href={`/news/${createSlug(item.title)}`}>
                       <a className="text-decoration-none flex-grow-1">
-                        <h4 className="text-gold font-serif m-0">
+                        <h4
+                          className="font-serif m-0"
+                          style={{ color: "#c5a059" }}>
                           {item.title}
                         </h4>
-
                         {item.subtitle && (
                           <p className="text-muted mt-1 fst-italic">
                             {item.subtitle}
@@ -305,8 +316,6 @@ function NewsIndex() {
                         )}
                       </a>
                     </Link>
-
-                  
                   </div>
                 </div>
               ))}
@@ -315,7 +324,8 @@ function NewsIndex() {
                 <div className="text-center mt-5">
                   <button
                     onClick={handleViewMore}
-                    className="btn btn-link text-gold text-decoration-none fw-bold text-uppercase p-0">
+                    className="btn btn-link text-decoration-none fw-bold text-uppercase p-0"
+                    style={{ color: "#c5a059" }}>
                     View More +
                   </button>
                 </div>
@@ -330,9 +340,6 @@ function NewsIndex() {
       </section>
 
       <style jsx>{`
-        .text-gold {
-          color: var(--primary-gold) !important;
-        }
         .placeholder-white::placeholder {
           color: white;
           opacity: 1;
@@ -351,7 +358,7 @@ function NewsIndex() {
           }
         }
         h4:hover {
-          color: var(--text-light) !important;
+          color: white !important;
         }
       `}</style>
     </div>
